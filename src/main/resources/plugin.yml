@@ -1,0 +1,102 @@
+name: GoldRushMC
+version: 1.2
+description: The plugin created to facilitate the Gold Rush Server Features
+author: Diremonsoon, lexwebb, 1SmallVille1
+database: false
+#Make sure you have a database ready!!! otherwise errors will fly!
+#website: http://forums.bukkit.org/threads/ GET NEW WEBSITE ADDRESS AND APPEND
+
+main: com.goldrushmc.bukkit.main.Main
+
+commands:
+  fall:
+   description: Test command?
+   aliases: [fall]
+   permission: goldrushmc.collapsetest
+   usage: /<command>
+
+  stationwand:
+   description: Wand which is used for marking the train stations
+   aliases: [stationtool, tool]
+   permission: goldrushmc.station.create
+   usage: /<command>
+ 
+  station:
+   description: Tree for station creation.
+   aliases: [station, st]
+   permission: goldrushmc.station.create
+   usage: /<command> [stationType, stationName]
+   
+  gun:
+   description: Get your gun
+   aliases: [gun]
+   permission: golrushmc.guns
+   usage: /<command>
+   
+  panningtool:
+   description: Retriever of Gold Panning Pan
+   aliases: [pt]
+   permission: golrushmc.goldpan
+   usage: /<command>
+
+  showvisitors:
+   description: Displays the amount of visitors per station.
+   aliases: [showvisitors, svisitors]
+   permission: goldrushmc.station.info
+   usage: /<command>
+   
+  traincycle:
+   description: Starts and stops the train scheduled runs.
+   aliases: [traincycle, cycle]
+   permission: goldrushmc.station.schedule
+   usage: /<command> [start or stop]
+  
+  removetrainstation:
+   description: Starts and stops the train scheduled runs.
+   aliases: [rmstation, removestation, dstat, rstat]
+   permission: goldrushmc.station.destroy
+   usage: /<command> [stationName]
+
+  liststations:
+   description: Lists the stations currently in existence.
+   aliases: [liststat, liststations, slist]
+   permission: goldrushmc.station.list
+   usage: /<command> [stationName]
+
+permissions:
+  goldrushmc.*:
+    description: Gives access to all commands to Gold Rush.
+    children:
+     goldrushmc.station.create: true
+     goldrushmc.guns: true
+     goldrushmc.collapsetest: true
+     golrushmc.goldpan: true
+     goldrushmc.station.info: true
+     goldrushmc.station.schedule: true
+     goldrushmc.station.destroy: true
+     goldrushmc.station.list: true
+  goldrushmc.station.create:
+    description: Allows you to spawn the station wand and make stations.
+    default: true
+  goldrushmc.station.destroy:
+    description: Allows you to delete stations from the station list.
+    default: true
+  goldrushmc.guns:
+   description: Allows access to guns
+   default: true
+  goldrushmc.collapsetest:
+   description: Tests collapse tool
+   default: true
+  golrushmc.goldpan:
+   description: Allows access to Gold Panning
+   default: true
+  goldrushmc.station.info:
+   description: Allows use of the show visitors command.
+   default: true
+  goldrushmc.station.schedule:
+   description: Allows toggling of train scheduled runs.
+   default: true
+  goldrushmc.station.list:  
+   description: Allows use of the list command.
+   default: true
+ 
