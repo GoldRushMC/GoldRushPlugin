@@ -9,7 +9,6 @@ import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import com.goldrushmc.bukkit.bank.InventoryLis;
-import com.goldrushmc.bukkit.chunkpersist.ChunkLoaderLis;
 import com.goldrushmc.bukkit.commands.CreateTrainStation;
 import com.goldrushmc.bukkit.commands.RemoveTrainStation;
 import com.goldrushmc.bukkit.commands.ShowVisitorsCommand;
@@ -35,6 +34,7 @@ import com.goldrushmc.bukkit.panning.PanningTool;
 import com.goldrushmc.bukkit.train.listeners.TrainLis;
 import com.goldrushmc.bukkit.train.listeners.TrainStationLis;
 import com.goldrushmc.bukkit.train.listeners.WandLis;
+import com.goldrushmc.bukkit.train.station.TrainStation;
 import com.goldrushmc.bukkit.train.station.npc.CartTradeable;
 import com.goldrushmc.bukkit.tunnelcollapse.SettingsManager;
 import com.goldrushmc.bukkit.tunnelcollapse.TunnelCollapseCommand;
@@ -51,7 +51,6 @@ public final class Main extends JavaPlugin{
 	public final GunLis gl = new GunLis(this);
 	public final PanningLis pl = new PanningLis(this);
 	public final InventoryLis il = new InventoryLis(this);
-	public final ChunkLoaderLis cll = new ChunkLoaderLis(this);
 
 	@Override
 	public void onEnable() {
@@ -77,13 +76,19 @@ public final class Main extends JavaPlugin{
 		pm.registerEvents(gl, this);
 		pm.registerEvents(pl, this);
 		pm.registerEvents(il, this);
-		pm.registerEvents(cll, this);
 		
-		//Add settings
+		//Add settings for Tunnel Collapse
 		SettingsManager settings = SettingsManager.getInstance();
 		settings.setup(this);
 
 		//Register traits for the NPCs.
+		if(getServer().getPluginManager().getPlugin("Citizens") == null || getServer().getPluginManager().getPlugin("Citizens").isEnabled() == false) {
+			getLogger().severe("Citizens 2.0 not found or not enabled");
+			getServer().getPluginManager().disablePlugin(this);	
+			return;
+		}	
+ 
+		//Register your trait with Citizens.        
 		CitizensAPI.getTraitFactory().registerTrait(TraitInfo.create(CartTradeable.class).withName("CartTrader"));
 		
 		//Populate the train station listener maps
@@ -133,6 +138,8 @@ public final class Main extends JavaPlugin{
 	
 	@Override
 	public void onDisable() {
+		//Clear all of the trains out of all the mappings, to free up memory.
+		TrainStation.getTrainStations().clear();
 		getLogger().info("GoldRush Plugin Disabled!");
 	}
 

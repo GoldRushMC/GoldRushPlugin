@@ -3,6 +3,7 @@ package com.goldrushmc.bukkit.train.station.npc;
 import org.bukkit.Location;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
+import org.bukkit.entity.Villager.Profession;
 
 import net.citizensnpcs.api.ai.Navigator;
 import net.citizensnpcs.api.event.DespawnReason;
@@ -11,8 +12,12 @@ import net.citizensnpcs.api.util.DataKey;
 
 public class KioskWorker extends AbstractNPC {
 
-	protected KioskWorker(int id, String name) {
-		super(id, name);
+	Profession profession;
+	
+	public KioskWorker(int id) {
+		super(id, "Kiosk Worker");
+		this.profession = Profession.LIBRARIAN;
+		this.addTrait(CartTradeable.class);
 	}
 
 	@Override

@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.bukkit.Location;
 import org.bukkit.World;
+import org.bukkit.plugin.java.JavaPlugin;
 
 import com.goldrushmc.bukkit.defaults.BlockFinder;
 import com.goldrushmc.bukkit.train.exceptions.MarkerNumberException;
@@ -14,10 +15,9 @@ import com.goldrushmc.bukkit.train.exceptions.MarkerNumberException;
  * @author Lucas
  *
  */
-public class Town extends BlockFinder{
+public abstract class Town extends BlockFinder{
 
-	public Town(World world, List<Location> coords)	throws MarkerNumberException {
-		super(world, coords);
+	public Town(World world, List<Location> coords, JavaPlugin plugin)	throws MarkerNumberException {
+		super(world, coords, plugin);
 	}
-
 }

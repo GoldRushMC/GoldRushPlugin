@@ -5,16 +5,28 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import net.citizensnpcs.api.CitizensAPI;
+import net.citizensnpcs.api.npc.NPC;
+
+import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.Chunk;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
+import org.bukkit.block.BlockState;
 import org.bukkit.block.Sign;
 import org.bukkit.entity.EntityType;
-import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
+import org.bukkit.event.block.Action;
+import org.bukkit.event.block.BlockPlaceEvent;
+import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.player.PlayerMoveEvent;
+import org.bukkit.event.world.ChunkUnloadEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import com.bergerkiller.bukkit.tc.controller.MinecartGroup;
@@ -23,17 +35,17 @@ import com.bergerkiller.bukkit.tc.controller.MinecartMemberStore;
 import com.bergerkiller.bukkit.tc.controller.type.MinecartMemberChest;
 import com.bergerkiller.bukkit.tc.controller.type.MinecartMemberFurnace;
 import com.bergerkiller.bukkit.tc.controller.type.MinecartMemberRideable;
+import com.bergerkiller.bukkit.tc.events.MemberBlockChangeEvent;
 import com.bergerkiller.bukkit.tc.properties.CartProperties;
 import com.bergerkiller.bukkit.tc.properties.TrainProperties;
-import com.goldrushmc.bukkit.chunkpersist.ChunkLoaderLis;
 import com.goldrushmc.bukkit.db.TrainStationLocationTbl;
 import com.goldrushmc.bukkit.db.TrainStationTbl;
 import com.goldrushmc.bukkit.defaults.BlockFinder;
 import com.goldrushmc.bukkit.defaults.DBAccess;
 import com.goldrushmc.bukkit.defaults.DBTrainsAccessible;
 import com.goldrushmc.bukkit.train.SmallBlockMap;
+import com.goldrushmc.bukkit.train.event.StationSignEvent;
 import com.goldrushmc.bukkit.train.exceptions.MissingSignException;
-import com.goldrushmc.bukkit.train.listeners.TrainStationLis;
 import com.goldrushmc.bukkit.train.signs.ISignLogic;
 import com.goldrushmc.bukkit.train.signs.SignLogic;
 import com.goldrushmc.bukkit.train.signs.SignType;
@@ -57,15 +69,16 @@ public abstract class TrainStation extends BlockFinder{
 	protected ISignLogic signs;
 	protected final BlockFace direction;
 	protected volatile List<Player> visitors = new ArrayList<Player>();
-	protected List<HumanEntity> workers = new ArrayList<HumanEntity>();
+	protected List<NPC> workers = new ArrayList<NPC>();
 	protected final List<Block> trainArea;
 	protected volatile List<MinecartGroup> trains = new ArrayList<MinecartGroup>();
 	protected final List<Block> rails;
-	protected final List<Chunk> chunks;
 
 	/**
 	 * We require the JavaPlugin because this class must be able to access the database.
 	 * This is the standard constructor, with the default stop block material..
+	 * <p>
+	 * Make sure that {@link TrainStation#add()} and {@link TrainStation#createWorkers()} is handled.
 	 * 
 	 * @param plugin
 	 * @param stationName
@@ -74,19 +87,12 @@ public abstract class TrainStation extends BlockFinder{
 	 * @throws Exception 
 	 */
 	public TrainStation(final JavaPlugin plugin, final String stationName, final List<Location> markers, final World world) throws Exception {
-		super(world, markers);
+		super(world, markers, plugin);
 		if(db == null) db = new DBAccess(plugin);
 		this.stationName = stationName;
 		this.trainArea = generateTrainArea();
 		this.rails = findRails();
 		this.signs = generateSignLogic();
-		//Added for chunk loading/unloading purposes.
-		List<Chunk> chunks = new ArrayList<Chunk>();
-		for(Block b : this.trainArea) {
-			if(chunks.contains(b)) continue;
-			chunks.add(b.getChunk());
-		}
-		this.chunks = chunks;
 		Sign dir = this.signs.getSign(SignType.TRAIN_STATION_DIRECTION);
 		if(dir == null) throw new MissingSignException(this.signs);
 		BlockFace tempDir = null;
@@ -99,16 +105,13 @@ public abstract class TrainStation extends BlockFinder{
 		else {
 			this.direction = BlockFace.SELF;
 		}
-		//		findWorkers();
-		//Add to the list of stations for both the listener and static class instance! IMPORTANT
-		trainStations.add(this);
-		ChunkLoaderLis.addStation(this);
-		TrainStationLis.addStation(this);
 	}
 
 	/**
 	 * We require the JavaPlugin because this class must be able to access the database.
 	 * This is the standard constructor with a custom stop block material.
+	 * <p>
+	 * Make sure that {@link TrainStation#add()} and {@link TrainStation#createWorkers()} is handled.
 	 * 
 	 * @param plugin
 	 * @param stationName
@@ -118,19 +121,12 @@ public abstract class TrainStation extends BlockFinder{
 	 * @throws Exception 
 	 */
 	public TrainStation(final JavaPlugin plugin, final String stationName, final List<Location> markers, final World world, Material stopMat) throws Exception {
-		super(world, markers);
+		super(world, markers, plugin);
 		if(db == null) db = new DBAccess(plugin);
 		this.stationName = stationName;
 		this.trainArea = generateTrainArea();
 		this.rails = findRails();
 		this.signs = generateSignLogic();
-		//Added for chunk loading/unloading purposes.
-		List<Chunk> chunks = new ArrayList<Chunk>();
-		for(Block b : this.trainArea) {
-			if(chunks.contains(b)) continue;
-			chunks.add(b.getChunk());
-		}
-		this.chunks = chunks;
 		Sign dir = this.signs.getSign(SignType.TRAIN_STATION_DIRECTION);
 		BlockFace tempDir = null;
 		if(dir == null) throw new MissingSignException(this.signs);
@@ -143,15 +139,56 @@ public abstract class TrainStation extends BlockFinder{
 		else {
 			this.direction = BlockFace.SELF;
 		}
-		//		findWorkers();
-
+	}
+	
+	@Override
+	public void add() {
 		//Add to the list of stations for both the listener and static class instance! IMPORTANT
 		trainStations.add(this);
-		ChunkLoaderLis.addStation(this);
-		TrainStationLis.addStation(this);
+		Bukkit.getPluginManager().registerEvents(this, plugin);
 	}
 
-	public abstract void createTransport();
+	@Override
+	public void remove() {
+		
+		//Unregister handlers for events.
+		ChunkUnloadEvent.getHandlerList().unregister(this);
+		PlayerMoveEvent.getHandlerList().unregister(this);
+		MemberBlockChangeEvent.getHandlerList().unregister(this);
+		PlayerInteractEvent.getHandlerList().unregister(this);
+		BlockPlaceEvent.getHandlerList().unregister(this);
+		
+		//Remove ALL NPC's in the area.
+		for(NPC npc : this.workers) CitizensAPI.getNPCRegistry().deregister(npc);
+		
+		//Clear sign logic and change signs to air.
+		this.signs = null;
+		for(Block b : this.trainArea) {
+			if(b.getState() instanceof Sign) {
+				b.setType(Material.AIR);
+			}
+		}
+		
+		//Clear trains.
+		this.departingTrain = null;
+		this.trains = null;
+		
+		//Clear visitors
+		this.visitors = null;
+		
+		//Clear name
+		this.stationName = null;
+		
+		//Remove from the list
+		trainStations.remove(this);
+		
+		//Try to finalize.
+		try {
+			this.finalize();
+		} catch (Throwable e) {
+			Bukkit.getLogger().info("Something went wrong with the deletion of a Train Station");
+		}
+	}
 
 	/**
 	 * Adds the train station to the database, in case of a server wide crash.
@@ -173,6 +210,7 @@ public abstract class TrainStation extends BlockFinder{
 		station.setCorners(corners);
 		db.getDB().save(station);
 	}
+	
 
 	/**
 	 * Provides a standard way to sell carts.
@@ -180,7 +218,7 @@ public abstract class TrainStation extends BlockFinder{
 	 * @param owner
 	 * @param type
 	 */
-	public abstract void sellCart(Player owner, EntityType type);
+	public abstract boolean sellCart(Player owner, EntityType type);
 
 	/**
 	 * The default way for players to buy carts.
@@ -188,7 +226,7 @@ public abstract class TrainStation extends BlockFinder{
 	 * @param owner
 	 * @param type
 	 */
-	public abstract void buyCart(Player owner, EntityType type);
+	public abstract boolean buyCart(Player owner, EntityType type);
 
 	/**
 	 * A standard way to update the departure time for a single departing train, in minutes.
@@ -262,7 +300,7 @@ public abstract class TrainStation extends BlockFinder{
 		train.setProperties(tp);
 
 		this.addTrain(train);
-		this.findNextDeparture();
+		if(this.departingTrain == null) this.departingTrain = train;
 		this.changeSignLogic(train.getProperties().getTrainName());
 	}
 
@@ -397,16 +435,23 @@ public abstract class TrainStation extends BlockFinder{
 		remover.sendMessage("You have no train carts to remove.");
 	}
 
-	/**
-	 * Finds the next train queued for departure. Its front cart (furnace cart) will be just above the stop block.
-	 * 
-	 * @return
-	 */
-	public abstract MinecartGroup findNextDeparture();
-
 	public MinecartGroup getDepartingTrain() {
 		return departingTrain;
 	}
+	
+	/**
+	 * Shows whether or not the station's departing train has any carts left to sell.
+	 * 
+	 * @return
+	 */
+	public abstract boolean hasCartsToSell();
+	
+	/**
+	 * Shows whether or not a station has a train to depart.
+	 * 
+	 * @return
+	 */
+	public abstract boolean hasDepartingTrain();
 
 	public void setDepartingTrain(MinecartGroup train) {
 		this.departingTrain = train;
@@ -434,10 +479,15 @@ public abstract class TrainStation extends BlockFinder{
 	 */
 	public abstract List<Block> findStopBlocks(Material m);
 
+	/**
+	 * Gets the list of stop blocks for a train station.
+	 * 
+	 * @return
+	 */
 	public abstract List<Block> getStopBlocks(); 
 
 	/**
-	 * This finds the rails which are within the train station.
+	 * This is a default way to find the rails which are within the train station.
 	 * <p>
 	 * This DOES NOT SHOW PATHWAYS. That is to be determined for each subclass.
 	 * 
@@ -464,6 +514,15 @@ public abstract class TrainStation extends BlockFinder{
 
 	public List<Block> getTrainArea() { return trainArea; }
 
+	public static TrainStation getTrainStationAt(Location loc) {
+		for(TrainStation station : trainStations) {
+			if(station.getTrainArea().contains(loc.getBlock())) {
+				return station;
+			}
+		}
+		return null;
+	}
+	
 	/**
 	 * Gets all of the existing train stations.
 	 * 
@@ -488,7 +547,7 @@ public abstract class TrainStation extends BlockFinder{
 
 	public List<Player> getVisitors() {	return visitors;}	
 
-	public List<HumanEntity> getWorkers() {	return workers;}
+	public List<NPC> getWorkers() {	return workers;}
 
 	public List<MinecartGroup> getTrains() {return trains;}
 
@@ -500,4 +559,59 @@ public abstract class TrainStation extends BlockFinder{
 	public List<Chunk> getChunks() {
 		return chunks;
 	}
+	
+	//TODO Listener Stuff
+	
+	@EventHandler(priority = EventPriority.MONITOR)
+	public abstract void onPlayerMove(PlayerMoveEvent event);
+	
+	/**
+	 * Handles when a train moves onto Train Station territory.
+	 * @param event
+	 */
+	@EventHandler
+	public abstract void onTrainMove(MemberBlockChangeEvent event);
+	
+	/**
+	 * Does work with sign clicking events.
+	 * 
+	 * @param event The {@link Sign} click.
+	 */
+	@EventHandler
+	public void onSignClick(PlayerInteractEvent event) {
+
+		//We don't care about air blocks!
+		if(event.getClickedBlock() == null) return;
+
+		Block b = event.getClickedBlock();
+		BlockState bs = b.getState();
+
+		//Player can only right click to get this event to work. Otherwise we fail silently.
+		if(!event.getAction().equals(Action.RIGHT_CLICK_BLOCK)) return;
+		//We don't care if it isn't a sign.
+		if(!(b.getType().equals(Material.SIGN) || b.getType().equals(Material.SIGN_POST) || b.getType().equals(Material.WALL_SIGN))) return;
+		//Make sure the player has permission to use signs at all.
+		if(!event.getPlayer().hasPermission("goldrushmc.station.signs")) { event.getPlayer().sendMessage(ChatColor.RED + "You don't have permission to use signs!"); return; }
+		//We don't want the player holding anything in their hand!
+		if(event.getItem() != null) { event.getPlayer().sendMessage("Please put away your things before using signs!"); return; }
+
+		//Collect Player and Sign instances.
+		Player p = event.getPlayer();
+		Sign sign = (Sign) bs;
+
+
+		//If the player is within a station, we need to throw an event to handle this sign click.
+		if(this.trainArea.contains(p.getLocation().getBlock())) {
+			StationSignEvent sEvent = new StationSignEvent(this, sign, p);
+			Bukkit.getServer().getPluginManager().callEvent(sEvent);
+		}
+	}
+	
+	/**
+	 * Updates the specified station when a new sign is placed.
+	 * 
+	 * @param event
+	 */
+	@EventHandler
+	public abstract void onSignPlacedWithin(BlockPlaceEvent event);
 }
