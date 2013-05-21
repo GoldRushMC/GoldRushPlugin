@@ -4,10 +4,8 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import com.goldrushmc.bukkit.chunkpersist.ChunkLoaderLis;
 import com.goldrushmc.bukkit.defaults.CommandDefault;
 import com.goldrushmc.bukkit.defaults.GoldRushPerms;
-import com.goldrushmc.bukkit.train.listeners.TrainStationLis;
 import com.goldrushmc.bukkit.train.station.TrainStation;
 
 public class RemoveTrainStation extends CommandDefault {
@@ -25,9 +23,11 @@ public class RemoveTrainStation extends CommandDefault {
 		
 		for(TrainStation station : TrainStation.getTrainStations()) {
 			if(station.getStationName().equalsIgnoreCase(args[0])) {
-				TrainStationLis.removeStation(station);
-				ChunkLoaderLis.removeStation(station);
-				TrainStation.getTrainStations().remove(station);
+//				TrainStationLis.removeStation(station);
+//				ChunkLoaderLis.removeStation(station);
+//				TrainStation.getTrainStations().remove(station);
+//				break;
+				station.remove();
 				break;
 			}
 		}

@@ -3,33 +3,59 @@ package com.goldrushmc.bukkit.defaults;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.bukkit.Chunk;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.block.Block;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.world.ChunkUnloadEvent;
+import org.bukkit.plugin.java.JavaPlugin;
 
 import com.goldrushmc.bukkit.train.exceptions.MarkerNumberException;
 import com.goldrushmc.bukkit.train.exceptions.TooLowException;
 import com.goldrushmc.bukkit.train.station.TrainStation;
 
-public class BlockFinder {
+public abstract class BlockFinder extends DefaultListener{
 
 	public final World world;
 	public final List<Block> selectedArea;
 	public final List<Block> area;
 	public final List<Block> surface;
 	public final List<Block> partialArea;
+	public final List<Chunk> chunks;
 
-	public BlockFinder(World world, List<Location> coords) throws MarkerNumberException {
+	public BlockFinder(World world, List<Location> coords, JavaPlugin plugin) throws MarkerNumberException {
+		super(plugin);
 		this.world = world;		
 		
 		if(!(coords.size() == 2)) throw new MarkerNumberException();
 		
 		Location loc1 = coords.get(0), loc2 = coords.get(1);
+		//Generate areas
 		this.selectedArea = this.generateArea(loc1, loc2);
 		this.surface = this.generateSurface(loc1, loc2);
 		this.partialArea = this.getSelectiveArea(loc1, loc2, 30, 60);
 		this.area = this.getFullArea(loc1, loc2);
+		//Add chunks
+		List<Chunk> chunks = new ArrayList<Chunk>();
+		for(Block b : this.surface) {
+			if(!chunks.contains(b.getChunk())) {
+				chunks.add(b.getChunk());
+			}
+		}
+		this.chunks = chunks;
 	}
+	
+	/**
+	 * Handles when the class is deleted.
+	 */
+	public abstract void remove();
+	
+	/**
+	 * Handles when the class is added.
+	 */
+	public abstract void add();
+	
 
 	protected final boolean isGreaterThan(final int x1, final int x2) {
 
@@ -168,5 +194,14 @@ public class BlockFinder {
 	 */
 	public List<Block> getPartialArea() {
 		return partialArea;
+	}
+	
+	//TODO Listener Stuff
+	
+	@EventHandler
+	public void onChunkUnload(ChunkUnloadEvent event) {
+		if(this.chunks.contains(event.getChunk())) {
+			event.setCancelled(true);
+		}
 	}
 }
