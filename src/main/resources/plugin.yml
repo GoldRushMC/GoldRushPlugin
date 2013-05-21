@@ -7,6 +7,10 @@ database: false
 #website: http://forums.bukkit.org/threads/ GET NEW WEBSITE ADDRESS AND APPEND
 
 main: com.goldrushmc.bukkit.main.Main
+depend:
+ - Citizens
+ - Train Carts
+ - BKCommonLib
 
 commands:
   fall:

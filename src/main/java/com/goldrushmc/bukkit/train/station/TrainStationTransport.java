@@ -3,15 +3,25 @@ package com.goldrushmc.bukkit.train.station;
 import java.util.ArrayList;
 import java.util.List;
 
+import net.citizensnpcs.api.CitizensAPI;
+
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.Chunk;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.Chest;
+import org.bukkit.block.Sign;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
+import org.bukkit.event.block.BlockPlaceEvent;
+import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import com.bergerkiller.bukkit.tc.controller.MinecartGroup;
@@ -19,9 +29,16 @@ import com.bergerkiller.bukkit.tc.controller.MinecartMember;
 import com.bergerkiller.bukkit.tc.controller.type.MinecartMemberChest;
 import com.bergerkiller.bukkit.tc.controller.type.MinecartMemberFurnace;
 import com.bergerkiller.bukkit.tc.controller.type.MinecartMemberRideable;
+import com.bergerkiller.bukkit.tc.events.MemberBlockChangeEvent;
 import com.bergerkiller.bukkit.tc.properties.TrainProperties;
 import com.goldrushmc.bukkit.train.SmallBlockMap;
+import com.goldrushmc.bukkit.train.event.EnterTrainStationEvent;
+import com.goldrushmc.bukkit.train.event.ExitTrainStationEvent;
+import com.goldrushmc.bukkit.train.event.TrainEnterStationEvent;
+import com.goldrushmc.bukkit.train.event.TrainExitStationEvent;
+import com.goldrushmc.bukkit.train.event.TrainFullStopEvent;
 import com.goldrushmc.bukkit.train.exceptions.StopBlockMismatchException;
+import com.goldrushmc.bukkit.train.signs.SignType;
 
 public class TrainStationTransport extends TrainStation {
 
@@ -51,6 +68,8 @@ public class TrainStationTransport extends TrainStation {
 				createTransport();	
 			}
 		}
+		add();
+		createWorkers();
 		//		this.lockers = findLockers();
 	}
 
@@ -73,6 +92,8 @@ public class TrainStationTransport extends TrainStation {
 				createTransport();	
 			}
 		}
+		add();
+		createWorkers();
 		//		this.lockers = findLockers();
 	}
 
@@ -98,8 +119,8 @@ public class TrainStationTransport extends TrainStation {
 	//	}
 
 	@Override
-	public void buyCart(Player owner, EntityType type) {
-		if(this.departingTrain == null) return;
+	public boolean buyCart(Player owner, EntityType type) {
+		if(this.departingTrain == null) return false;
 		//The boolean success will be set true if a minecart is actually bought.
 		boolean success = false;
 		for(MinecartMember<?> cart : this.departingTrain) {
@@ -140,7 +161,7 @@ public class TrainStationTransport extends TrainStation {
 				default: break;
 				}
 				this.updateCartsAvailable(this.departingTrain, type);
-				break;
+				return true;
 			}
 		}
 		//If the buy wasn't successful, send a message.
@@ -150,13 +171,14 @@ public class TrainStationTransport extends TrainStation {
 			case MINECART_CHEST: owner.sendMessage("There are no" + ChatColor.BLUE + " storage cart(s) " + ChatColor.RESET + "for sale..."); break;
 			default: break;
 			}
+			return false;
 		}
-
+		return false;
 	}
 
 	@Override
-	public void sellCart(Player owner, EntityType type) {
-		if(this.departingTrain == null) return;
+	public boolean sellCart(Player owner, EntityType type) {
+		if(this.departingTrain == null) return false;
 		//The boolean success will be set true if a minecart is actually bought.
 		boolean success = false;
 		for(MinecartMember<?> cart : this.departingTrain) {
@@ -196,7 +218,7 @@ public class TrainStationTransport extends TrainStation {
 				default: break;
 				}
 				this.updateCartsAvailable(this.departingTrain, type);
-				break;
+				return true;
 			}
 		}
 		//If the sell wasn't successful, send a message.
@@ -206,10 +228,11 @@ public class TrainStationTransport extends TrainStation {
 			case MINECART_CHEST: owner.sendMessage("You have no" + ChatColor.BLUE + " storage cart(s) " + ChatColor.RESET + "to sell..."); break;
 			default: break;
 			}
+			return false;
 		}
+		return false;
 	}
 
-	@Override
 	public void createTransport() {
 
 		if(this.trains == null) this.trains = new ArrayList<MinecartGroup>();
@@ -250,7 +273,7 @@ public class TrainStationTransport extends TrainStation {
 		train.setProperties(tp);
 
 		this.addTrain(train);
-		this.findNextDeparture();
+		if(this.departingTrain == null) this.departingTrain = train;
 		this.changeSignLogic(train.getProperties().getTrainName());
 		this.updateCartsAvailable(train, EntityType.MINECART_CHEST);
 	}
@@ -284,24 +307,10 @@ public class TrainStationTransport extends TrainStation {
 	}
 
 	@Override
-	public MinecartGroup findNextDeparture() {
-		for(MinecartGroup mg : this.trains) {
-			for(MinecartMember<?> mm : mg) {
-				if(mm instanceof MinecartMemberFurnace) {
-					if(this.stopBlocks.contains(mm.getBlock())) {
-						return mg;
-					}
-				}
-			}
-		}
-		return null;
-	}
-
-	@Override
 	public boolean pushQueue() {
 		MinecartGroup mg = this.departingTrain;
 		if(mg == null) return false;
-		mg.getProperties().setSpeedLimit(0.4);
+		mg.getProperties().setSpeedLimit(0.6);
 		mg.getProperties().setColliding(false);
 		for(MinecartMember<?> mm : mg) {
 			if(mm instanceof MinecartMemberFurnace) {
@@ -313,15 +322,24 @@ public class TrainStationTransport extends TrainStation {
 			}
 		}
 		this.trains.remove(mg);
+		this.departingTrain = null;
 		if(this.trains.isEmpty()) return true;
 		for(MinecartGroup train : this.trains) {
 			train.setForwardForce(0.4);
 		}
 		return true;
 	}
-	
+
 	@Override
 	public void createWorkers() {
+		for(Chunk c : this.chunks) {
+			Entity[] entities = c.getEntities();
+			for(int i = 0; i < entities.length; i++) {
+				if(CitizensAPI.getNPCRegistry().isNPC(entities[i])) {
+					
+				}
+			}
+		}
 	}
 
 	@Override
@@ -331,5 +349,133 @@ public class TrainStationTransport extends TrainStation {
 
 	public Block getMainStopBlock() {
 		return this.mainStop;
+	}
+
+	@Override
+	public boolean hasDepartingTrain() {
+		if(this.departingTrain == null) return false;
+		else return true;
+	}
+
+	@Override
+	public boolean hasCartsToSell() {
+		if(!hasDepartingTrain()) return false;
+		
+		for(MinecartMember<?> mm : this.departingTrain) {
+			if(mm instanceof MinecartMemberChest) {
+				if(mm.getProperties().getOwners().isEmpty()) return true;
+			}
+		}
+		return false;
+	}
+
+	@Override
+	@EventHandler
+	public void onTrainMove(MemberBlockChangeEvent event) {
+		Block to = event.getTo(), from = event.getFrom();
+		MinecartMember<?> cart = event.getMember();
+		MinecartMemberFurnace furnace = null;
+		if(cart instanceof MinecartMemberFurnace) {
+			furnace = (MinecartMemberFurnace) cart;
+		}
+
+		//We don't care about non-furnaces. Furnaces lead the charge!
+		if(furnace == null) return;
+
+		if(this.trainArea.contains(to)) {
+			if(!this.trainArea.contains(from)) {
+				//Entering station
+				TrainEnterStationEvent enter = new TrainEnterStationEvent(this, event.getGroup());
+				Bukkit.getServer().getPluginManager().callEvent(enter);	
+			}
+
+			//The train has hit the stop block, and needs to stop.
+			else if(getStopBlocks().contains(to)) {
+				//Check to see if there is already a departing train assigned. If so, we don't need to add it again.
+				if(this.departingTrain == null) {
+				//If there is no departing train yet, we need to add this one.
+				TrainFullStopEvent stop = new TrainFullStopEvent(this, event.getGroup());
+				Bukkit.getServer().getPluginManager().callEvent(stop);
+				}
+			}
+		}
+		//Leaving station
+		else if(!this.trainArea.contains(to) && this.trainArea.contains(from)) {
+			TrainExitStationEvent exit = new TrainExitStationEvent(this, event.getGroup());
+			Bukkit.getServer().getPluginManager().callEvent(exit);
+		}
+		
+	}
+
+	@Override
+	@EventHandler
+	public void onSignPlacedWithin(BlockPlaceEvent event) {
+		if(this.trainArea.contains(event.getBlock())) {
+			//If it isn't a sign, we don't care.
+			if(!(event.getBlock().getState() instanceof Sign)) return;
+			
+			Sign sign = (Sign) event.getBlock().getState();
+			//We only want signs that have the symbol {trains} denoted on them.
+			if(!sign.getLine(0).equals("{trains}")) return;
+			
+			boolean isUseful = this.getSigns().addSign(sign.getLine(1), sign);
+			
+			if(isUseful) {
+				
+				String trainName = "N/A";
+				int cartCount = 0;
+				MinecartGroup train = this.getDepartingTrain();
+				if(train != null) {
+					trainName = train.getProperties().getTrainName();
+					cartCount = train.size() - 1;	
+				}
+				
+				SignType type = this.getSigns().getSignType(sign);
+				switch(type) {
+				case ADD_RIDE_CART:
+				case ADD_STORAGE_CART:
+				case REMOVE_RIDE_CART:
+				case REMOVE_STORAGE_CART:
+				case TRAIN_STATION:  {
+					sign.setLine(2, trainName); 
+					sign.update();
+					event.getPlayer().sendMessage("You placed a " + type.toString() + " Sign!"); 
+					break;
+				}
+				case TRAIN_STATION_CART_COUNT:  {
+					String count = "N/A";
+					if(cartCount != 0) {
+						count = String.valueOf(cartCount);
+					}
+					sign.setLine(2, count); 
+					event.getPlayer().sendMessage("You placed a Cart Counter Sign!"); 
+					break; 
+				}
+				case TRAIN_STATION_TIME: break;
+				default: break;
+				}
+			}
+		}
+		
+	}
+
+	@Override
+	@EventHandler(priority = EventPriority.MONITOR)
+	public void onPlayerMove(PlayerMoveEvent event) {
+		//We look for the blocks to and from
+		Block from = event.getFrom().getBlock(), to = event.getTo().getBlock();
+
+		//Has left the station!
+		if(this.trainArea.contains(from) && !this.trainArea.contains(to)) {
+			ExitTrainStationEvent exit = new ExitTrainStationEvent(this, event.getPlayer());
+			Bukkit.getServer().getPluginManager().callEvent(exit);
+		}
+
+		//Has entered the station!
+		else if(this.trainArea.contains(to) && !this.trainArea.contains(from)) {
+			EnterTrainStationEvent enter = new EnterTrainStationEvent(this, event.getPlayer());
+			Bukkit.getServer().getPluginManager().callEvent(enter);
+		}
+		
 	}
 }
