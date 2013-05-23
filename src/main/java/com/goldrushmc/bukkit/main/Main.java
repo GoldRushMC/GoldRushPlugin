@@ -29,6 +29,8 @@ import com.goldrushmc.bukkit.db.TrainStatusTbl;
 import com.goldrushmc.bukkit.db.TrainTbl;
 import com.goldrushmc.bukkit.guns.GunLis;
 import com.goldrushmc.bukkit.guns.GunTool;
+import com.goldrushmc.bukkit.mines.MineLis;
+import com.goldrushmc.bukkit.mines.MineTool;
 import com.goldrushmc.bukkit.panning.PanningLis;
 import com.goldrushmc.bukkit.panning.PanningTool;
 import com.goldrushmc.bukkit.train.listeners.TrainLis;
@@ -51,6 +53,7 @@ public final class Main extends JavaPlugin{
 	public final GunLis gl = new GunLis(this);
 	public final PanningLis pl = new PanningLis(this);
 	public final InventoryLis il = new InventoryLis(this);
+	public final MineLis ml = new MineLis(this);
 
 	@Override
 	public void onEnable() {
@@ -62,6 +65,7 @@ public final class Main extends JavaPlugin{
 		getCommand("Fall").setExecutor(new TunnelCollapseCommand(this));
 		getCommand("Gun").setExecutor(new GunTool(this));
 		getCommand("PanningTool").setExecutor(new PanningTool(this));
+		getCommand("Mine").setExecutor(new MineTool(this));
 		getCommand("ShowVisitors").setExecutor(new ShowVisitorsCommand(this));
 		getCommand("TrainCycle").setExecutor(new TrainCycleCommand(this));
 		getCommand("RemoveStation").setExecutor(new RemoveTrainStation(this));
@@ -76,6 +80,7 @@ public final class Main extends JavaPlugin{
 		pm.registerEvents(gl, this);
 		pm.registerEvents(pl, this);
 		pm.registerEvents(il, this);
+		pm.registerEvents(ml, this);
 		
 		//Add settings for Tunnel Collapse
 		SettingsManager settings = SettingsManager.getInstance();
