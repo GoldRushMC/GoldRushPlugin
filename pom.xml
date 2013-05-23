@@ -31,6 +31,10 @@
 			<id>citizensapi</id>
 			<url>http://ci.citizensnpcs.com/plugin/repository/everything/</url>
 		</repository>
+		<repository>
+      			<id>sk89q-repo</id>
+	      		<url>http://maven.sk89q.com/repo/</url>
+    		</repository>
 	</repositories>
 
 	<dependencies>
@@ -64,6 +68,13 @@
 			<groupId>com.bergerkiller.bukkit</groupId>
 			<artifactId>BKCommonLib</artifactId>
 			<version>1.52-SNAPSHOT</version>
+			<type>jar</type>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.sk89q</groupId>
+			<artifactId>worldedit</artifactId>
+			<version>5.5.7-SNAPSHOT</version>
 			<scope>provided</scope>
 		</dependency>
 	</dependencies>
