@@ -67,7 +67,7 @@ public class MineTool  extends CommandDefault {
 						
 					} else if (args[0].equalsIgnoreCase("confirm")){ 
 						
-						int density = 5; //effects the spawn rate of ores and caves, the higher, the less
+						int density = 2; //effects the spawn rate of ores and caves, the higher, the less
 						
 						int size = (MineLis.worldEditPlugin.getSelection(p).getWidth() + 
 								MineLis.worldEditPlugin.getSelection(p).getHeight() + 
@@ -78,6 +78,7 @@ public class MineTool  extends CommandDefault {
 						fillSelection(p.getWorld(), p, Material.GLASS); //fills the area with chosen base block
 						populateGold(p.getWorld(), p, veins, 10); //populates area with gold veins
 						populateTunnels(p.getWorld(), p, 6, size / (density * 2) ); //populates the area with tunnels
+						populateGravel(p.getWorld(), p, size / (density * 2)); //populates the area with gravel blobs
 						
 						return true;
 					} else if (args[0].equalsIgnoreCase("cancel")){ 
@@ -116,6 +117,77 @@ public class MineTool  extends CommandDefault {
 		}
 	}
 	
+	private void changeSides(Block b, Material m) {
+		Block north = b.getRelative(BlockFace.NORTH);
+		Block west = b.getRelative(BlockFace.WEST);
+		Block east = b.getRelative(BlockFace.EAST);
+		Block south = b.getRelative(BlockFace.SOUTH);
+		Block northEast = b.getRelative(BlockFace.NORTH_EAST);
+		Block northWest = b.getRelative(BlockFace.NORTH_WEST);
+		Block southEast = b.getRelative(BlockFace.SOUTH_EAST);
+		Block southWest = b.getRelative(BlockFace.SOUTH_WEST);
+		Block northUp = north.getRelative(BlockFace.UP);
+		Block eastUp = east.getRelative(BlockFace.UP);
+		Block westhUp = west.getRelative(BlockFace.UP);
+		Block southUp = south.getRelative(BlockFace.UP);
+		Block northEastUp = northEast.getRelative(BlockFace.UP);
+		Block northWestUp = northWest.getRelative(BlockFace.UP);
+		Block southEastUp = southEast.getRelative(BlockFace.UP);
+		Block southWestUp = southWest.getRelative(BlockFace.UP);
+		Block northDown = north.getRelative(BlockFace.DOWN);
+		Block eastDown = east.getRelative(BlockFace.DOWN);
+		Block westhDown = west.getRelative(BlockFace.DOWN);
+		Block southDown = south.getRelative(BlockFace.DOWN);
+		Block northEastDown = northEast.getRelative(BlockFace.DOWN);
+		Block northWestDown = northWest.getRelative(BlockFace.DOWN);
+		Block southEastDown = southEast.getRelative(BlockFace.DOWN);
+		Block southWestDown = southWest.getRelative(BlockFace.DOWN);
+		Block up = b.getRelative(BlockFace.UP);
+		Block down = b.getRelative(BlockFace.DOWN);
+		
+		Block northNorth = north.getRelative(BlockFace.NORTH);
+		Block southSouth = south.getRelative(BlockFace.SOUTH);
+		Block eastEast = east.getRelative(BlockFace.EAST);
+		Block westWest = west.getRelative(BlockFace.WEST);
+		Block upUp = up.getRelative(BlockFace.UP);
+		Block downDown = down.getRelative(BlockFace.DOWN);
+		
+		north.setType(m);
+		west.setType(m);
+		east.setType(m);
+		south.setType(m);
+		northEast.setType(m);
+		northWest.setType(m);
+		southEast.setType(m);
+		southWest.setType(m);
+		northUp.setType(m);
+		eastUp.setType(m);
+		westhUp.setType(m);
+		southUp.setType(m);
+		northEastUp.setType(m);
+		northWestUp.setType(m);
+		southEastUp.setType(m);
+		southWestUp.setType(m);
+		northDown.setType(m);
+		eastDown.setType(m);
+		westhDown.setType(m);
+		southDown.setType(m);
+		northEastDown.setType(m);
+		northWestDown.setType(m);
+		southEastDown.setType(m);
+		southWestDown.setType(m);
+		up.setType(m);
+		down.setType(m);
+		
+		northNorth.setType(m);
+		southSouth.setType(m);
+		eastEast.setType(m);
+		westWest.setType(m);
+		upUp.setType(m);
+		downDown.setType(m);
+		
+	}
+	
 	private void populateGold(World w, Player p, Integer numVeins, Integer veinLength) {
 		
 		//loops on number of veins specified
@@ -138,6 +210,18 @@ public class MineTool  extends CommandDefault {
 				blockToAdd = bli.next().getLocation();
 				w.getBlockAt(new Location(blockToAdd.getWorld(), blockToAdd.getBlockX(), blockToAdd.getBlockY(), blockToAdd.getBlockZ())).setType(Material.GOLD_ORE);
 			}
+		}
+	}
+	
+	private void populateGravel(World w, Player p, Integer numPatches) {
+		for(int i = 0; i < numPatches; i++) {
+			Vector pos = randomConstrainedVector(MineLis.mineMin.get(p), MineLis.mineMax.get(p));
+			
+			Block blockToChange = w.getBlockAt(pos.toLocation(w));
+			blockToChange.setType(Material.GRAVEL);
+			
+			//also changes adjacent blocks
+			changeSides(blockToChange, Material.GRAVEL);
 		}
 	}
 	
@@ -180,8 +264,7 @@ public class MineTool  extends CommandDefault {
 						blockToChange.setType(Material.AIR);
 						
 						//also changes adjacent blocks
-						for(BlockFace face : BlockFace.values())
-							blockToChange.getRelative(face).setType(Material.AIR);
+						changeSides(blockToChange, Material.AIR);
 					}
 				
 					//makes next segment start the end of previous
