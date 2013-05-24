@@ -14,7 +14,6 @@ import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
-import org.bukkit.block.Chest;
 import org.bukkit.block.Sign;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
@@ -42,17 +41,16 @@ import com.goldrushmc.bukkit.train.exceptions.StopBlockMismatchException;
 import com.goldrushmc.bukkit.train.signs.SignType;
 import com.goldrushmc.bukkit.train.station.npc.CartTradeable;
 
-public class TrainStationTransport extends TrainStation {
+public class PublicTrainStation extends TrainStation {
 
 	private final int maxStopBlocks = 4;
 	private final Material stopMat;
 	private final List<Block> stopBlocks;
 	private Block mainStop;
-	//	private final List<Chest> lockers;
-	//	private Map<Player, Chest> lockerPlayerMap = new HashMap<Player, Chest>();
 
-	public TrainStationTransport(JavaPlugin plugin, String stationName,	List<Location> markers, World world, boolean train) throws Exception {
+	public PublicTrainStation(JavaPlugin plugin, String stationName, List<Location> markers, World world, boolean train) throws Exception {
 		super(plugin, stationName, markers, world);
+
 		this.stopMat = defaultStop;
 		this.stopBlocks = findStopBlocks(this.stopMat);
 		for(Block b : this.stopBlocks) {
@@ -71,12 +69,11 @@ public class TrainStationTransport extends TrainStation {
 			}
 		}
 		add();
-//		createWorkers();
-		//		this.lockers = findLockers();
 	}
 
-	public TrainStationTransport(JavaPlugin plugin, String stationName,	List<Location> markers, World world, Material stopMat, boolean train) throws Exception {
+	public PublicTrainStation(JavaPlugin plugin, String stationName, List<Location> markers, World world, Material stopMat, boolean train) throws Exception {
 		super(plugin, stationName, markers, world, stopMat);
+
 		this.stopMat = stopMat;
 		this.stopBlocks = findStopBlocks(stopMat);
 		for(Block b : this.stopBlocks) {
@@ -95,146 +92,73 @@ public class TrainStationTransport extends TrainStation {
 			}
 		}
 		add();
-//		createWorkers();
-		//		this.lockers = findLockers();
 	}
-
-	/**
-	 * A way to find all of the lockers in the selectedArea.
-	 * 
-	 * @return
-	 */
-	protected List<Chest> findLockers() {
-		List<Chest> lockers = new ArrayList<Chest>();
-		for(Block b : this.trainArea) {
-			if(b.getType().equals(Material.CHEST)) {
-				if(b.getState() instanceof Chest) {
-					lockers.add((Chest) b.getState());
-				}
-			}
-		}
-		return lockers;
-	}
-
-	//	public List<Chest> getLockers() {
-	//		return this.lockers;
-	//	}
 
 	@Override
 	public boolean buyCart(Player owner, EntityType type) {
+		if(!type.equals(EntityType.MINECART)) return false;
 		if(this.departingTrain == null) { owner.sendMessage("There is currently no train available to buy from. "); return false; }
+		
 		//The boolean success will be set true if a minecart is actually bought.
 		boolean success = false;
 		for(MinecartMember<?> cart : this.departingTrain) {
 			//If the cart is an instance of the furnace, skip it.
 			if(cart instanceof MinecartMemberFurnace) continue;
-			switch(type) {
 			//If the player wants a passenger minecart, do this.
-			case MINECART: { 
-				if(cart instanceof MinecartMemberRideable) {
-					//If the owners list is empty, set the owner!
-					if(cart.getProperties().getOwners().isEmpty()) {
-						cart.getProperties().setOwner(owner);
-						success = true;
-						break;
-					}
-				} else {break;}
-			}
-			//If the player wants a chest minecart, do this.
-			case MINECART_CHEST: { 
-				if(cart instanceof MinecartMemberChest) {
-					//If the owners list is empty, set the owner!
-					if(cart.getProperties().getOwners().isEmpty()) {
-						cart.getProperties().setOwner(owner);
-						success = true;
-						break;
-					}
-				} else {break;}
-			}
-			//This should never happen, but if it does, oh well.
-			default: break;
-			}
-			//If we have already gotten a cart, end the loop.
-			if(success) {
-				//If the buy was successful, send a confirmation.
-				switch(type) {
-				case MINECART: owner.sendMessage("You bought" + ChatColor.BLUE + " passenger cart" + ChatColor.GREEN + " [#" + (cart.getIndex() + 1) + "]"
-						+ " from train " + this.departingTrain.getProperties().getTrainName()); break;
-				case MINECART_CHEST: owner.sendMessage("You bought" + ChatColor.BLUE + " storage cart" + ChatColor.GREEN + " [#" + (cart.getIndex() + 1) + "]" 
-						+ " from train " + this.departingTrain.getProperties().getTrainName()); break;
-				default: break;
+			if(cart instanceof MinecartMemberRideable) {
+				//If the owners list is empty, set the owner!
+				if(cart.getProperties().getOwners().isEmpty()) {
+					cart.getProperties().setOwner(owner);
+					success = true;
 				}
-				this.updateCartsAvailable(this.departingTrain, type);
-				return true;
+				//If we have already gotten a cart, end the loop.
+				if(success) {
+					//If the buy was successful, send a confirmation.
+					owner.sendMessage("You bought" + ChatColor.BLUE + " passenger cart" + ChatColor.GREEN + " [#" + (cart.getIndex() + 1) + "]"
+							+ " from train " + this.departingTrain.getProperties().getTrainName());
+					this.updateCartsAvailable(this.departingTrain, type);
+					return true;
+				}
 			}
 		}
 		//If the buy wasn't successful, send a message.
 		if(!success) {
-			switch(type) {
-			case MINECART: owner.sendMessage("There are no" + ChatColor.BLUE + " passenger cart(s) " + ChatColor.RESET + "for sale"
-			+ " on train " + this.departingTrain.getProperties().getTrainName()); break;
-			case MINECART_CHEST: owner.sendMessage("There are no" + ChatColor.BLUE + " storage cart(s) " + ChatColor.RESET + "for sale" 
-					+ " from train " + this.departingTrain.getProperties().getTrainName()); break;
-			default: break;
-			}
-			return false;
+			owner.sendMessage("There are no" + ChatColor.BLUE + " passenger cart(s) " + ChatColor.RESET + "for sale"
+					+ " on train " + this.departingTrain.getProperties().getTrainName());
 		}
 		return false;
 	}
 
 	@Override
 	public boolean sellCart(Player owner, EntityType type) {
-		if(this.departingTrain == null) return false;
+		if(!type.equals(EntityType.MINECART)) return false;
+		if(this.departingTrain == null) { owner.sendMessage("There is currently no train available to buy from. "); return false; }
+		
 		//The boolean success will be set true if a minecart is actually bought.
 		boolean success = false;
 		for(MinecartMember<?> cart : this.departingTrain) {
 			//If the cart is an instance of the furnace, skip it.
 			if(cart instanceof MinecartMemberFurnace) continue;
-			switch(type) {
 			//If the player wants a passenger minecart, do this.
-			case MINECART: if(cart instanceof MinecartMemberRideable) {
+			if(cart instanceof MinecartMemberRideable) {
 				//If the owners list is not empty, and the owner is the player, remove them!
 				if(!cart.getProperties().getOwners().isEmpty()) {
 					if(cart.getProperties().getOwners().contains(owner.getName().toLowerCase())) {
 						cart.getProperties().getOwners().remove(owner.getName().toLowerCase());
 						success = true;
-						break;	
 					}
 				}
-			} else {break;}
-			//If the player wants a chest minecart, do this.
-			case MINECART_CHEST: if(cart instanceof MinecartMemberChest) {
-				//If the owners list is not empty, and the owner is the player, remove them!
-				if(!cart.getProperties().getOwners().isEmpty()) {
-					if(cart.getProperties().getOwners().contains(owner.getName().toLowerCase())) {
-						cart.getProperties().getOwners().remove(owner.getName().toLowerCase());
-						success = true;
-						break;	
-					}
-				} 
-			} else {break;}
-			//This should never happen, but if it does, oh well.
-			default: break;
-			}
+			} 
 			if(success) {
 				//If the sell was successful, send a confirmation.
-				switch(type) {
-				case MINECART: owner.sendMessage("You sold" + ChatColor.BLUE + " passenger cart" + ChatColor.GREEN + " [#" + (cart.getIndex() + 1) + "]"); break;
-				case MINECART_CHEST: owner.sendMessage("You sold" + ChatColor.BLUE + " storage cart" + ChatColor.GREEN + " [#" + (cart.getIndex() + 1) + "]"); break;
-				default: break;
-				}
+				owner.sendMessage("You sold" + ChatColor.BLUE + " passenger cart" + ChatColor.GREEN + " [#" + (cart.getIndex() + 1) + "]");
 				this.updateCartsAvailable(this.departingTrain, type);
 				return true;
 			}
 		}
 		//If the sell wasn't successful, send a message.
 		if(!success) { 
-			switch(type) {
-			case MINECART: owner.sendMessage("You have no" + ChatColor.BLUE + " passenger cart(s) " + ChatColor.RESET + "to sell..."); break;
-			case MINECART_CHEST: owner.sendMessage("You have no" + ChatColor.BLUE + " storage cart(s) " + ChatColor.RESET + "to sell..."); break;
-			default: break;
-			}
-			return false;
+			owner.sendMessage("You have no" + ChatColor.BLUE + " passenger cart(s) " + ChatColor.RESET + "to sell...");
 		}
 		return false;
 	}
@@ -248,14 +172,17 @@ public class TrainStationTransport extends TrainStation {
 		SmallBlockMap sbm = new SmallBlockMap(this.mainStop);
 		BlockFace dir = this.direction.getOppositeFace();
 		//Iterate to get the max size of minecarts, or just short of it if the rails end.
-		for(int i = 0; i < 14; i++) {
+		int i = 0;
+		while(!sbm.isEnd() || i < 14) {
 			sbm = new SmallBlockMap(sbm.getBlockAt(dir));
 			if(!sbm.isRail(sbm.getBlockAt(dir))) {
 				break;
 			}
-			carts.add(EntityType.MINECART_CHEST);
+			carts.add(EntityType.MINECART);
+			i++;
 		}
 		carts.add(EntityType.MINECART_FURNACE);
+		
 		//Should make the furnace spawn right on top of the stop block.
 		MinecartGroup train = MinecartGroup.spawn(this.mainStop, this.direction.getOppositeFace(), carts);
 		for(MinecartMember<?> mm : train) {
@@ -494,30 +421,31 @@ public class TrainStationTransport extends TrainStation {
 			if(!trains[i].isMoving()) {
 				//At least the front of the train must be WITHIN the station.
 				for(MinecartMember<?> mm : trains[i]) {
-					
+
 					boolean foundTrain = false;
 					if(!(mm instanceof MinecartMemberFurnace)) continue;
-					
-						if(this.stopBlocks.contains(mm.getBlock())) {
-							this.departingTrain = trains[i];
-							foundTrain = true;
-							Bukkit.getLogger().info("Found a still train! Added to departing.");
-							break;
-						} else {
-							for(Block b : this.trainArea) {
-								//If the train is within the station grounds, accept it.
-								if(b.equals(mm.getBlock())) {
-									this.trains.add(trains[i]);
-									foundTrain = true;
-									Bukkit.getLogger().info("Found a still train! Added to regular list.");
-									break;
-								}
+
+					if(this.stopBlocks.contains(mm.getBlock())) {
+						this.departingTrain = trains[i];
+						foundTrain = true;
+						Bukkit.getLogger().info("Found a still train! Added to departing.");
+						break;
+					} else {
+						for(Block b : this.trainArea) {
+							//If the train is within the station grounds, accept it.
+							if(b.equals(mm.getBlock())) {
+								this.trains.add(trains[i]);
+								foundTrain = true;
+								Bukkit.getLogger().info("Found a still train! Added to regular list.");
+								break;
 							}
 						}
+					}
 					return foundTrain;
 				}
 			}
 		}
 		return false;
 	}
+
 }

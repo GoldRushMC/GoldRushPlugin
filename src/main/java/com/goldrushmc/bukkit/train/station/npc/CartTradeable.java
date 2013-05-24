@@ -6,8 +6,8 @@ import net.citizensnpcs.api.event.NPCLeftClickEvent;
 import net.citizensnpcs.api.event.NPCRightClickEvent;
 import net.citizensnpcs.api.persistence.Persist;
 import net.citizensnpcs.api.trait.Trait;
-import net.citizensnpcs.api.util.DataKey;
 
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.entity.EntityType;
@@ -31,17 +31,6 @@ public class CartTradeable extends Trait {
 	private EntityType cartType = EntityType.MINECART_CHEST;
 	ItemStack gold = new ItemStack(Material.GOLD_NUGGET, 64);
 
-
-	@Override
-	public void load(DataKey key) {
-
-	}
-
-	@Override
-	public void save(DataKey key) {
-
-	}
-
 	/**
 	 * Every 500 ticks, update the worth of a cart.
 	 */
@@ -62,13 +51,9 @@ public class CartTradeable extends Trait {
 		TrainStation station = TrainStation.getTrainStationAt(this.npc.getBukkitEntity().getLocation());
 		if(station != null) {
 			this.station = station;
+			Bukkit.getLogger().info(this.getNPC().getFullName() + " has join station " + this.station.getStationName());
 			hasCarts = this.station.hasCartsToSell();
 		}
-	}
-
-	@Override
-	public void onRemove() {
-
 	}
 
 	/**
@@ -77,6 +62,8 @@ public class CartTradeable extends Trait {
 	 */
 	@EventHandler
 	public void leftClick(NPCLeftClickEvent e) {
+		//Checks to make sure the NPC is the same one as the attached one.
+		if(this.getNPC() != e.getNPC()) return;
 		if(!this.hasCarts) return;
 		Player patron = e.getClicker();
 		//Logic for Buying
@@ -133,6 +120,9 @@ public class CartTradeable extends Trait {
 
 	@EventHandler
 	public void rightClick(NPCRightClickEvent e) {
+		//Checks to make sure the NPC is the same one as the attached one.
+		if(this.getNPC() != e.getNPC()) return;
+		
 		if(!this.hasCarts) return;
 		//Shift + Right Click sells ALL CARTS for the player.
 		if(e.getClicker().isSneaking()) {
