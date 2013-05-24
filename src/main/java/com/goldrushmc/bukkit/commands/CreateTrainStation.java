@@ -12,6 +12,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 import com.goldrushmc.bukkit.defaults.CommandDefault;
 import com.goldrushmc.bukkit.defaults.GoldRushPerms;
 import com.goldrushmc.bukkit.train.listeners.WandLis;
+import com.goldrushmc.bukkit.train.station.PublicTrainStation;
 import com.goldrushmc.bukkit.train.station.StationType;
 import com.goldrushmc.bukkit.train.station.TrainStation;
 import com.goldrushmc.bukkit.train.station.TrainStationTransport;
@@ -59,7 +60,7 @@ public class CreateTrainStation extends CommandDefault {
 		try {
 			switch(type) {
 			case DEFAULT: new TrainStationTransport(plugin, args[1], locs, p.getWorld(), trainSpawn);	break;
-			case PASSENGER_TRANS:
+			case PASSENGER_TRANS: new PublicTrainStation(plugin, args[1], locs, p.getWorld(), trainSpawn); break;
 			case STORAGE_TRANS: new TrainStationTransport(plugin, args[1], locs, p.getWorld(), trainSpawn); break;
 			}
 		}catch (Exception e) {

@@ -340,21 +340,11 @@ public abstract class TrainStation extends BlockFinder{
 		return new SignLogic(this.trainArea);
 	}
 
-	public void findStillTrains() {
-		MinecartGroup[] trains = MinecartGroup.getGroups();
-		for(int i = 0; i < trains.length; i++) {
-			if(!trains[i].isMoving()) {
-				//At least the front of the train must be WITHIN the station.
-				Block ground = trains[i].get(0).getGroundBlock();
-				for(Block b : this.trainArea) {
-					//If the train is within the station grounds, accept it.
-					if(b.equals(ground)) {
-						this.trains.add(trains[i]);
-					}
-				}
-			}
-		}
-	}
+	/**
+	 * Finds pre-existing trains within the station.
+	 * @return 
+	 */
+	public abstract boolean findStillTrains();
 
 	/**
 	 * Spawns a cart onto the train scheduled for departure
