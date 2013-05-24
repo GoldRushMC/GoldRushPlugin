@@ -1,9 +1,12 @@
 package com.goldrushmc.bukkit.bank;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.bukkit.Location;
 import org.bukkit.World;
+import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import com.goldrushmc.bukkit.defaults.BlockFinder;
@@ -17,6 +20,8 @@ import com.goldrushmc.bukkit.train.exceptions.MarkerNumberException;
  */
 public abstract class Bank extends BlockFinder {
 
+	private Map<Player, Account> accountHolders = new HashMap<Player, Account>();
+	
 	public Bank(World world, List<Location> coords, JavaPlugin plugin)	throws MarkerNumberException {
 		super(world, coords, plugin);
 	}

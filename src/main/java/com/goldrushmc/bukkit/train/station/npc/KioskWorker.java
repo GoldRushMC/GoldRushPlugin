@@ -5,6 +5,8 @@ import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Villager.Profession;
 
+import com.goldrushmc.bukkit.train.station.TrainStation;
+
 import net.citizensnpcs.api.ai.Navigator;
 import net.citizensnpcs.api.event.DespawnReason;
 import net.citizensnpcs.api.npc.AbstractNPC;
@@ -13,6 +15,7 @@ import net.citizensnpcs.api.util.DataKey;
 public class KioskWorker extends AbstractNPC {
 
 	Profession profession;
+	private TrainStation station;
 	
 	public KioskWorker(int id) {
 		super(id, "Kiosk Worker");
@@ -40,7 +43,6 @@ public class KioskWorker extends AbstractNPC {
 
 	@Override
 	public boolean isSpawned() {
-		// TODO Auto-generated method stub
 		return false;
 	}
 
