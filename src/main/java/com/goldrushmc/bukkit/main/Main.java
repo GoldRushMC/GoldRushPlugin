@@ -1,5 +1,8 @@
 package com.goldrushmc.bukkit.main;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import javax.persistence.PersistenceException;
 
 import net.citizensnpcs.api.CitizensAPI;
@@ -29,8 +32,11 @@ import com.goldrushmc.bukkit.db.TrainStatusTbl;
 import com.goldrushmc.bukkit.db.TrainTbl;
 import com.goldrushmc.bukkit.guns.GunLis;
 import com.goldrushmc.bukkit.guns.GunTool;
+import com.goldrushmc.bukkit.mines.LoadMines;
+import com.goldrushmc.bukkit.mines.Mine;
 import com.goldrushmc.bukkit.mines.MineLis;
-import com.goldrushmc.bukkit.mines.MineTool;
+import com.goldrushmc.bukkit.mines.MineCommands;
+import com.goldrushmc.bukkit.mines.SaveMines;
 import com.goldrushmc.bukkit.panning.PanningLis;
 import com.goldrushmc.bukkit.panning.PanningTool;
 import com.goldrushmc.bukkit.train.listeners.TrainLis;
@@ -54,6 +60,8 @@ public final class Main extends JavaPlugin{
 	public final PanningLis pl = new PanningLis(this);
 	public final InventoryLis il = new InventoryLis(this);
 	public final MineLis ml = new MineLis(this);
+	
+	public static List<Mine> mineList;
 
 	@Override
 	public void onEnable() {
@@ -65,7 +73,7 @@ public final class Main extends JavaPlugin{
 		getCommand("Fall").setExecutor(new TunnelCollapseCommand(this));
 		getCommand("Gun").setExecutor(new GunTool(this));
 		getCommand("PanningTool").setExecutor(new PanningTool(this));
-		getCommand("Mine").setExecutor(new MineTool(this));
+		getCommand("Mine").setExecutor(new MineCommands(this));
 		getCommand("ShowVisitors").setExecutor(new ShowVisitorsCommand(this));
 		getCommand("TrainCycle").setExecutor(new TrainCycleCommand(this));
 		getCommand("RemoveStation").setExecutor(new RemoveTrainStation(this));
@@ -99,6 +107,14 @@ public final class Main extends JavaPlugin{
 		//Populate the train station listener maps
 		//This only works if the database has data to make train stations with....
 //		tsl.populate();
+		
+		//load mines
+		try {
+		LoadMines loadMines = new LoadMines(this, this);
+		mineList = loadMines.parseMinesStrings();
+		} catch (Exception e) {
+			mineList = new ArrayList<Mine>();
+		}
 		
 		getLogger().info(getDescription().getName() + " " + getDescription().getVersion() + " Enabled!");		
 	}
@@ -145,7 +161,16 @@ public final class Main extends JavaPlugin{
 	public void onDisable() {
 		//Clear all of the trains out of all the mappings, to free up memory.
 		TrainStation.getTrainStations().clear();
-		getLogger().info("GoldRush Plugin Disabled!");
+		SaveMines saveMines = new SaveMines(this, mineList);
+		int count = 0;
+		while(!saveMines.save()) {
+			count++;
+			if(count==5) { 
+				this.getLogger().info("GOLDRUSHMC: Could not save mines after 5 retrys! Exiting..");
+				break; 
+			}
+		}
+		this.getLogger().info("GoldRush Plugin Disabled!");
 	}
 
 }

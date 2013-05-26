@@ -68,7 +68,7 @@ public class MineLis extends DefaultListener{
 										mineLoc.get(p).getX() + ", " +
 										mineLoc.get(p).getY() + ", " +
 										mineLoc.get(p).getZ() + ".");
-								p.sendMessage("Use '/mine create to create mine");
+								p.sendMessage("Use '/mine create (name) to create mine");
 							} else {
 								p.sendMessage(ChatColor.RED + "Entrance is not within WorldEdit Selection"); 
 							}
