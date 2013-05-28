@@ -3,6 +3,7 @@ package com.goldrushmc.bukkit.defaults;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public abstract class CommandDefault implements CommandExecutor {
@@ -39,5 +40,8 @@ public abstract class CommandDefault implements CommandExecutor {
 	public void deny(CommandSender sender) {
 		sender.sendMessage("You do not have permission to perform this command.");
 	}
-
+	
+	public boolean isPlayer(CommandSender sender) {
+		return (sender instanceof Player);
+	}
 }

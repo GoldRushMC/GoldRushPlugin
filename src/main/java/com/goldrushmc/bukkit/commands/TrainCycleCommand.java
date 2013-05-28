@@ -4,6 +4,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.scheduler.BukkitScheduler;
 
 import com.goldrushmc.bukkit.defaults.CommandDefault;
 import com.goldrushmc.bukkit.defaults.GoldRushPerms;
@@ -29,7 +30,8 @@ public class TrainCycleCommand extends CommandDefault {
 		if(!sender.hasPermission(GoldRushPerms.SCHEDULE)) { deny(sender); return true; }
 		
 		int taskID = Departure.getTaskID();
-		
+		BukkitScheduler s = Bukkit.getScheduler();
+
 		if(args[0].equalsIgnoreCase("Start") && taskID == 0) {
 			sender.sendMessage("Starting Train Cycle...");
 			taskID = Bukkit.getScheduler().scheduleSyncRepeatingTask(plugin, new Departure(plugin), 100, 400);
@@ -40,18 +42,15 @@ public class TrainCycleCommand extends CommandDefault {
 			return true;
 		}
 		
-		if(args[0].equalsIgnoreCase("Stop") && taskID != 0) {
+		else if(args[0].equalsIgnoreCase("Stop") && (s.isCurrentlyRunning(taskID) || s.isQueued(taskID))) {
 			sender.sendMessage("Stopping Train Cycle...");
 			Bukkit.getScheduler().cancelTask(taskID);
 			Departure.resetTaskID();
 			return true;
 		}
-		else if(taskID == 0) {
+		else {
 			sender.sendMessage("Train Cycle is not running.");
 			return true;
 		}
-		
-		return true;
 	}
-
 }

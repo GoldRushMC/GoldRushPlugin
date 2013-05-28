@@ -1,4 +1,4 @@
-package com.goldrushmc.bukkit.tunnelcollapse;
+package com.goldrushmc.bukkit.main;
 
 import java.io.File;
 import java.io.IOException;
@@ -25,6 +25,10 @@ public class SettingsManager {
 
 		return instance;
 	}
+	
+	public FileConfiguration getFileConfig() {
+		return config;
+	}
 
 	public void setup(Plugin p) {
 
@@ -39,11 +43,20 @@ public class SettingsManager {
 
 			config = p.getConfig();
 			config.options().copyDefaults(true);
+
+			//Configure tunnel collapse defaults
+			config.addDefault("collapse.depth", 38);
+			config.addDefault("collapse.chance", 5);
+			config.addDefault("collapse.radius", 25);
+			config.addDefault("collapse.delay", 30L);
 			
-			config.addDefault("depth", 38);
-			config.addDefault("chance", 5);
-			config.addDefault("radius", 25);
-			config.addDefault("delay", 30L);
+			//Configure default world
+			config.addDefault("world", "world");
+			
+			//Configure default train station schedule times
+			config.addDefault("station.times.public", 200);
+			config.addDefault("station.times.transport", 500);
+			config.addDefault("station.times.hub", 800);
 			
 			saveConfig();
 

@@ -40,7 +40,8 @@ commands:
   mine:
    description: Mine creator
    aliases: [mine]
-   usage: /<command> [subcommand]
+   #permission: golrushmc.mines
+   usage: /<command>
    
   panningtool:
    description: Retriever of Gold Panning Pan
@@ -108,4 +109,3 @@ permissions:
   goldrushmc.station.list:  
    description: Allows use of the list command.
    default: true
- 
