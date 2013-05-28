@@ -30,7 +30,7 @@ public class SaveMines {
 			BufferedWriter out = new BufferedWriter(new FileWriter(file));
 			int count = 0;
 			
-			for(Mine mine : mineList) {
+			for(Mine mine : Main.mineList) {
 				String name = mine.name;
 				String world = mine.w.getName();
 				String gened = mine.isGenerated.toString();

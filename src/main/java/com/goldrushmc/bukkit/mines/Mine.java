@@ -51,9 +51,14 @@ public class Mine extends BlockFinder{
 		Vector max = this.selectedArea.get(0).getLocation().toVector();
 		
 		for(Block b : this.selectedArea) {
-			if(b.getY() < recCoordOne.getBlockY() || b.getY() < recCoordTwo.getBlockY()) {
-				Vector check = new Vector(b.getX(), b.getY(), b.getZ());
-				max = Vector.getMaximum(max, check);
+			if(b.getX() <= recCoordOne.getBlockX() || b.getX() <= recCoordTwo.getBlockX()) {
+                if(b.getY() <= recCoordOne.getBlockY() || b.getY() <= recCoordTwo.getBlockY()) {
+                    if(b.getZ() <= recCoordOne.getBlockZ() || b.getZ() <= recCoordTwo.getBlockZ()) {
+                        Vector check = new Vector(b.getX(), b.getY(), b.getZ());
+                        max = Vector.getMaximum(max, check);
+                    }
+                }
+
 			}
 		}
 		
@@ -65,9 +70,13 @@ public class Mine extends BlockFinder{
 		Vector min = this.selectedArea.get(0).getLocation().toVector();
 		
 		for(Block b : this.selectedArea) {
-			if(b.getY() > recCoordOne.getBlockY() || b.getY() > recCoordTwo.getBlockY()) {
-				Vector check = new Vector(b.getX(), b.getY(), b.getZ());
-				min = Vector.getMinimum(min, check);
+			if(b.getX() >= recCoordOne.getBlockX() || b.getX() >= recCoordTwo.getBlockX()) {
+                if(b.getY() >= recCoordOne.getBlockY() || b.getY() >= recCoordTwo.getBlockY()) {
+                    if(b.getZ() >= recCoordOne.getBlockZ() || b.getZ() >= recCoordTwo.getBlockZ()) {
+                        Vector check = new Vector(b.getX(), b.getY(), b.getZ());
+                        min = Vector.getMinimum(min, check);
+                    }
+                }
 			}
 		}
 		
