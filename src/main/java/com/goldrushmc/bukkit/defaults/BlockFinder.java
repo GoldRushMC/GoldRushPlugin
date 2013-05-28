@@ -169,6 +169,14 @@ public abstract class BlockFinder extends DefaultListener{
 	}
 
 	/**
+	 * Will find the blocks which make up a structure, excluding all air blocks.
+	 * <p>
+	 * This method is meant for grief-prevention.
+	 * @return
+	 */
+	public abstract List<Block> findNonAirBlocks();
+
+	/**
 	 * @return the selectedArea
 	 */
 	public List<Block> getSelectedArea() {

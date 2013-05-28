@@ -95,6 +95,11 @@ public class PublicTrainStation extends TrainStation {
 	}
 
 	@Override
+	public StationType getType() {
+		return StationType.PASSENGER_TRANS;
+	}
+
+	@Override
 	public boolean buyCart(Player owner, EntityType type) {
 		if(!type.equals(EntityType.MINECART)) return false;
 		if(this.departingTrain == null) { owner.sendMessage("There is currently no train available to buy from. "); return false; }
@@ -243,7 +248,7 @@ public class PublicTrainStation extends TrainStation {
 	public boolean pushQueue() {
 		MinecartGroup mg = this.departingTrain;
 		if(mg == null) return false;
-		mg.getProperties().setSpeedLimit(0.6);
+		mg.getProperties().setSpeedLimit(0.8);
 		mg.getProperties().setColliding(false);
 		for(MinecartMember<?> mm : mg) {
 			if(mm instanceof MinecartMemberFurnace) {
@@ -447,5 +452,4 @@ public class PublicTrainStation extends TrainStation {
 		}
 		return false;
 	}
-
 }
