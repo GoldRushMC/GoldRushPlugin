@@ -10,7 +10,6 @@ import org.bukkit.block.Block;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.world.ChunkUnloadEvent;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.bukkit.util.Vector;
 
 import com.goldrushmc.bukkit.train.exceptions.MarkerNumberException;
 import com.goldrushmc.bukkit.train.exceptions.TooLowException;
@@ -167,17 +166,6 @@ public abstract class BlockFinder extends DefaultListener{
 	 */
 	public World getWorld() {
 		return world;
-	}
-	
-	public Vector findMaxBlock() {
-		//Get a starting point
-		Vector max = new Vector(0, 0, 0);
-		
-		for(Block b : this.selectedArea) {
-			Vector check = new Vector(b.getX(), b.getY(), b.getZ());
-			max = Vector.getMaximum(max, check);
-		}
-		return null;
 	}
 
 	/**
