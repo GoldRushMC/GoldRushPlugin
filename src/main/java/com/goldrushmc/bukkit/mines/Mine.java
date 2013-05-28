@@ -15,6 +15,11 @@ import com.goldrushmc.bukkit.train.exceptions.MarkerNumberException;
 
 public class Mine extends BlockFinder{
 	
+	/*The reason this is private is because we don't want anyone to be able to add/remove from it.
+	 *The mine class itself can facilitate this.
+	 */
+	private static List<Mine> mines = new ArrayList<Mine>();
+	
 	public Vector mineMin, mineMax, mineEntrance;
 	Location recCoordOne, recCoordTwo;
 	public int length, width, height;
@@ -44,6 +49,7 @@ public class Mine extends BlockFinder{
 		width = mineMax.getBlockX() - mineMin.getBlockX();
 		height = mineMax.getBlockY() - mineMin.getBlockY();
 		isGenerated = isGen;
+		add(); //Call the add method, which will add the mine to the list.
 	}
 	
 	private Vector findMaxBlock() {
@@ -51,17 +57,12 @@ public class Mine extends BlockFinder{
 		Vector max = this.selectedArea.get(0).getLocation().toVector();
 		
 		for(Block b : this.selectedArea) {
-			if(b.getX() <= recCoordOne.getBlockX() || b.getX() <= recCoordTwo.getBlockX()) {
-                if(b.getY() <= recCoordOne.getBlockY() || b.getY() <= recCoordTwo.getBlockY()) {
-                    if(b.getZ() <= recCoordOne.getBlockZ() || b.getZ() <= recCoordTwo.getBlockZ()) {
-                        Vector check = new Vector(b.getX(), b.getY(), b.getZ());
-                        max = Vector.getMaximum(max, check);
+			if((b.getX() <= recCoordOne.getBlockX() && b.getY() <= recCoordOne.getBlockY() && b.getZ() <= recCoordOne.getBlockZ())
+			|| (b.getX() <= recCoordTwo.getBlockX() && b.getY() <= recCoordTwo.getBlockY() && b.getZ() <= recCoordTwo.getBlockZ())) {
+                        	Vector check = new Vector(b.getX(), b.getY(), b.getZ());
+                        	max = Vector.getMaximum(max, check);
                     }
-                }
-
-			}
 		}
-		
 		return max;
 	}
 	
@@ -70,22 +71,19 @@ public class Mine extends BlockFinder{
 		Vector min = this.selectedArea.get(0).getLocation().toVector();
 		
 		for(Block b : this.selectedArea) {
-			if(b.getX() >= recCoordOne.getBlockX() || b.getX() >= recCoordTwo.getBlockX()) {
-                if(b.getY() >= recCoordOne.getBlockY() || b.getY() >= recCoordTwo.getBlockY()) {
-                    if(b.getZ() >= recCoordOne.getBlockZ() || b.getZ() >= recCoordTwo.getBlockZ()) {
-                        Vector check = new Vector(b.getX(), b.getY(), b.getZ());
-                        min = Vector.getMinimum(min, check);
+			if((b.getX() <= recCoordOne.getBlockX() && b.getY() <= recCoordOne.getBlockY() && b.getZ() <= recCoordOne.getBlockZ())
+			|| (b.getX() <= recCoordTwo.getBlockX() && b.getY() <= recCoordTwo.getBlockY() && b.getZ() <= recCoordTwo.getBlockZ())) {
+                        	Vector check = new Vector(b.getX(), b.getY(), b.getZ());
+                        	min = Vector.getMinimum(min, check);
                     }
-                }
-			}
-		}
-		
+                }		
 		return min;
 	}
 
 	@Override
 	public void remove() {
 		// TODO remove RefreshEvent
+		mines.remove(this); //TODO Need to remove ALL variable memory references first. This is the first step.
 		
 	}
 
@@ -95,8 +93,16 @@ public class Mine extends BlockFinder{
 			reGenerate();
 			isGenerated = true;
 		}
-		
-		
+		mines.add(this); //Add the mine to the list.
+	}
+	
+	/**
+	 * The static method which can retrieve the Static {@link Mine} list.
+	 * 
+	 * @return the {@code List<Mine>} of mines.
+	 */
+	public static List<Mine> getMines() {
+		return mines;
 	}
 
 	public void getGoldLeft() {
