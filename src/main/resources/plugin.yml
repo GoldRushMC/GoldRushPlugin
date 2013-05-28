@@ -40,8 +40,7 @@ commands:
   mine:
    description: Mine creator
    aliases: [mine]
-   #permission: golrushmc.guns
-   usage: /<command>
+   usage: /<command> [subcommand]
    
   panningtool:
    description: Retriever of Gold Panning Pan
