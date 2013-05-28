@@ -98,6 +98,11 @@ public class TrainStationTransport extends TrainStation {
 //		createWorkers();
 		//		this.lockers = findLockers();
 	}
+	
+	@Override
+	public StationType getType() {
+		return StationType.STORAGE_TRANS;
+	}
 
 	/**
 	 * A way to find all of the lockers in the selectedArea.

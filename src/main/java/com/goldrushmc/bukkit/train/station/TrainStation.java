@@ -23,6 +23,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.block.Action;
+import org.bukkit.event.block.BlockDamageEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
@@ -52,7 +53,9 @@ import com.goldrushmc.bukkit.train.signs.SignType;
 import com.goldrushmc.bukkit.train.util.TrainTools;
 
 /**
- * Will control the functionality behind train stations.
+ * An Abstract Class which sets up the framework for the train subclasses.
+ * <p>
+ * Contains some default implementations, and extends the BlockFinder class.
  *
  * @author Diremonsoon 
  * 
@@ -71,6 +74,7 @@ public abstract class TrainStation extends BlockFinder{
 	protected volatile List<Player> visitors = new ArrayList<Player>();
 	protected List<NPC> workers = new ArrayList<NPC>();
 	protected final List<Block> trainArea;
+	protected final List<Block> trainStationBlocks;
 	protected volatile List<MinecartGroup> trains = new ArrayList<MinecartGroup>();
 	protected final List<Block> rails;
 
@@ -91,6 +95,7 @@ public abstract class TrainStation extends BlockFinder{
 		if(db == null) db = new DBAccess(plugin);
 		this.stationName = stationName;
 		this.trainArea = generateTrainArea();
+		this.trainStationBlocks = this.findNonAirBlocks();
 		this.rails = findRails();
 		this.signs = generateSignLogic();
 		Sign dir = this.signs.getSign(SignType.TRAIN_STATION_DIRECTION);
@@ -125,6 +130,7 @@ public abstract class TrainStation extends BlockFinder{
 		if(db == null) db = new DBAccess(plugin);
 		this.stationName = stationName;
 		this.trainArea = generateTrainArea();
+		this.trainStationBlocks = this.findNonAirBlocks();
 		this.rails = findRails();
 		this.signs = generateSignLogic();
 		Sign dir = this.signs.getSign(SignType.TRAIN_STATION_DIRECTION);
@@ -140,7 +146,13 @@ public abstract class TrainStation extends BlockFinder{
 			this.direction = BlockFace.SELF;
 		}
 	}
-	
+
+	/**
+	 * Shows what type of station class this is, using the enum {@link StationType}
+	 * @return
+	 */
+	public abstract StationType getType();
+
 	@Override
 	public void add() {
 		//Add to the list of stations for both the listener and static class instance! IMPORTANT
@@ -150,17 +162,17 @@ public abstract class TrainStation extends BlockFinder{
 
 	@Override
 	public void remove() {
-		
+
 		//Unregister handlers for events.
 		ChunkUnloadEvent.getHandlerList().unregister(this);
 		PlayerMoveEvent.getHandlerList().unregister(this);
 		MemberBlockChangeEvent.getHandlerList().unregister(this);
 		PlayerInteractEvent.getHandlerList().unregister(this);
 		BlockPlaceEvent.getHandlerList().unregister(this);
-		
+
 		//Remove ALL NPC's in the area.
 		for(NPC npc : this.workers) CitizensAPI.getNPCRegistry().deregister(npc);
-		
+
 		//Clear sign logic and change signs to air.
 		this.signs = null;
 		for(Block b : this.trainArea) {
@@ -168,26 +180,38 @@ public abstract class TrainStation extends BlockFinder{
 				b.setType(Material.AIR);
 			}
 		}
-		
+
 		//Clear trains.
 		this.departingTrain = null;
 		this.trains = null;
-		
+
 		//Clear visitors
 		this.visitors = null;
-		
+
 		//Clear name
 		this.stationName = null;
-		
+
 		//Remove from the list
 		trainStations.remove(this);
-		
+
 		//Try to finalize.
 		try {
 			this.finalize();
 		} catch (Throwable e) {
 			Bukkit.getLogger().info("Something went wrong with the deletion of a Train Station");
 		}
+	}
+
+
+	@Override
+	public List<Block> findNonAirBlocks() {
+		List<Block> nonAir = new ArrayList<Block>();
+		for(Block b : this.trainArea) {
+			if(!b.getType().equals(Material.AIR)) {
+				nonAir.add(b);
+			}
+		}
+		return nonAir;
 	}
 
 	/**
@@ -210,7 +234,7 @@ public abstract class TrainStation extends BlockFinder{
 		station.setCorners(corners);
 		db.getDB().save(station);
 	}
-	
+
 
 	/**
 	 * Provides a standard way to sell carts.
@@ -327,7 +351,7 @@ public abstract class TrainStation extends BlockFinder{
 	 * 
 	 */
 	protected abstract void createWorkers();
-	
+
 	public void addVisitor(Player visitor) {
 		this.visitors.add(visitor);
 	}
@@ -428,14 +452,14 @@ public abstract class TrainStation extends BlockFinder{
 	public MinecartGroup getDepartingTrain() {
 		return departingTrain;
 	}
-	
+
 	/**
 	 * Shows whether or not the station's departing train has any carts left to sell.
 	 * 
 	 * @return
 	 */
 	public abstract boolean hasCartsToSell();
-	
+
 	/**
 	 * Shows whether or not a station has a train to depart.
 	 * 
@@ -512,7 +536,7 @@ public abstract class TrainStation extends BlockFinder{
 		}
 		return null;
 	}
-	
+
 	/**
 	 * Gets all of the existing train stations.
 	 * 
@@ -546,22 +570,21 @@ public abstract class TrainStation extends BlockFinder{
 	/**
 	 * @return the chunks
 	 */
-	public List<Chunk> getChunks() {
-		return chunks;
-	}
-	
+	public List<Chunk> getChunks() {return chunks;}
+
+
 	//TODO Listener Stuff
-	
+
 	@EventHandler(priority = EventPriority.MONITOR)
 	public abstract void onPlayerMove(PlayerMoveEvent event);
-	
+
 	/**
 	 * Handles when a train moves onto Train Station territory.
 	 * @param event
 	 */
 	@EventHandler
 	public abstract void onTrainMove(MemberBlockChangeEvent event);
-	
+
 	/**
 	 * Does work with sign clicking events.
 	 * 
@@ -596,7 +619,7 @@ public abstract class TrainStation extends BlockFinder{
 			Bukkit.getServer().getPluginManager().callEvent(sEvent);
 		}
 	}
-	
+
 	/**
 	 * Updates the specified station when a new sign is placed.
 	 * 
@@ -604,4 +627,32 @@ public abstract class TrainStation extends BlockFinder{
 	 */
 	@EventHandler
 	public abstract void onSignPlacedWithin(BlockPlaceEvent event);
+
+	@EventHandler
+	public void onPlayerBreakAttempt(BlockDamageEvent event) {
+		Player p = event.getPlayer();
+		Block b = event.getBlock();
+
+		//If the block to be broken is a part of a train station, we cancel it.
+		if(this.trainStationBlocks.contains(b)) {
+			//If the player has permission to edit the blocks, we are ok with them doing so.
+			if(p.hasPermission("goldrushmc.station.edit")) return;
+
+			event.setCancelled(true);
+		}		
+	}
+
+	@EventHandler
+	public void onPlayerPlaceAttempt(BlockPlaceEvent event) {
+		Player p = event.getPlayer();
+		Block b = event.getBlock();
+
+		//If the block to be broken is a part of a train station, we cancel it.
+		if(this.trainStationBlocks.contains(b)) {
+			//If the player has permission to edit the blocks, we are ok with them doing so.
+			if(p.hasPermission("goldrushmc.station.edit")) return;
+
+			event.setCancelled(true);
+		}
+	}
 }

@@ -5,6 +5,8 @@ import javax.persistence.PersistenceException;
 import net.citizensnpcs.api.CitizensAPI;
 import net.citizensnpcs.api.trait.TraitInfo;
 
+import org.bukkit.Bukkit;
+import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -36,9 +38,9 @@ import com.goldrushmc.bukkit.panning.PanningTool;
 import com.goldrushmc.bukkit.train.listeners.TrainLis;
 import com.goldrushmc.bukkit.train.listeners.TrainStationLis;
 import com.goldrushmc.bukkit.train.listeners.WandLis;
+import com.goldrushmc.bukkit.train.scheduling.TimeCounter;
 import com.goldrushmc.bukkit.train.station.TrainStation;
 import com.goldrushmc.bukkit.train.station.npc.CartTradeable;
-import com.goldrushmc.bukkit.tunnelcollapse.SettingsManager;
 import com.goldrushmc.bukkit.tunnelcollapse.TunnelCollapseCommand;
 import com.goldrushmc.bukkit.tunnelcollapse.TunnelsListener;
 
@@ -82,9 +84,13 @@ public final class Main extends JavaPlugin{
 		pm.registerEvents(il, this);
 		pm.registerEvents(ml, this);
 		
-		//Add settings for Tunnel Collapse
-		SettingsManager settings = SettingsManager.getInstance();
-		settings.setup(this);
+		//Add settings for Tunnel Collapse		
+		FileConfiguration fc = this.getConfig();
+		if(fc == null) {
+			SettingsManager settings = SettingsManager.getInstance();
+			settings.setup(this);
+			fc = settings.getFileConfig();
+		}
 
 		//Register traits for the NPCs.
 		if(getServer().getPluginManager().getPlugin("Citizens") == null || getServer().getPluginManager().getPlugin("Citizens").isEnabled() == false) {
@@ -99,6 +105,10 @@ public final class Main extends JavaPlugin{
 		//Populate the train station listener maps
 		//This only works if the database has data to make train stations with....
 //		tsl.populate();
+		
+		//Start the time counter, so that we can measure the time remaining for each train.
+		//We need to get the worlds from the config file.
+		Bukkit.getScheduler().scheduleSyncRepeatingTask(this, new TimeCounter(this, Bukkit.getWorld(fc.getString("world"))), 0, 1);
 		
 		getLogger().info(getDescription().getName() + " " + getDescription().getVersion() + " Enabled!");		
 	}
