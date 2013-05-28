@@ -8,15 +8,17 @@ import java.util.List;
 
 import org.bukkit.plugin.Plugin;
 
+import com.goldrushmc.bukkit.main.Main;
+
 public class SaveMines {
 	
 	File file;
 	List<Mine> mineList;
 	Plugin p;
 	
-	public SaveMines(Plugin p, List<Mine> mineList) {
+	public SaveMines(Plugin p) {
 		file = new File(p.getDataFolder(), "mines.txt");
-		this.mineList = mineList;
+		this.mineList = Main.mineList;
 		this.p = p;
 	}
 	

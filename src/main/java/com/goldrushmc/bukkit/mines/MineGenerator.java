@@ -204,7 +204,7 @@ public class MineGenerator {
 				Boolean nextPointFound = false;
 				
 				//Loops until the random point is within the mine area
-				while(true) {
+				while(!nextPointFound) {
 					endLocation = randomConstrainedVector(minArea, maxArea);
 					if(contains(endLocation)) {
 						nextPointFound = true;

@@ -48,9 +48,9 @@ public class Mine extends BlockFinder{
 	
 	private Vector findMaxBlock() {
 		//get first max - first block in the array
-		Vector max = this.area.get(0).getLocation().toVector();
+		Vector max = this.selectedArea.get(0).getLocation().toVector();
 		
-		for(Block b : this.area) {
+		for(Block b : this.selectedArea) {
 			if(b.getY() < recCoordOne.getBlockY() || b.getY() < recCoordTwo.getBlockY()) {
 				Vector check = new Vector(b.getX(), b.getY(), b.getZ());
 				max = Vector.getMaximum(max, check);
@@ -62,9 +62,9 @@ public class Mine extends BlockFinder{
 	
 	private Vector findMinBlock() {
 		//get first min - first block in the array
-		Vector min = this.area.get(0).getLocation().toVector();
+		Vector min = this.selectedArea.get(0).getLocation().toVector();
 		
-		for(Block b : this.area) {
+		for(Block b : this.selectedArea) {
 			if(b.getY() > recCoordOne.getBlockY() || b.getY() > recCoordTwo.getBlockY()) {
 				Vector check = new Vector(b.getX(), b.getY(), b.getZ());
 				min = Vector.getMinimum(min, check);

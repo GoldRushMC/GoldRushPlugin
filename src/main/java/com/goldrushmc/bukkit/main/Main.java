@@ -2,12 +2,18 @@ package com.goldrushmc.bukkit.main;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 import javax.persistence.PersistenceException;
 
 import net.citizensnpcs.api.CitizensAPI;
 import net.citizensnpcs.api.trait.TraitInfo;
 
+import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
+import org.bukkit.Material;
+import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -109,12 +115,11 @@ public final class Main extends JavaPlugin{
 //		tsl.populate();
 		
 		//load mines
-		try {
-		LoadMines loadMines = new LoadMines(this, this);
-		mineList = loadMines.parseMinesStrings();
-		} catch (Exception e) {
-			mineList = new ArrayList<Mine>();
-		}
+		mineList = new ArrayList<Mine>();
+
+		//run load task later once world has loaded
+		Bukkit.getServer().broadcastMessage("Loading Mines.. Prepare for Lag..");
+		Bukkit.getServer().getScheduler().runTaskLater(this, new LoadMinesTask(this), 100);
 		
 		getLogger().info(getDescription().getName() + " " + getDescription().getVersion() + " Enabled!");		
 	}
@@ -161,9 +166,12 @@ public final class Main extends JavaPlugin{
 	public void onDisable() {
 		//Clear all of the trains out of all the mappings, to free up memory.
 		TrainStation.getTrainStations().clear();
-		SaveMines saveMines = new SaveMines(this, mineList);
+		
+		SaveMines saveMines = new SaveMines(this);
 		int count = 0;
-		while(!saveMines.save()) {
+		Boolean saved = false;
+		while(saved == false) {
+			saved = saveMines.save();
 			count++;
 			if(count==5) { 
 				this.getLogger().info("GOLDRUSHMC: Could not save mines after 5 retrys! Exiting..");
@@ -173,4 +181,29 @@ public final class Main extends JavaPlugin{
 		this.getLogger().info("GoldRush Plugin Disabled!");
 	}
 
+	class LoadMinesTask implements Runnable{
+		JavaPlugin p;
+		LoadMinesTask(JavaPlugin plug) {
+			p = plug;
+		}
+
+		@Override
+		public void run() {
+			LoadMines loadMines = new LoadMines(p, p);
+			Bukkit.getServer().getScheduler().runTaskLater(p, new GenTask(loadMines), 20);
+		}
+		
+		class GenTask implements Runnable{
+			LoadMines loadMines;
+			GenTask(LoadMines lm) {
+				loadMines = lm;
+			}
+
+			@Override
+			public void run() {
+				mineList = loadMines.parseMinesStrings();
+				Bukkit.getServer().broadcastMessage("Successfully loaded " + mineList.size() + " mines!");
+			}
+		}
+	}
 }

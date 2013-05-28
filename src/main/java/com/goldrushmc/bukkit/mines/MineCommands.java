@@ -94,18 +94,41 @@ public class MineCommands  extends CommandDefault {
 								plugin.getLogger().info("GOLDRUSHMC: MarkerNumberException creating mine");
 							}
 							
-							SaveMines saveMines = new SaveMines(plugin, Main.mineList);
+							SaveMines saveMines = new SaveMines(plugin);
 							int count = 0;
-							while(!saveMines.save()) {
+							Boolean save = false;
+							while(!save) {
+								save = saveMines.save();
 								count++;
 								if(count==5) { 
-									plugin.getLogger().info("GOLDRUSHMC: Could not save mines after 5 retrys! Exiting..");
-									break; 
+									plugin.getLogger().info("GOLDRUSHMC: Could not save mines after 5 retrys!");
+									save = true;
 								}
 							}
 						}
 												
 						return true;
+					} else if (args[0].equalsIgnoreCase("load")){
+						if(args.length == 2){
+							int i = 0;
+							for(Mine mine : Main.mineList) {
+								p.sendMessage(mine.name);
+								if(mine.name == args[1]) {
+									LoadMines loadMines = new LoadMines(plugin, plugin);
+									for(Mine mine2 :loadMines.parseMinesStrings()) {
+										p.sendMessage(mine2.name);
+										if(mine.name == mine2.name) {
+											Main.mineList.set(i, mine2);
+										}
+									}
+								}
+								i++;
+							}
+							
+							return true;
+						} else {
+							return false;
+						}
 					} else if (args[0].equalsIgnoreCase("cancel")){ 
 						undoMarkers(p.getWorld(), p); //undoes the placement of wool outline
 						return true;
