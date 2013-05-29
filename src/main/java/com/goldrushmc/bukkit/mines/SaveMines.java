@@ -8,6 +8,8 @@ import java.util.List;
 
 import org.bukkit.plugin.Plugin;
 
+import com.goldrushmc.bukkit.main.Main;
+
 public class SaveMines {
 	
 	File file;
@@ -28,7 +30,7 @@ public class SaveMines {
 			BufferedWriter out = new BufferedWriter(new FileWriter(file));
 			int count = 0;
 			
-			for(Mine mine : this.mineList) {
+			for(Mine mine : mineList) {
 				String name = mine.name;
 				String world = mine.w.getName();
 				String gened = mine.isGenerated.toString();
