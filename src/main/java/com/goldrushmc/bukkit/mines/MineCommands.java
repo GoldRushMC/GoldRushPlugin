@@ -109,14 +109,14 @@ public class MineCommands  extends CommandDefault {
 					} else if (args[0].equalsIgnoreCase("load")){
 						if(args.length == 2){
 							int i = 0;
-							for(Mine mine : Mine.getMines()) {
+							for(Mine mine : Main.mineList) {
 								p.sendMessage(mine.name);
 								if(mine.name == args[1]) {
 									LoadMines loadMines = new LoadMines(plugin, plugin);
 									for(Mine mine2 :loadMines.parseMinesStrings()) {
 										p.sendMessage(mine2.name);
 										if(mine.name == mine2.name) {
-											
+											Main.mineList.set(i, mine2);
 										}
 									}
 								}
