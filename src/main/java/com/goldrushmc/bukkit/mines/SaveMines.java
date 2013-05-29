@@ -18,7 +18,7 @@ public class SaveMines {
 	
 	public SaveMines(Plugin p) {
 		file = new File(p.getDataFolder(), "mines.txt");
-		this.mineList = Main.mineList;
+		this.mineList = Mine.getMines();
 		this.p = p;
 	}
 	
@@ -30,7 +30,7 @@ public class SaveMines {
 			BufferedWriter out = new BufferedWriter(new FileWriter(file));
 			int count = 0;
 			
-			for(Mine mine : Main.mineList) {
+			for(Mine mine : mineList) {
 				String name = mine.name;
 				String world = mine.w.getName();
 				String gened = mine.isGenerated.toString();

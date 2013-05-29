@@ -1,48 +1,11 @@
 package com.goldrushmc.bukkit.main;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
-
-import javax.persistence.PersistenceException;
-
-import net.citizensnpcs.api.CitizensAPI;
-import net.citizensnpcs.api.trait.TraitInfo;
-
-import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
-import org.bukkit.Material;
-import org.bukkit.entity.Player;
-import org.bukkit.inventory.ItemStack;
-import org.bukkit.plugin.PluginManager;
-import org.bukkit.plugin.java.JavaPlugin;
-
 import com.goldrushmc.bukkit.bank.InventoryLis;
-import com.goldrushmc.bukkit.commands.CreateTrainStation;
-import com.goldrushmc.bukkit.commands.RemoveTrainStation;
-import com.goldrushmc.bukkit.commands.ShowVisitorsCommand;
-import com.goldrushmc.bukkit.commands.StationWand;
-import com.goldrushmc.bukkit.commands.TrainCycleCommand;
-import com.goldrushmc.bukkit.commands.TrainStationListCommand;
-import com.goldrushmc.bukkit.db.BankTbl;
-import com.goldrushmc.bukkit.db.CartListTbl;
-import com.goldrushmc.bukkit.db.ItemForeignKeyTbl;
-import com.goldrushmc.bukkit.db.ItemTbl;
-import com.goldrushmc.bukkit.db.JobTbl;
-import com.goldrushmc.bukkit.db.PlayerTbl;
-import com.goldrushmc.bukkit.db.TownTbl;
-import com.goldrushmc.bukkit.db.TrainScheduleTbl;
-import com.goldrushmc.bukkit.db.TrainStationLocationTbl;
-import com.goldrushmc.bukkit.db.TrainStationTbl;
-import com.goldrushmc.bukkit.db.TrainStatusTbl;
-import com.goldrushmc.bukkit.db.TrainTbl;
+import com.goldrushmc.bukkit.commands.*;
+import com.goldrushmc.bukkit.db.*;
 import com.goldrushmc.bukkit.guns.GunLis;
 import com.goldrushmc.bukkit.guns.GunTool;
-import com.goldrushmc.bukkit.mines.LoadMines;
-import com.goldrushmc.bukkit.mines.Mine;
-import com.goldrushmc.bukkit.mines.MineLis;
-import com.goldrushmc.bukkit.mines.MineCommands;
-import com.goldrushmc.bukkit.mines.SaveMines;
+import com.goldrushmc.bukkit.mines.*;
 import com.goldrushmc.bukkit.panning.PanningLis;
 import com.goldrushmc.bukkit.panning.PanningTool;
 import com.goldrushmc.bukkit.train.listeners.TrainLis;
@@ -53,6 +16,15 @@ import com.goldrushmc.bukkit.train.station.npc.CartTradeable;
 import com.goldrushmc.bukkit.tunnelcollapse.SettingsManager;
 import com.goldrushmc.bukkit.tunnelcollapse.TunnelCollapseCommand;
 import com.goldrushmc.bukkit.tunnelcollapse.TunnelsListener;
+import net.citizensnpcs.api.CitizensAPI;
+import net.citizensnpcs.api.trait.TraitInfo;
+import org.bukkit.Bukkit;
+import org.bukkit.plugin.PluginManager;
+import org.bukkit.plugin.java.JavaPlugin;
+
+import javax.persistence.PersistenceException;
+import java.util.ArrayList;
+import java.util.List;
 
 
 

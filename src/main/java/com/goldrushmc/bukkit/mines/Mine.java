@@ -1,5 +1,6 @@
 package com.goldrushmc.bukkit.mines;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.bukkit.Location;
@@ -104,6 +105,10 @@ public class Mine extends BlockFinder{
 	public static List<Mine> getMines() {
 		return mines;
 	}
+
+    public static void setMines(List<Mine> mineList) {
+        mines = mineList;
+    }
 
 	public void getGoldLeft() {
 		goldLeft = 0;

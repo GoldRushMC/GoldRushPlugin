@@ -1,6 +1,11 @@
-class LoadMinesTask implements Runnable{
+package com.goldrushmc.bukkit.mines;
+
+import org.bukkit.Bukkit;
+import org.bukkit.plugin.java.JavaPlugin;
+
+public class LoadMinesTask implements Runnable{
   	JavaPlugin p;
-		LoadMinesTask(JavaPlugin plug) {
+		public LoadMinesTask(JavaPlugin plug) {
 			p = plug;
 		}
 
@@ -18,8 +23,8 @@ class LoadMinesTask implements Runnable{
 
 			@Override
 			public void run() {
-				mineList = loadMines.parseMinesStrings();
-				Bukkit.getServer().broadcastMessage("Successfully loaded " + mineList.size() + " mines!");
+				Mine.setMines(loadMines.parseMinesStrings());
+				Bukkit.getServer().broadcastMessage("Successfully loaded " + Mine.getMines().size() + " mines!");
 			}
 		}
   }

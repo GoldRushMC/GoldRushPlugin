@@ -88,8 +88,6 @@ public class MineCommands  extends CommandDefault {
 							try {
 								Mine newMine = new Mine(nameList.get(p), p.getWorld(), 
 										locList, plugin, MineLis.mineLoc.get(p).toVector(), 2, false);
-								newMine.add();
-								Main.mineList.add(newMine);
 							} catch (MarkerNumberException e) {
 								plugin.getLogger().info("GOLDRUSHMC: MarkerNumberException creating mine");
 							}
