@@ -127,4 +127,10 @@ public class Mine extends BlockFinder{
 		MineGenerator mineGen = new MineGenerator(w, mineMin, mineMax, mineEntrance);
 		mineGen.generate(density);
 	}
+
+	@Override
+	public List<Block> findNonAirBlocks() {
+		// TODO Auto-generated method stub
+		return null;
+	}
 }
