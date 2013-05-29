@@ -4,26 +4,19 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
 
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
-import org.bukkit.block.Block;
-import org.bukkit.block.BlockFace;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.bukkit.util.BlockIterator;
-import org.bukkit.util.Vector;
 
-import com.goldrushmc.bukkit.defaults.BlockFinder;
 import com.goldrushmc.bukkit.defaults.CommandDefault;
-import com.goldrushmc.bukkit.main.Main;
 import com.goldrushmc.bukkit.train.exceptions.MarkerNumberException;
 
 public class MineCommands  extends CommandDefault {
@@ -109,14 +102,14 @@ public class MineCommands  extends CommandDefault {
 					} else if (args[0].equalsIgnoreCase("load")){
 						if(args.length == 2){
 							int i = 0;
-							for(Mine mine : Main.mineList) {
+							for(Mine mine : Mine.getMines()) {
 								p.sendMessage(mine.name);
 								if(mine.name == args[1]) {
 									LoadMines loadMines = new LoadMines(plugin, plugin);
 									for(Mine mine2 :loadMines.parseMinesStrings()) {
 										p.sendMessage(mine2.name);
 										if(mine.name == mine2.name) {
-											Main.mineList.set(i, mine2);
+											Mine.getMines().set(i, mine2);
 										}
 									}
 								}
