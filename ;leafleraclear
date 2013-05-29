@@ -1,0 +1,1844 @@
+[1mdiff --cc src/main/java/com/goldrushmc/bukkit/main/Main.java[m
+[1mindex 0e344c0,9e51abb..0000000[m
+[1m--- a/src/main/java/com/goldrushmc/bukkit/main/Main.java[m
+[1m+++ b/src/main/java/com/goldrushmc/bukkit/main/Main.java[m
+[36m@@@ -1,179 -1,155 +1,337 @@@[m
+[31m -package com.goldrushmc.bukkit.main;[m
+[31m -[m
+[31m -import com.goldrushmc.bukkit.bank.InventoryLis;[m
+[31m -import com.goldrushmc.bukkit.commands.*;[m
+[31m -import com.goldrushmc.bukkit.db.*;[m
+[31m -import com.goldrushmc.bukkit.guns.GunLis;[m
+[31m -import com.goldrushmc.bukkit.guns.GunTool;[m
+[31m -import com.goldrushmc.bukkit.mines.*;[m
+[31m -import com.goldrushmc.bukkit.panning.PanningLis;[m
+[31m -import com.goldrushmc.bukkit.panning.PanningTool;[m
+[31m -import com.goldrushmc.bukkit.train.listeners.TrainLis;[m
+[31m -import com.goldrushmc.bukkit.train.listeners.TrainStationLis;[m
+[31m -import com.goldrushmc.bukkit.train.listeners.WandLis;[m
+[31m -import com.goldrushmc.bukkit.train.station.TrainStation;[m
+[31m -import com.goldrushmc.bukkit.train.station.npc.CartTradeable;[m
+[31m -import com.goldrushmc.bukkit.tunnelcollapse.SettingsManager;[m
+[31m -import com.goldrushmc.bukkit.tunnelcollapse.TunnelCollapseCommand;[m
+[31m -import com.goldrushmc.bukkit.tunnelcollapse.TunnelsListener;[m
+[31m -import net.citizensnpcs.api.CitizensAPI;[m
+[31m -import net.citizensnpcs.api.trait.TraitInfo;[m
+[31m -import org.bukkit.Bukkit;[m
+[31m -import org.bukkit.plugin.PluginManager;[m
+[31m -import org.bukkit.plugin.java.JavaPlugin;[m
+[31m -[m
+[31m -import javax.persistence.PersistenceException;[m
+[31m -import java.util.ArrayList;[m
+[31m -import java.util.List;[m
+[31m -[m
+[31m -[m
+[31m -[m
+[31m -public final class Main extends JavaPlugin{[m
+[31m -	[m
+[31m -	public final TrainLis tl = new TrainLis(this);[m
+[31m -	public final WandLis wl = new WandLis(this);[m
+[31m -	public final TrainStationLis tsl = new TrainStationLis(this);[m
+[31m -	public final TunnelsListener tunnel = new TunnelsListener(this);[m
+[31m -	public final GunLis gl = new GunLis(this);[m
+[31m -	public final PanningLis pl = new PanningLis(this);[m
+[31m -	public final InventoryLis il = new InventoryLis(this);[m
+[31m -	public final MineLis ml = new MineLis(this);[m
+[31m -	[m
+[31m -	public static List<Mine> mineList;[m
+[31m -[m
+[31m -	@Override[m
+[31m -	public void onEnable() {[m
+[31m -//		setupDB();[m
+[31m -		[m
+[31m -		//Add commands[m
+[31m -		getCommand("StationWand").setExecutor(new StationWand(this));[m
+[31m -		getCommand("Station").setExecutor(new CreateTrainStation(this));[m
+[31m -		getCommand("Fall").setExecutor(new TunnelCollapseCommand(this));[m
+[31m -		getCommand("Gun").setExecutor(new GunTool(this));[m
+[31m -		getCommand("PanningTool").setExecutor(new PanningTool(this));[m
+[31m -		getCommand("Mine").setExecutor(new MineCommands(this));[m
+[31m -		getCommand("ShowVisitors").setExecutor(new ShowVisitorsCommand(this));[m
+[31m -		getCommand("TrainCycle").setExecutor(new TrainCycleCommand(this));[m
+[31m -		getCommand("RemoveStation").setExecutor(new RemoveTrainStation(this));[m
+[31m -		getCommand("ListStations").setExecutor(new TrainStationListCommand(this));[m
+[31m -		[m
+[31m -		[m
+[31m -		//Register listeners[m
+[31m -		PluginManager pm = getServer().getPluginManager();[m
+[31m -		pm.registerEvents(tl, this);[m
+[31m -		pm.registerEvents(wl, this);[m
+[31m -		pm.registerEvents(tsl, this);[m
+[31m -		pm.registerEvents(gl, this);[m
+[31m -		pm.registerEvents(pl, this);[m
+[31m -		pm.registerEvents(il, this);[m
+[31m -		pm.registerEvents(ml, this);[m
+[31m -		[m
+[31m -		//Add settings for Tunnel Collapse[m
+[31m -		SettingsManager settings = SettingsManager.getInstance();[m
+[31m -		settings.setup(this);[m
+[31m -[m
+[31m -		//Register traits for the NPCs.[m
+[31m -		if(getServer().getPluginManager().getPlugin("Citizens") == null || getServer().getPluginManager().getPlugin("Citizens").isEnabled() == false) {[m
+[31m -			getLogger().severe("Citizens 2.0 not found or not enabled");[m
+[31m -			getServer().getPluginManager().disablePlugin(this);	[m
+[31m -			return;[m
+[31m -		}	[m
+[31m - [m
+[31m -		//Register your trait with Citizens.        [m
+[31m -		CitizensAPI.getTraitFactory().registerTrait(TraitInfo.create(CartTradeable.class).withName("CartTrader"));[m
+[31m -		[m
+[31m -		//Populate the train station listener maps[m
+[31m -		//This only works if the database has data to make train stations with....[m
+[31m -//		tsl.populate();[m
+[31m -		[m
+[31m -		//load mines[m
+[31m -		mineList = new ArrayList<Mine>();[m
+[31m -[m
+[31m -		//run load task later once world has loaded[m
+[31m -		Bukkit.getServer().broadcastMessage("Loading Mines.. Prepare for Lag..");[m
+[31m -		Bukkit.getServer().getScheduler().runTaskLater(this, new LoadMinesTask(this), 100);[m
+[31m -		[m
+[31m -		getLogger().info(getDescription().getName() + " " + getDescription().getVersion() + " Enabled!");		[m
+[31m -	}[m
+[31m -	[m
+[31m -	private void setupDB() {[m
+[31m -		try {[m
+[31m -			getDatabase().find(TrainTbl.class).findRowCount();[m
+[31m -			getDatabase().find(TrainScheduleTbl.class).findRowCount();[m
+[31m -			getDatabase().find(TrainStatusTbl.class).findRowCount();[m
+[31m -			getDatabase().find(TrainStationTbl.class).findRowCount();[m
+[31m -			getDatabase().find(TrainStationLocationTbl.class).findRowCount();[m
+[31m -			getDatabase().find(PlayerTbl.class).findRowCount();[m
+[31m -			getDatabase().find(TownTbl.class).findRowCount();[m
+[31m -			getDatabase().find(BankTbl.class).findRowCount();[m
+[31m -			getDatabase().find(JobTbl.class).findRowCount();[m
+[31m -			getDatabase().find(CartListTbl.class).findRowCount();[m
+[31m -			getDatabase().find(ItemForeignKeyTbl.class).findRowCount();[m
+[31m -			getDatabase().find(ItemTbl.class).findRowCount();[m
+[31m -		} catch (PersistenceException | NullPointerException e) {[m
+[31m -			getLogger().info("Installing database for " + getDescription().getName() + " due to first time use.");[m
+[31m -			installDDL();[m
+[31m -		}[m
+[31m -	}[m
+[31m -	[m
+[31m -//	@Override[m
+[31m -//	public List<Class<?>> getDatabaseClasses() {[m
+[31m -//		List<Class<?>> list = new ArrayList<Class<?>>();[m
+[31m -//		list.add(TrainTbl.class);[m
+[31m -//		list.add(TrainScheduleTbl.class);[m
+[31m -//		list.add(TrainStatusTbl.class);[m
+[31m -//		list.add(TrainStationTbl.class);[m
+[31m -//		list.add(TrainStationLocationTbl.class);[m
+[31m -//		list.add(PlayerTbl.class);[m
+[31m -//		list.add(TownTbl.class);[m
+[31m -//		list.add(BankTbl.class);[m
+[31m -//		list.add(JobTbl.class);[m
+[31m -//		list.add(CartListTbl.class);[m
+[31m -//		list.add(ItemForeignKeyTbl.class);[m
+[31m -//		list.add(ItemTbl.class);[m
+[31m -//		return list;[m
+[31m -//	}[m
+[31m -	[m
+[31m -	@Override[m
+[31m -	public void onDisable() {[m
+[31m -		//Clear all of the trains out of all the mappings, to free up memory.[m
+[31m -		TrainStation.getTrainStations().clear();[m
+[31m -		[m
+[31m -		SaveMines saveMines = new SaveMines(this);[m
+[31m -		int count = 0;[m
+[31m -		Boolean saved = false;[m
+[31m -		while(saved == false) {[m
+[31m -			saved = saveMines.save();[m
+[31m -			count++;[m
+[31m -			if(count==5) { [m
+[31m -				this.getLogger().info("GOLDRUSHMC: Could not save mines after 5 retrys! Exiting..");[m
+[31m -				break; [m
+[31m -			}[m
+[31m -		}[m
+[31m -		this.getLogger().info("GoldRush Plugin Disabled!");[m
+[31m -	}[m
+[31m -}[m
+[32m++<<<<<<< HEAD[m
+[32m +package com.goldrushmc.bukkit.main;[m
+[32m +[m
+[32m +import javax.persistence.PersistenceException;[m
+[32m +[m
+[32m +import net.citizensnpcs.api.CitizensAPI;[m
+[32m +import net.citizensnpcs.api.trait.TraitInfo;[m
+[32m +[m
+[32m +import org.bukkit.Bukkit;[m
+[32m +import org.bukkit.configuration.file.FileConfiguration;[m
+[32m +import org.bukkit.plugin.PluginManager;[m
+[32m +import org.bukkit.plugin.java.JavaPlugin;[m
+[32m +[m
+[32m +import com.goldrushmc.bukkit.bank.InventoryLis;[m
+[32m +import com.goldrushmc.bukkit.commands.CreateTrainStation;[m
+[32m +import com.goldrushmc.bukkit.commands.RemoveTrainStation;[m
+[32m +import com.goldrushmc.bukkit.commands.ShowVisitorsCommand;[m
+[32m +import com.goldrushmc.bukkit.commands.StationWand;[m
+[32m +import com.goldrushmc.bukkit.commands.TrainCycleCommand;[m
+[32m +import com.goldrushmc.bukkit.commands.TrainStationListCommand;[m
+[32m +import com.goldrushmc.bukkit.db.BankTbl;[m
+[32m +import com.goldrushmc.bukkit.db.CartListTbl;[m
+[32m +import com.goldrushmc.bukkit.db.ItemForeignKeyTbl;[m
+[32m +import com.goldrushmc.bukkit.db.ItemTbl;[m
+[32m +import com.goldrushmc.bukkit.db.JobTbl;[m
+[32m +import com.goldrushmc.bukkit.db.PlayerTbl;[m
+[32m +import com.goldrushmc.bukkit.db.TownTbl;[m
+[32m +import com.goldrushmc.bukkit.db.TrainScheduleTbl;[m
+[32m +import com.goldrushmc.bukkit.db.TrainStationLocationTbl;[m
+[32m +import com.goldrushmc.bukkit.db.TrainStationTbl;[m
+[32m +import com.goldrushmc.bukkit.db.TrainStatusTbl;[m
+[32m +import com.goldrushmc.bukkit.db.TrainTbl;[m
+[32m +import com.goldrushmc.bukkit.guns.GunLis;[m
+[32m +import com.goldrushmc.bukkit.guns.GunTool;[m
+[32m +import com.goldrushmc.bukkit.mines.LoadMinesTask;[m
+[32m +import com.goldrushmc.bukkit.mines.MineCommands;[m
+[32m +import com.goldrushmc.bukkit.mines.MineLis;[m
+[32m +import com.goldrushmc.bukkit.mines.SaveMines;[m
+[32m +import com.goldrushmc.bukkit.panning.PanningLis;[m
+[32m +import com.goldrushmc.bukkit.panning.PanningTool;[m
+[32m +import com.goldrushmc.bukkit.train.listeners.TrainLis;[m
+[32m +import com.goldrushmc.bukkit.train.listeners.TrainStationLis;[m
+[32m +import com.goldrushmc.bukkit.train.listeners.WandLis;[m
+[32m +import com.goldrushmc.bukkit.train.scheduling.TimeCounter;[m
+[32m +import com.goldrushmc.bukkit.train.station.TrainStation;[m
+[32m +import com.goldrushmc.bukkit.train.station.npc.CartTradeable;[m
+[32m +import com.goldrushmc.bukkit.tunnelcollapse.TunnelCollapseCommand;[m
+[32m +import com.goldrushmc.bukkit.tunnelcollapse.TunnelsListener;[m
+[32m +[m
+[32m +[m
+[32m +[m
+[32m +public final class Main extends JavaPlugin{[m
+[32m +	[m
+[32m +	public final TrainLis tl = new TrainLis(this);[m
+[32m +	public final WandLis wl = new WandLis(this);[m
+[32m +	public final TrainStationLis tsl = new TrainStationLis(this);[m
+[32m +	public final TunnelsListener tunnel = new TunnelsListener(this);[m
+[32m +	public final GunLis gl = new GunLis(this);[m
+[32m +	public final PanningLis pl = new PanningLis(this);[m
+[32m +	public final InventoryLis il = new InventoryLis(this);[m
+[32m +	public final MineLis ml = new MineLis(this);[m
+[32m +[m
+[32m +	@Override[m
+[32m +	public void onEnable() {[m
+[32m +//		setupDB();[m
+[32m +		[m
+[32m +		//Add commands[m
+[32m +		getCommand("StationWand").setExecutor(new StationWand(this));[m
+[32m +		getCommand("Station").setExecutor(new CreateTrainStation(this));[m
+[32m +		getCommand("Fall").setExecutor(new TunnelCollapseCommand(this));[m
+[32m +		getCommand("Gun").setExecutor(new GunTool(this));[m
+[32m +		getCommand("PanningTool").setExecutor(new PanningTool(this));[m
+[32m +		getCommand("Mine").setExecutor(new MineCommands(this));[m
+[32m +		getCommand("ShowVisitors").setExecutor(new ShowVisitorsCommand(this));[m
+[32m +		getCommand("TrainCycle").setExecutor(new TrainCycleCommand(this));[m
+[32m +		getCommand("RemoveStation").setExecutor(new RemoveTrainStation(this));[m
+[32m +		getCommand("ListStations").setExecutor(new TrainStationListCommand(this));[m
+[32m +		[m
+[32m +		[m
+[32m +		//Register listeners[m
+[32m +		PluginManager pm = getServer().getPluginManager();[m
+[32m +		pm.registerEvents(tl, this);[m
+[32m +		pm.registerEvents(wl, this);[m
+[32m +		pm.registerEvents(tsl, this);[m
+[32m +		pm.registerEvents(gl, this);[m
+[32m +		pm.registerEvents(pl, this);[m
+[32m +		pm.registerEvents(il, this);[m
+[32m +		pm.registerEvents(ml, this);[m
+[32m +		[m
+[32m +		//Add settings for Tunnel Collapse		[m
+[32m +		FileConfiguration fc = this.getConfig();[m
+[32m +		if(fc == null) {[m
+[32m +			SettingsManager settings = SettingsManager.getInstance();[m
+[32m +			settings.setup(this);[m
+[32m +			fc = settings.getFileConfig();[m
+[32m +		}[m
+[32m +[m
+[32m +		//Register traits for the NPCs.[m
+[32m +		if(getServer().getPluginManager().getPlugin("Citizens") == null || getServer().getPluginManager().getPlugin("Citizens").isEnabled() == false) {[m
+[32m +			getLogger().severe("Citizens 2.0 not found or not enabled");[m
+[32m +			getServer().getPluginManager().disablePlugin(this);	[m
+[32m +			return;[m
+[32m +		}	[m
+[32m + [m
+[32m +		//Register your trait with Citizens.        [m
+[32m +		CitizensAPI.getTraitFactory().registerTrait(TraitInfo.create(CartTradeable.class).withName("CartTrader"));[m
+[32m +		[m
+[32m +		//Populate the train station listener maps[m
+[32m +		//This only works if the database has data to make train stations with....[m
+[32m +//		tsl.populate();[m
+[32m +		[m
+[32m +		//Start the time counter, so that we can measure the time remaining for each train.[m
+[32m +		//We need to get the worlds from the config file.[m
+[32m +		Bukkit.getScheduler().scheduleSyncRepeatingTask(this, new TimeCounter(this, Bukkit.getWorld(fc.getString("world"))), 0, 1);[m
+[32m +		[m
+[32m +		//run load task later once world has loaded[m
+[32m +		Bukkit.getServer().broadcastMessage("Loading Mines.. Prepare for Lag..");[m
+[32m +		Bukkit.getServer().getScheduler().runTaskLater(this, new LoadMinesTask(this), 100);[m
+[32m +		[m
+[32m +		getLogger().info(getDescription().getName() + " " + getDescription().getVersion() + " Enabled!");		[m
+[32m +	}[m
+[32m +	[m
+[32m +	private void setupDB() {[m
+[32m +		try {[m
+[32m +			getDatabase().find(TrainTbl.class).findRowCount();[m
+[32m +			getDatabase().find(TrainScheduleTbl.class).findRowCount();[m
+[32m +			getDatabase().find(TrainStatusTbl.class).findRowCount();[m
+[32m +			getDatabase().find(TrainStationTbl.class).findRowCount();[m
+[32m +			getDatabase().find(TrainStationLocationTbl.class).findRowCount();[m
+[32m +			getDatabase().find(PlayerTbl.class).findRowCount();[m
+[32m +			getDatabase().find(TownTbl.class).findRowCount();[m
+[32m +			getDatabase().find(BankTbl.class).findRowCount();[m
+[32m +			getDatabase().find(JobTbl.class).findRowCount();[m
+[32m +			getDatabase().find(CartListTbl.class).findRowCount();[m
+[32m +			getDatabase().find(ItemForeignKeyTbl.class).findRowCount();[m
+[32m +			getDatabase().find(ItemTbl.class).findRowCount();[m
+[32m +		} catch (PersistenceException | NullPointerException e) {[m
+[32m +			getLogger().info("Installing database for " + getDescription().getName() + " due to first time use.");[m
+[32m +			installDDL();[m
+[32m +		}[m
+[32m +	}[m
+[32m +	[m
+[32m +//	@Override[m
+[32m +//	public List<Class<?>> getDatabaseClasses() {[m
+[32m +//		List<Class<?>> list = new ArrayList<Class<?>>();[m
+[32m +//		list.add(TrainTbl.class);[m
+[32m +//		list.add(TrainScheduleTbl.class);[m
+[32m +//		list.add(TrainStatusTbl.class);[m
+[32m +//		list.add(TrainStationTbl.class);[m
+[32m +//		list.add(TrainStationLocationTbl.class);[m
+[32m +//		list.add(PlayerTbl.class);[m
+[32m +//		list.add(TownTbl.class);[m
+[32m +//		list.add(BankTbl.class);[m
+[32m +//		list.add(JobTbl.class);[m
+[32m +//		list.add(CartListTbl.class);[m
+[32m +//		list.add(ItemForeignKeyTbl.class);[m
+[32m +//		list.add(ItemTbl.class);[m
+[32m +//		return list;[m
+[32m +//	}[m
+[32m +	[m
+[32m +	@Override[m
+[32m +	public void onDisable() {[m
+[32m +		//Clear all of the trains out of all the mappings, to free up memory.[m
+[32m +		TrainStation.getTrainStations().clear();[m
+[32m +		[m
+[32m +		SaveMines saveMines = new SaveMines(this);[m
+[32m +		int count = 0;[m
+[32m +		Boolean saved = false;[m
+[32m +		while(saved == false) {[m
+[32m +			saved = saveMines.save();[m
+[32m +			count++;[m
+[32m +			if(count==5) { [m
+[32m +				this.getLogger().info("GOLDRUSHMC: Could not save mines after 5 retrys! Exiting..");[m
+[32m +				break; [m
+[32m +			}[m
+[32m +		}[m
+[32m +		[m
+[32m +		getLogger().info("GoldRush Plugin Disabled!");[m
+[32m +	}[m
+[32m +}[m
+[32m++=======[m
+[32m++package com.goldrushmc.bukkit.main;[m
+[32m++[m
+[32m++import com.goldrushmc.bukkit.bank.InventoryLis;[m
+[32m++import com.goldrushmc.bukkit.commands.*;[m
+[32m++import com.goldrushmc.bukkit.db.*;[m
+[32m++import com.goldrushmc.bukkit.guns.GunLis;[m
+[32m++import com.goldrushmc.bukkit.guns.GunTool;[m
+[32m++import com.goldrushmc.bukkit.mines.*;[m
+[32m++import com.goldrushmc.bukkit.panning.PanningLis;[m
+[32m++import com.goldrushmc.bukkit.panning.PanningTool;[m
+[32m++import com.goldrushmc.bukkit.train.listeners.TrainLis;[m
+[32m++import com.goldrushmc.bukkit.train.listeners.TrainStationLis;[m
+[32m++import com.goldrushmc.bukkit.train.listeners.WandLis;[m
+[32m++import com.goldrushmc.bukkit.train.station.TrainStation;[m
+[32m++import com.goldrushmc.bukkit.train.station.npc.CartTradeable;[m
+[32m++import com.goldrushmc.bukkit.tunnelcollapse.SettingsManager;[m
+[32m++import com.goldrushmc.bukkit.tunnelcollapse.TunnelCollapseCommand;[m
+[32m++import com.goldrushmc.bukkit.tunnelcollapse.TunnelsListener;[m
+[32m++import net.citizensnpcs.api.CitizensAPI;[m
+[32m++import net.citizensnpcs.api.trait.TraitInfo;[m
+[32m++import org.bukkit.Bukkit;[m
+[32m++import org.bukkit.plugin.PluginManager;[m
+[32m++import org.bukkit.plugin.java.JavaPlugin;[m
+[32m++[m
+[32m++import javax.persistence.PersistenceException;[m
+[32m++import java.util.ArrayList;[m
+[32m++import java.util.List;[m
+[32m++[m
+[32m++[m
+[32m++[m
+[32m++public final class Main extends JavaPlugin{[m
+[32m++	[m
+[32m++	public final TrainLis tl = new TrainLis(this);[m
+[32m++	public final WandLis wl = new WandLis(this);[m
+[32m++	public final TrainStationLis tsl = new TrainStationLis(this);[m
+[32m++	public final TunnelsListener tunnel = new TunnelsListener(this);[m
+[32m++	public final GunLis gl = new GunLis(this);[m
+[32m++	public final PanningLis pl = new PanningLis(this);[m
+[32m++	public final InventoryLis il = new InventoryLis(this);[m
+[32m++	public final MineLis ml = new MineLis(this);[m
+[32m++	[m
+[32m++	public static List<Mine> mineList;[m
+[32m++[m
+[32m++	@Override[m
+[32m++	public void onEnable() {[m
+[32m++//		setupDB();[m
+[32m++		[m
+[32m++		//Add commands[m
+[32m++		getCommand("StationWand").setExecutor(new StationWand(this));[m
+[32m++		getCommand("Station").setExecutor(new CreateTrainStation(this));[m
+[32m++		getCommand("Fall").setExecutor(new TunnelCollapseCommand(this));[m
+[32m++		getCommand("Gun").setExecutor(new GunTool(this));[m
+[32m++		getCommand("PanningTool").setExecutor(new PanningTool(this));[m
+[32m++		getCommand("Mine").setExecutor(new MineCommands(this));[m
+[32m++		getCommand("ShowVisitors").setExecutor(new ShowVisitorsCommand(this));[m
+[32m++		getCommand("TrainCycle").setExecutor(new TrainCycleCommand(this));[m
+[32m++		getCommand("RemoveStation").setExecutor(new RemoveTrainStation(this));[m
+[32m++		getCommand("ListStations").setExecutor(new TrainStationListCommand(this));[m
+[32m++		[m
+[32m++		[m
+[32m++		//Register listeners[m
+[32m++		PluginManager pm = getServer().getPluginManager();[m
+[32m++		pm.registerEvents(tl, this);[m
+[32m++		pm.registerEvents(wl, this);[m
+[32m++		pm.registerEvents(tsl, this);[m
+[32m++		pm.registerEvents(gl, this);[m
+[32m++		pm.registerEvents(pl, this);[m
+[32m++		pm.registerEvents(il, this);[m
+[32m++		pm.registerEvents(ml, this);[m
+[32m++		[m
+[32m++		//Add settings for Tunnel Collapse[m
+[32m++		SettingsManager settings = SettingsManager.getInstance();[m
+[32m++		settings.setup(this);[m
+[32m++[m
+[32m++		//Register traits for the NPCs.[m
+[32m++		if(getServer().getPluginManager().getPlugin("Citizens") == null || getServer().getPluginManager().getPlugin("Citizens").isEnabled() == false) {[m
+[32m++			getLogger().severe("Citizens 2.0 not found or not enabled");[m
+[32m++			getServer().getPluginManager().disablePlugin(this);	[m
+[32m++			return;[m
+[32m++		}	[m
+[32m++ [m
+[32m++		//Register your trait with Citizens.        [m
+[32m++		CitizensAPI.getTraitFactory().registerTrait(TraitInfo.create(CartTradeable.class).withName("CartTrader"));[m
+[32m++		[m
+[32m++		//Populate the train station listener maps[m
+[32m++		//This only works if the database has data to make train stations with....[m
+[32m++//		tsl.populate();[m
+[32m++		[m
+[32m++		//load mines[m
+[32m++		mineList = new ArrayList<Mine>();[m
+[32m++[m
+[32m++		//run load task later once world has loaded[m
+[32m++		Bukkit.getServer().broadcastMessage("Loading Mines.. Prepare for Lag..");[m
+[32m++		Bukkit.getServer().getScheduler().runTaskLater(this, new LoadMinesTask(this), 100);[m
+[32m++		[m
+[32m++		getLogger().info(getDescription().getName() + " " + getDescription().getVersion() + " Enabled!");		[m
+[32m++	}[m
+[32m++	[m
+[32m++	private void setupDB() {[m
+[32m++		try {[m
+[32m++			getDatabase().find(TrainTbl.class).findRowCount();[m
+[32m++			getDatabase().find(TrainScheduleTbl.class).findRowCount();[m
+[32m++			getDatabase().find(TrainStatusTbl.class).findRowCount();[m
+[32m++			getDatabase().find(TrainStationTbl.class).findRowCount();[m
+[32m++			getDatabase().find(TrainStationLocationTbl.class).findRowCount();[m
+[32m++			getDatabase().find(PlayerTbl.class).findRowCount();[m
+[32m++			getDatabase().find(TownTbl.class).findRowCount();[m
+[32m++			getDatabase().find(BankTbl.class).findRowCount();[m
+[32m++			getDatabase().find(JobTbl.class).findRowCount();[m
+[32m++			getDatabase().find(CartListTbl.class).findRowCount();[m
+[32m++			getDatabase().find(ItemForeignKeyTbl.class).findRowCount();[m
+[32m++			getDatabase().find(ItemTbl.class).findRowCount();[m
+[32m++		} catch (PersistenceException | NullPointerException e) {[m
+[32m++			getLogger().info("Installing database for " + getDescription().getName() + " due to first time use.");[m
+[32m++			installDDL();[m
+[32m++		}[m
+[32m++	}[m
+[32m++	[m
+[32m++//	@Override[m
+[32m++//	public List<Class<?>> getDatabaseClasses() {[m
+[32m++//		List<Class<?>> list = new ArrayList<Class<?>>();[m
+[32m++//		list.add(TrainTbl.class);[m
+[32m++//		list.add(TrainScheduleTbl.class);[m
+[32m++//		list.add(TrainStatusTbl.class);[m
+[32m++//		list.add(TrainStationTbl.class);[m
+[32m++//		list.add(TrainStationLocationTbl.class);[m
+[32m++//		list.add(PlayerTbl.class);[m
+[32m++//		list.add(TownTbl.class);[m
+[32m++//		list.add(BankTbl.class);[m
+[32m++//		list.add(JobTbl.class);[m
+[32m++//		list.add(CartListTbl.class);[m
+[32m++//		list.add(ItemForeignKeyTbl.class);[m
+[32m++//		list.add(ItemTbl.class);[m
+[32m++//		return list;[m
+[32m++//	}[m
+[32m++	[m
+[32m++	@Override[m
+[32m++	public void onDisable() {[m
+[32m++		//Clear all of the trains out of all the mappings, to free up memory.[m
+[32m++		TrainStation.getTrainStations().clear();[m
+[32m++		[m
+[32m++		SaveMines saveMines = new SaveMines(this);[m
+[32m++		int count = 0;[m
+[32m++		Boolean saved = false;[m
+[32m++		while(saved == false) {[m
+[32m++			saved = saveMines.save();[m
+[32m++			count++;[m
+[32m++			if(count==5) { [m
+[32m++				this.getLogger().info("GOLDRUSHMC: Could not save mines after 5 retrys! Exiting..");[m
+[32m++				break; [m
+[32m++			}[m
+[32m++		}[m
+[32m++		this.getLogger().info("GoldRush Plugin Disabled!");[m
+[32m++	}[m
+[32m++}[m
+[32m++>>>>>>> 257bbab534d278b0a66ed7c032c85252b06c98f2[m
+[1mdiff --cc src/main/java/com/goldrushmc/bukkit/mines/LoadMinesTask.java[m
+[1mindex d8d657d,554b2eb..0000000[m
+[1m--- a/src/main/java/com/goldrushmc/bukkit/mines/LoadMinesTask.java[m
+[1m+++ b/src/main/java/com/goldrushmc/bukkit/mines/LoadMinesTask.java[m
+[36m@@@ -1,7 -1,5 +1,10 @@@[m
+  package com.goldrushmc.bukkit.mines;[m
+  [m
+[32m++<<<<<<< HEAD[m
+[32m +import java.util.List;[m
+[32m +[m
+[32m++=======[m
+[32m++>>>>>>> 257bbab534d278b0a66ed7c032c85252b06c98f2[m
+  import org.bukkit.Bukkit;[m
+  import org.bukkit.plugin.java.JavaPlugin;[m
+  [m
+[36m@@@ -25,8 -23,8 +28,13 @@@[m [mpublic class LoadMinesTask implements R[m
+  [m
+  			@Override[m
+  			public void run() {[m
+[32m++<<<<<<< HEAD[m
+[32m +				List<Mine> mines = loadMines.parseMinesStrings();[m
+[32m +				Bukkit.getServer().broadcastMessage("Successfully loaded " + mines.size() + " mines!");[m
+[32m++=======[m
+[32m+ 				Mine.setMines(loadMines.parseMinesStrings());[m
+[32m+ 				Bukkit.getServer().broadcastMessage("Successfully loaded " + Mine.getMines().size() + " mines!");[m
+[32m++>>>>>>> 257bbab534d278b0a66ed7c032c85252b06c98f2[m
+  			}[m
+  		}[m
+    }[m
+[1mdiff --cc src/main/java/com/goldrushmc/bukkit/mines/Mine.java[m
+[1mindex 619d6a4,e321fe9..0000000[m
+[1m--- a/src/main/java/com/goldrushmc/bukkit/mines/Mine.java[m
+[1m+++ b/src/main/java/com/goldrushmc/bukkit/mines/Mine.java[m
+[36m@@@ -1,131 -1,130 +1,264 @@@[m
+[31m -package com.goldrushmc.bukkit.mines;[m
+[31m -[m
+[31m -import java.util.ArrayList;[m
+[31m -import java.util.List;[m
+[31m -[m
+[31m -import org.bukkit.Location;[m
+[31m -import org.bukkit.Material;[m
+[31m -import org.bukkit.World;[m
+[31m -import org.bukkit.block.Block;[m
+[31m -import org.bukkit.plugin.java.JavaPlugin;[m
+[31m -import org.bukkit.util.Vector;[m
+[31m -[m
+[31m -import com.goldrushmc.bukkit.defaults.BlockFinder;[m
+[31m -import com.goldrushmc.bukkit.main.Main;[m
+[31m -import com.goldrushmc.bukkit.train.exceptions.MarkerNumberException;[m
+[31m -[m
+[31m -public class Mine extends BlockFinder{[m
+[31m -	[m
+[31m -	/*The reason this is private is because we don't want anyone to be able to add/remove from it.[m
+[31m -	 *The mine class itself can facilitate this.[m
+[31m -	 */[m
+[31m -	private static List<Mine> mines = new ArrayList<Mine>();[m
+[31m -	[m
+[31m -	public Vector mineMin, mineMax, mineEntrance;[m
+[31m -	Location recCoordOne, recCoordTwo;[m
+[31m -	public int length, width, height;[m
+[31m -	int goldLeft, genedGold, density;[m
+[31m -	Boolean isGenerated = false;[m
+[31m -	String name;[m
+[31m -	World w;[m
+[31m -	[m
+[31m -	public Mine(String name, World world, List<Location> coords, JavaPlugin plugin, [m
+[31m -			Vector entrance, Integer dense, Boolean isGen)[m
+[31m -			throws MarkerNumberException {[m
+[31m -		super(world, coords, plugin);[m
+[31m -		[m
+[31m -		this.name = name;[m
+[31m -		mineEntrance = entrance;[m
+[31m -		recCoordOne = coords.get(0);[m
+[31m -		plugin.getServer().broadcastMessage(recCoordOne.toVector().toString());[m
+[31m -		recCoordTwo = coords.get(1);[m
+[31m -		plugin.getServer().broadcastMessage(recCoordTwo.toVector().toString());[m
+[31m -		[m
+[31m -		mineMax = findMaxBlock();[m
+[31m -		mineMin = findMinBlock();[m
+[31m -		[m
+[31m -		density = dense;[m
+[31m -		w = world;[m
+[31m -		length = mineMax.getBlockZ() - mineMin.getBlockZ();[m
+[31m -		width = mineMax.getBlockX() - mineMin.getBlockX();[m
+[31m -		height = mineMax.getBlockY() - mineMin.getBlockY();[m
+[31m -		isGenerated = isGen;[m
+[31m -		add(); //Call the add method, which will add the mine to the list.[m
+[31m -	}[m
+[31m -	[m
+[31m -	private Vector findMaxBlock() {[m
+[31m -		//get first max - first block in the array[m
+[31m -		Vector max = this.selectedArea.get(0).getLocation().toVector();[m
+[31m -		[m
+[31m -		for(Block b : this.selectedArea) {[m
+[31m -			if((b.getX() <= recCoordOne.getBlockX() && b.getY() <= recCoordOne.getBlockY() && b.getZ() <= recCoordOne.getBlockZ())[m
+[31m -			|| (b.getX() <= recCoordTwo.getBlockX() && b.getY() <= recCoordTwo.getBlockY() && b.getZ() <= recCoordTwo.getBlockZ())) {[m
+[31m -                        	Vector check = new Vector(b.getX(), b.getY(), b.getZ());[m
+[31m -                        	max = Vector.getMaximum(max, check);[m
+[31m -                    }[m
+[31m -		}[m
+[31m -		return max;[m
+[31m -	}[m
+[31m -	[m
+[31m -	private Vector findMinBlock() {[m
+[31m -		//get first min - first block in the array[m
+[31m -		Vector min = this.selectedArea.get(0).getLocation().toVector();[m
+[31m -		[m
+[31m -		for(Block b : this.selectedArea) {[m
+[31m -			if((b.getX() <= recCoordOne.getBlockX() && b.getY() <= recCoordOne.getBlockY() && b.getZ() <= recCoordOne.getBlockZ())[m
+[31m -			|| (b.getX() <= recCoordTwo.getBlockX() && b.getY() <= recCoordTwo.getBlockY() && b.getZ() <= recCoordTwo.getBlockZ())) {[m
+[31m -                        	Vector check = new Vector(b.getX(), b.getY(), b.getZ());[m
+[31m -                        	min = Vector.getMinimum(min, check);[m
+[31m -                    }[m
+[31m -                }		[m
+[31m -		return min;[m
+[31m -	}[m
+[31m -[m
+[31m -	@Override[m
+[31m -	public void remove() {[m
+[31m -		// TODO remove RefreshEvent[m
+[31m -		mines.remove(this); //TODO Need to remove ALL variable memory references first. This is the first step.[m
+[31m -		[m
+[31m -	}[m
+[31m -[m
+[31m -	@Override[m
+[31m -	public void add() { [m
+[31m -		if(!isGenerated) {[m
+[31m -			reGenerate();[m
+[31m -			isGenerated = true;[m
+[31m -		}[m
+[31m -		mines.add(this); //Add the mine to the list.[m
+[31m -	}[m
+[31m -	[m
+[31m -	/**[m
+[31m -	 * The static method which can retrieve the Static {@link Mine} list.[m
+[31m -	 * [m
+[31m -	 * @return the {@code List<Mine>} of mines.[m
+[31m -	 */[m
+[31m -	public static List<Mine> getMines() {[m
+[31m -		return mines;[m
+[31m -	}[m
+[31m -[m
+[31m -    public static void setMines(List<Mine> mineList) {[m
+[31m -        mines = mineList;[m
+[31m -    }[m
+[31m -[m
+[31m -	public void getGoldLeft() {[m
+[31m -		goldLeft = 0;[m
+[31m -		for(Block b : this.selectedArea) {[m
+[31m -			if(b.getType() == Material.GOLD_ORE) {[m
+[31m -				goldLeft++;[m
+[31m -			}[m
+[31m -		}[m
+[31m -	}[m
+[31m -	[m
+[31m -	public String getName() { return name; }[m
+[31m -	[m
+[31m -	public void reGenerate() {[m
+[31m -		plugin.getServer().broadcastMessage(mineMin.toString());[m
+[31m -		plugin.getServer().broadcastMessage(mineMax.toString());[m
+[31m -		MineGenerator mineGen = new MineGenerator(w, mineMin, mineMax, mineEntrance);[m
+[31m -		mineGen.generate(density);[m
+[31m -	}[m
+[31m -}[m
+[32m++<<<<<<< HEAD[m
+[32m +package com.goldrushmc.bukkit.mines;[m
+[32m +[m
+[32m +import java.util.ArrayList;[m
+[32m +import java.util.List;[m
+[32m +[m
+[32m +import org.bukkit.Location;[m
+[32m +import org.bukkit.Material;[m
+[32m +import org.bukkit.World;[m
+[32m +import org.bukkit.block.Block;[m
+[32m +import org.bukkit.plugin.java.JavaPlugin;[m
+[32m +import org.bukkit.util.Vector;[m
+[32m +[m
+[32m +import com.goldrushmc.bukkit.defaults.BlockFinder;[m
+[32m +import com.goldrushmc.bukkit.train.exceptions.MarkerNumberException;[m
+[32m +[m
+[32m +public class Mine extends BlockFinder{[m
+[32m +[m
+[32m +	/*The reason this is private is because we don't want anyone to be able to add/remove from it.[m
+[32m +	 *The mine class itself can facilitate this.[m
+[32m +	 */[m
+[32m +	private static List<Mine> mines = new ArrayList<Mine>();[m
+[32m +[m
+[32m +	public Vector mineMin, mineMax, mineEntrance;[m
+[32m +	Location recCoordOne, recCoordTwo;[m
+[32m +	public int length, width, height;[m
+[32m +	int goldLeft, genedGold, density;[m
+[32m +	Boolean isGenerated = false;[m
+[32m +	String name;[m
+[32m +	World w;[m
+[32m +[m
+[32m +	public Mine(String name, World world, List<Location> coords, JavaPlugin plugin, [m
+[32m +			Vector entrance, Integer dense, Boolean isGen)[m
+[32m +					throws MarkerNumberException {[m
+[32m +		super(world, coords, plugin);[m
+[32m +[m
+[32m +		this.name = name;[m
+[32m +		mineEntrance = entrance;[m
+[32m +		recCoordOne = coords.get(0);[m
+[32m +		plugin.getServer().broadcastMessage(recCoordOne.toVector().toString());[m
+[32m +		recCoordTwo = coords.get(1);[m
+[32m +		plugin.getServer().broadcastMessage(recCoordTwo.toVector().toString());[m
+[32m +[m
+[32m +		mineMax = findMaxBlock();[m
+[32m +		mineMin = findMinBlock();[m
+[32m +[m
+[32m +		density = dense;[m
+[32m +		w = world;[m
+[32m +		length = mineMax.getBlockZ() - mineMin.getBlockZ();[m
+[32m +		width = mineMax.getBlockX() - mineMin.getBlockX();[m
+[32m +		height = mineMax.getBlockY() - mineMin.getBlockY();[m
+[32m +		isGenerated = isGen;[m
+[32m +		add(); //Call the add method, which will add the mine to the list.[m
+[32m +	}[m
+[32m +[m
+[32m +	private Vector findMaxBlock() {[m
+[32m +		//get first max - first block in the array[m
+[32m +		Vector max = this.selectedArea.get(0).getLocation().toVector();[m
+[32m +[m
+[32m +		for(Block b : this.selectedArea) {[m
+[32m +			if((b.getX() <= recCoordOne.getBlockX() && b.getY() <= recCoordOne.getBlockY() && b.getZ() <= recCoordOne.getBlockZ())[m
+[32m +					|| (b.getX() <= recCoordTwo.getBlockX() && b.getY() <= recCoordTwo.getBlockY() && b.getZ() <= recCoordTwo.getBlockZ())) {[m
+[32m +				Vector check = new Vector(b.getX(), b.getY(), b.getZ());[m
+[32m +				max = Vector.getMaximum(max, check);[m
+[32m +			}[m
+[32m +		}[m
+[32m +		return max;[m
+[32m +	}[m
+[32m +[m
+[32m +	private Vector findMinBlock() {[m
+[32m +		//get first min - first block in the array[m
+[32m +		Vector min = this.selectedArea.get(0).getLocation().toVector();[m
+[32m +[m
+[32m +		for(Block b : this.selectedArea) {[m
+[32m +			if((b.getX() <= recCoordOne.getBlockX() && b.getY() <= recCoordOne.getBlockY() && b.getZ() <= recCoordOne.getBlockZ())[m
+[32m +					|| (b.getX() <= recCoordTwo.getBlockX() && b.getY() <= recCoordTwo.getBlockY() && b.getZ() <= recCoordTwo.getBlockZ())) {[m
+[32m +				Vector check = new Vector(b.getX(), b.getY(), b.getZ());[m
+[32m +				min = Vector.getMinimum(min, check);[m
+[32m +			}[m
+[32m +		}		[m
+[32m +		return min;[m
+[32m +	}[m
+[32m +[m
+[32m +	@Override[m
+[32m +	public void remove() {[m
+[32m +		// TODO remove RefreshEvent[m
+[32m +		mines.remove(this); //TODO Need to remove ALL variable memory references first. This is the first step.[m
+[32m +[m
+[32m +	}[m
+[32m +[m
+[32m +	@Override[m
+[32m +	public void add() { [m
+[32m +		if(!isGenerated) {[m
+[32m +			reGenerate();[m
+[32m +			isGenerated = true;[m
+[32m +		}[m
+[32m +		mines.add(this); //Add the mine to the list.[m
+[32m +	}[m
+[32m +[m
+[32m +	/**[m
+[32m +	 * The static method which can retrieve the Static {@link Mine} list.[m
+[32m +	 * [m
+[32m +	 * @return the {@code List<Mine>} of mines.[m
+[32m +	 */[m
+[32m +	public static List<Mine> getMines() {[m
+[32m +		return mines;[m
+[32m +	}[m
+[32m +[m
+[32m +	public void getGoldLeft() {[m
+[32m +		goldLeft = 0;[m
+[32m +		for(Block b : this.selectedArea) {[m
+[32m +			if(b.getType() == Material.GOLD_ORE) {[m
+[32m +				goldLeft++;[m
+[32m +			}[m
+[32m +		}[m
+[32m +	}[m
+[32m +[m
+[32m +	public String getName() { return name; }[m
+[32m +[m
+[32m +	public void reGenerate() {[m
+[32m +		plugin.getServer().broadcastMessage(mineMin.toString());[m
+[32m +		plugin.getServer().broadcastMessage(mineMax.toString());[m
+[32m +		MineGenerator mineGen = new MineGenerator(w, mineMin, mineMax, mineEntrance);[m
+[32m +		mineGen.generate(density);[m
+[32m +	}[m
+[32m +[m
+[32m +	@Override[m
+[32m +	public List<Block> findNonAirBlocks() {[m
+[32m +		// TODO Auto-generated method stub[m
+[32m +		return null;[m
+[32m +	}[m
+[32m +}[m
+[32m++=======[m
+[32m++package com.goldrushmc.bukkit.mines;[m
+[32m++[m
+[32m++import java.util.ArrayList;[m
+[32m++import java.util.List;[m
+[32m++[m
+[32m++import org.bukkit.Location;[m
+[32m++import org.bukkit.Material;[m
+[32m++import org.bukkit.World;[m
+[32m++import org.bukkit.block.Block;[m
+[32m++import org.bukkit.plugin.java.JavaPlugin;[m
+[32m++import org.bukkit.util.Vector;[m
+[32m++[m
+[32m++import com.goldrushmc.bukkit.defaults.BlockFinder;[m
+[32m++import com.goldrushmc.bukkit.main.Main;[m
+[32m++import com.goldrushmc.bukkit.train.exceptions.MarkerNumberException;[m
+[32m++[m
+[32m++public class Mine extends BlockFinder{[m
+[32m++	[m
+[32m++	/*The reason this is private is because we don't want anyone to be able to add/remove from it.[m
+[32m++	 *The mine class itself can facilitate this.[m
+[32m++	 */[m
+[32m++	private static List<Mine> mines = new ArrayList<Mine>();[m
+[32m++	[m
+[32m++	public Vector mineMin, mineMax, mineEntrance;[m
+[32m++	Location recCoordOne, recCoordTwo;[m
+[32m++	public int length, width, height;[m
+[32m++	int goldLeft, genedGold, density;[m
+[32m++	Boolean isGenerated = false;[m
+[32m++	String name;[m
+[32m++	World w;[m
+[32m++	[m
+[32m++	public Mine(String name, World world, List<Location> coords, JavaPlugin plugin, [m
+[32m++			Vector entrance, Integer dense, Boolean isGen)[m
+[32m++			throws MarkerNumberException {[m
+[32m++		super(world, coords, plugin);[m
+[32m++		[m
+[32m++		this.name = name;[m
+[32m++		mineEntrance = entrance;[m
+[32m++		recCoordOne = coords.get(0);[m
+[32m++		plugin.getServer().broadcastMessage(recCoordOne.toVector().toString());[m
+[32m++		recCoordTwo = coords.get(1);[m
+[32m++		plugin.getServer().broadcastMessage(recCoordTwo.toVector().toString());[m
+[32m++		[m
+[32m++		mineMax = findMaxBlock();[m
+[32m++		mineMin = findMinBlock();[m
+[32m++		[m
+[32m++		density = dense;[m
+[32m++		w = world;[m
+[32m++		length = mineMax.getBlockZ() - mineMin.getBlockZ();[m
+[32m++		width = mineMax.getBlockX() - mineMin.getBlockX();[m
+[32m++		height = mineMax.getBlockY() - mineMin.getBlockY();[m
+[32m++		isGenerated = isGen;[m
+[32m++		add(); //Call the add method, which will add the mine to the list.[m
+[32m++	}[m
+[32m++	[m
+[32m++	private Vector findMaxBlock() {[m
+[32m++		//get first max - first block in the array[m
+[32m++		Vector max = this.selectedArea.get(0).getLocation().toVector();[m
+[32m++		[m
+[32m++		for(Block b : this.selectedArea) {[m
+[32m++			if((b.getX() <= recCoordOne.getBlockX() && b.getY() <= recCoordOne.getBlockY() && b.getZ() <= recCoordOne.getBlockZ())[m
+[32m++			|| (b.getX() <= recCoordTwo.getBlockX() && b.getY() <= recCoordTwo.getBlockY() && b.getZ() <= recCoordTwo.getBlockZ())) {[m
+[32m++                        	Vector check = new Vector(b.getX(), b.getY(), b.getZ());[m
+[32m++                        	max = Vector.getMaximum(max, check);[m
+[32m++                    }[m
+[32m++		}[m
+[32m++		return max;[m
+[32m++	}[m
+[32m++	[m
+[32m++	private Vector findMinBlock() {[m
+[32m++		//get first min - first block in the array[m
+[32m++		Vector min = this.selectedArea.get(0).getLocation().toVector();[m
+[32m++		[m
+[32m++		for(Block b : this.selectedArea) {[m
+[32m++			if((b.getX() <= recCoordOne.getBlockX() && b.getY() <= recCoordOne.getBlockY() && b.getZ() <= recCoordOne.getBlockZ())[m
+[32m++			|| (b.getX() <= recCoordTwo.getBlockX() && b.getY() <= recCoordTwo.getBlockY() && b.getZ() <= recCoordTwo.getBlockZ())) {[m
+[32m++                        	Vector check = new Vector(b.getX(), b.getY(), b.getZ());[m
+[32m++                        	min = Vector.getMinimum(min, check);[m
+[32m++                    }[m
+[32m++                }		[m
+[32m++		return min;[m
+[32m++	}[m
+[32m++[m
+[32m++	@Override[m
+[32m++	public void remove() {[m
+[32m++		// TODO remove RefreshEvent[m
+[32m++		mines.remove(this); //TODO Need to remove ALL variable memory references first. This is the first step.[m
+[32m++		[m
+[32m++	}[m
+[32m++[m
+[32m++	@Override[m
+[32m++	public void add() { [m
+[32m++		if(!isGenerated) {[m
+[32m++			reGenerate();[m
+[32m++			isGenerated = true;[m
+[32m++		}[m
+[32m++		mines.add(this); //Add the mine to the list.[m
+[32m++	}[m
+[32m++	[m
+[32m++	/**[m
+[32m++	 * The static method which can retrieve the Static {@link Mine} list.[m
+[32m++	 * [m
+[32m++	 * @return the {@code List<Mine>} of mines.[m
+[32m++	 */[m
+[32m++	public static List<Mine> getMines() {[m
+[32m++		return mines;[m
+[32m++	}[m
+[32m++[m
+[32m++    public static void setMines(List<Mine> mineList) {[m
+[32m++        mines = mineList;[m
+[32m++    }[m
+[32m++[m
+[32m++	public void getGoldLeft() {[m
+[32m++		goldLeft = 0;[m
+[32m++		for(Block b : this.selectedArea) {[m
+[32m++			if(b.getType() == Material.GOLD_ORE) {[m
+[32m++				goldLeft++;[m
+[32m++			}[m
+[32m++		}[m
+[32m++	}[m
+[32m++	[m
+[32m++	public String getName() { return name; }[m
+[32m++	[m
+[32m++	public void reGenerate() {[m
+[32m++		plugin.getServer().broadcastMessage(mineMin.toString());[m
+[32m++		plugin.getServer().broadcastMessage(mineMax.toString());[m
+[32m++		MineGenerator mineGen = new MineGenerator(w, mineMin, mineMax, mineEntrance);[m
+[32m++		mineGen.generate(density);[m
+[32m++	}[m
+[32m++}[m
+[32m++>>>>>>> 257bbab534d278b0a66ed7c032c85252b06c98f2[m
+[1mdiff --cc src/main/java/com/goldrushmc/bukkit/mines/MineCommands.java[m
+[1mindex 205bfbe,7c6ea27..0000000[m
+[1m--- a/src/main/java/com/goldrushmc/bukkit/mines/MineCommands.java[m
+[1m+++ b/src/main/java/com/goldrushmc/bukkit/mines/MineCommands.java[m
+[36m@@@ -1,231 -1,231 +1,465 @@@[m
+[31m -package com.goldrushmc.bukkit.mines;[m
+[31m -[m
+[31m -import java.util.ArrayList;[m
+[31m -import java.util.HashMap;[m
+[31m -import java.util.List;[m
+[31m -import java.util.Map;[m
+[31m -import java.util.Random;[m
+[31m -[m
+[31m -import org.bukkit.ChatColor;[m
+[31m -import org.bukkit.Location;[m
+[31m -import org.bukkit.Material;[m
+[31m -import org.bukkit.World;[m
+[31m -import org.bukkit.block.Block;[m
+[31m -import org.bukkit.block.BlockFace;[m
+[31m -import org.bukkit.command.Command;[m
+[31m -import org.bukkit.command.CommandSender;[m
+[31m -import org.bukkit.entity.Player;[m
+[31m -import org.bukkit.inventory.ItemStack;[m
+[31m -import org.bukkit.inventory.meta.ItemMeta;[m
+[31m -import org.bukkit.plugin.java.JavaPlugin;[m
+[31m -import org.bukkit.util.BlockIterator;[m
+[31m -import org.bukkit.util.Vector;[m
+[31m -[m
+[31m -import com.goldrushmc.bukkit.defaults.BlockFinder;[m
+[31m -import com.goldrushmc.bukkit.defaults.CommandDefault;[m
+[31m -import com.goldrushmc.bukkit.main.Main;[m
+[31m -import com.goldrushmc.bukkit.train.exceptions.MarkerNumberException;[m
+[31m -[m
+[31m -public class MineCommands  extends CommandDefault {[m
+[31m -	[m
+[31m -	public static Map<Player, List<Integer>> mineSize = new HashMap<Player, List<Integer>>();[m
+[31m -	public static Map<Player, List<blockBackup>> backList = new HashMap<Player, List<blockBackup>>();[m
+[31m -	public static Map<Player, String> nameList = new HashMap<Player, String>();[m
+[31m -[m
+[31m -	public MineCommands(JavaPlugin plugin) {[m
+[31m -		super(plugin);[m
+[31m -	}[m
+[31m -[m
+[31m -	@Override[m
+[31m -	public boolean onCommand(CommandSender sender, Command cmd, String label,[m
+[31m -			String[] args) {[m
+[31m -		[m
+[31m -		Player p = (Player) sender;[m
+[31m -[m
+[31m -		if(cmd.getName().equalsIgnoreCase("mine")){ // command label[m
+[31m -			if (p instanceof Player){ // instance of player - checks if player[m
+[31m -				if (args.length > 0){[m
+[31m -					if (args[0].equalsIgnoreCase("create")){[m
+[31m -							if(args.length == 2){[m
+[31m -								try{[m
+[31m -									p.sendMessage("Created mine outline");[m
+[31m -									p.sendMessage("Type " + ChatColor.GREEN + "/mine confirm " + [m
+[31m -										ChatColor.WHITE + "to create the mine, " +[m
+[31m -										ChatColor.RED + "/mine cancel " + ChatColor.WHITE + "to start again.");[m
+[31m -									makeMarkers(p.getWorld(), p, Material.WOOL); //makes a wool outline of the area selected[m
+[31m -									nameList.put(p, args[1]);[m
+[31m -									return true;[m
+[31m -								} catch(Exception ex) {[m
+[31m -									p.sendMessage(ChatColor.RED + "Invalid Paramters!");[m
+[31m -									return false;[m
+[31m -								}[m
+[31m -							} else {[m
+[31m -								p.sendMessage(ChatColor.RED + "Missing mine name!");[m
+[31m -								return false;[m
+[31m -							}[m
+[31m -					} else if (args[0].equalsIgnoreCase("tool")){ [m
+[31m -						[m
+[31m -						ItemStack panningTool= new ItemStack(Material.CLAY_BALL);[m
+[31m -						List<String> lore = new ArrayList<String>();[m
+[31m -						lore.add("Right click to denote start of mine");[m
+[31m -						ItemMeta meta = panningTool.getItemMeta();[m
+[31m -						meta.setLore(lore);[m
+[31m -						meta.setDisplayName("Mine Creator");[m
+[31m -						panningTool.setItemMeta(meta);[m
+[31m -						p.getInventory().addItem(panningTool);[m
+[31m -						return true;[m
+[31m -						[m
+[31m -					} else if (args[0].equalsIgnoreCase("confirm")){ [m
+[31m -						Location loc1 = MineLis.mineMin.get(p).toLocation(p.getWorld());[m
+[31m -						p.sendMessage(String.valueOf(loc1.getBlockY()));[m
+[31m -						Location loc2 = MineLis.mineMax.get(p).toLocation(p.getWorld());[m
+[31m -						p.sendMessage(String.valueOf(loc2.getBlockY()));[m
+[31m -						[m
+[31m -						List<Location> locList = new ArrayList<Location>();[m
+[31m -						locList.add(loc1);[m
+[31m -						locList.add(loc2);[m
+[31m -						if(nameList.containsKey(p)) {[m
+[31m -							try {[m
+[31m -								Mine newMine = new Mine(nameList.get(p), p.getWorld(), [m
+[31m -										locList, plugin, MineLis.mineLoc.get(p).toVector(), 2, false);[m
+[31m -							} catch (MarkerNumberException e) {[m
+[31m -								plugin.getLogger().info("GOLDRUSHMC: MarkerNumberException creating mine");[m
+[31m -							}[m
+[31m -							[m
+[31m -							SaveMines saveMines = new SaveMines(plugin);[m
+[31m -							int count = 0;[m
+[31m -							Boolean save = false;[m
+[31m -							while(!save) {[m
+[31m -								save = saveMines.save();[m
+[31m -								count++;[m
+[31m -								if(count==5) { [m
+[31m -									plugin.getLogger().info("GOLDRUSHMC: Could not save mines after 5 retrys!");[m
+[31m -									save = true;[m
+[31m -								}[m
+[31m -							}[m
+[31m -						}[m
+[31m -												[m
+[31m -						return true;[m
+[31m -					} else if (args[0].equalsIgnoreCase("load")){[m
+[31m -						if(args.length == 2){[m
+[31m -							int i = 0;[m
+[31m -							for(Mine mine : Main.mineList) {[m
+[31m -								p.sendMessage(mine.name);[m
+[31m -								if(mine.name == args[1]) {[m
+[31m -									LoadMines loadMines = new LoadMines(plugin, plugin);[m
+[31m -									for(Mine mine2 :loadMines.parseMinesStrings()) {[m
+[31m -										p.sendMessage(mine2.name);[m
+[31m -										if(mine.name == mine2.name) {[m
+[31m -											Main.mineList.set(i, mine2);[m
+[31m -										}[m
+[31m -									}[m
+[31m -								}[m
+[31m -								i++;[m
+[31m -							}[m
+[31m -							[m
+[31m -							return true;[m
+[31m -						} else {[m
+[31m -							return false;[m
+[31m -						}[m
+[31m -					} else if (args[0].equalsIgnoreCase("cancel")){ [m
+[31m -						undoMarkers(p.getWorld(), p); //undoes the placement of wool outline[m
+[31m -						return true;[m
+[31m -					} else {[m
+[31m -						p.sendMessage("Not a valid command!");[m
+[31m -						return false;[m
+[31m -					}[m
+[31m -				} else {[m
+[31m -					return false;[m
+[31m -				}[m
+[31m -			} else {[m
+[31m -				return false;[m
+[31m -			}[m
+[31m -		} else {[m
+[31m -		return false;[m
+[31m -		}[m
+[31m -	}[m
+[31m -	[m
+[31m -	private void makeMarkers(World w, Player p, Material m) {[m
+[31m -		[m
+[31m -		int maxx = MineLis.mineMax.get(p).getBlockX();[m
+[31m -		int minx = MineLis.mineMin.get(p).getBlockX();[m
+[31m -		int maxz = MineLis.mineMax.get(p).getBlockZ();[m
+[31m -		int minz = MineLis.mineMin.get(p).getBlockZ();[m
+[31m -		int maxy = MineLis.mineMax.get(p).getBlockY();[m
+[31m -		int miny = MineLis.mineMin.get(p).getBlockY();[m
+[31m -		[m
+[31m -		//Backup array[m
+[31m -		List<blockBackup> temp = new ArrayList<blockBackup>();[m
+[31m -		[m
+[31m -		//if(backList.containsKey(p)){[m
+[31m -			//if(backList.get(p).size() > 0) {[m
+[31m -				//undoMarkers(w, p);[m
+[31m -			//}[m
+[31m -		//}[m
+[31m -		[m
+[31m -		//loops to only fill the edges of the cube[m
+[31m -		backList.remove(p);[m
+[31m -		for(int x = minx; x <= maxx; x++) {[m
+[31m -			for(int z = minz; z <= maxz; z++) {[m
+[31m -				for(int y = miny; y <= maxy; y++) {[m
+[31m -					if(x == minx && y == miny){[m
+[31m -						temp.add(new blockBackup(new Location(w, x, y, z), w.getBlockAt(x, y, z).getType()));[m
+[31m -						w.getBlockAt(x, y, z).setType(m);[m
+[31m -					} else if(x == maxx && y == maxy){[m
+[31m -						temp.add(new blockBackup(new Location(w, x, y, z), w.getBlockAt(x, y, z).getType()));[m
+[31m -						w.getBlockAt(x, y, z).setType(m);[m
+[31m -					} else if(x == maxx && y == miny){[m
+[31m -						temp.add(new blockBackup(new Location(w, x, y, z), w.getBlockAt(x, y, z).getType()));[m
+[31m -						w.getBlockAt(x, y, z).setType(m);[m
+[31m -					} else if(x == minx && y == maxy){[m
+[31m -						temp.add(new blockBackup(new Location(w, x, y, z), w.getBlockAt(x, y, z).getType()));[m
+[31m -						w.getBlockAt(x, y, z).setType(m);[m
+[31m -					} else if(z == minz && y == miny){[m
+[31m -						temp.add(new blockBackup(new Location(w, x, y, z), w.getBlockAt(x, y, z).getType()));[m
+[31m -						w.getBlockAt(x, y, z).setType(m);[m
+[31m -					} else if(z == maxz && y == maxy){[m
+[31m -						temp.add(new blockBackup(new Location(w, x, y, z), w.getBlockAt(x, y, z).getType()));[m
+[31m -						w.getBlockAt(x, y, z).setType(m);[m
+[31m -					} else if(z == maxz && y == miny){[m
+[31m -						temp.add(new blockBackup(new Location(w, x, y, z), w.getBlockAt(x, y, z).getType()));[m
+[31m -						w.getBlockAt(x, y, z).setType(m);[m
+[31m -					} else if(z == minz && y == maxy){[m
+[31m -						temp.add(new blockBackup(new Location(w, x, y, z), w.getBlockAt(x, y, z).getType()));[m
+[31m -						w.getBlockAt(x, y, z).setType(m);[m
+[31m -					} else if(x == minx && z == minz){[m
+[31m -						temp.add(new blockBackup(new Location(w, x, y, z), w.getBlockAt(x, y, z).getType()));[m
+[31m -						w.getBlockAt(x, y, z).setType(m);[m
+[31m -					} else if(x == maxx && z == maxz){[m
+[31m -						temp.add(new blockBackup(new Location(w, x, y, z), w.getBlockAt(x, y, z).getType()));[m
+[31m -						w.getBlockAt(x, y, z).setType(m);[m
+[31m -					} else if(x == maxx && z == minz){[m
+[31m -						temp.add(new blockBackup(new Location(w, x, y, z), w.getBlockAt(x, y, z).getType()));[m
+[31m -						w.getBlockAt(x, y, z).setType(m);[m
+[31m -					} else if(x == minx && z == maxz){[m
+[31m -						temp.add(new blockBackup(new Location(w, x, y, z), w.getBlockAt(x, y, z).getType()));[m
+[31m -						w.getBlockAt(x, y, z).setType(m);[m
+[31m -					}[m
+[31m -				}[m
+[31m -			}[m
+[31m -		}[m
+[31m -		[m
+[31m -		backList.put(p, temp);[m
+[31m -	}[m
+[31m -	[m
+[31m -	private void undoMarkers(World w, Player p) {[m
+[31m -		for(int i = 0; i < backList.get(p).size(); i++){[m
+[31m -			w.getBlockAt(backList.get(p).get(i).location).setType(backList.get(p).get(i).material);[m
+[31m -		}[m
+[31m -	}[m
+[31m -	[m
+[31m -	//class for storing the block backup data[m
+[31m -	class blockBackup {[m
+[31m -		public Location location;[m
+[31m -		public Material material;[m
+[31m -	[m
+[31m -		public blockBackup(Location loc, Material mat) {[m
+[31m -			location = loc;[m
+[31m -			material = mat;[m
+[31m -		}[m
+[31m -	}[m
+[31m -}[m
+[32m++<<<<<<< HEAD[m
+[32m +package com.goldrushmc.bukkit.mines;[m
+[32m +[m
+[32m +import java.util.ArrayList;[m
+[32m +import java.util.HashMap;[m
+[32m +import java.util.List;[m
+[32m +import java.util.Map;[m
+[32m +import java.util.Random;[m
+[32m +[m
+[32m +import org.bukkit.ChatColor;[m
+[32m +import org.bukkit.Location;[m
+[32m +import org.bukkit.Material;[m
+[32m +import org.bukkit.World;[m
+[32m +import org.bukkit.block.Block;[m
+[32m +import org.bukkit.block.BlockFace;[m
+[32m +import org.bukkit.command.Command;[m
+[32m +import org.bukkit.command.CommandSender;[m
+[32m +import org.bukkit.entity.Player;[m
+[32m +import org.bukkit.inventory.ItemStack;[m
+[32m +import org.bukkit.inventory.meta.ItemMeta;[m
+[32m +import org.bukkit.plugin.java.JavaPlugin;[m
+[32m +import org.bukkit.util.BlockIterator;[m
+[32m +import org.bukkit.util.Vector;[m
+[32m +[m
+[32m +import com.goldrushmc.bukkit.defaults.BlockFinder;[m
+[32m +import com.goldrushmc.bukkit.defaults.CommandDefault;[m
+[32m +import com.goldrushmc.bukkit.main.Main;[m
+[32m +import com.goldrushmc.bukkit.train.exceptions.MarkerNumberException;[m
+[32m +[m
+[32m +public class MineCommands  extends CommandDefault {[m
+[32m +	[m
+[32m +	public static Map<Player, List<Integer>> mineSize = new HashMap<Player, List<Integer>>();[m
+[32m +	public static Map<Player, List<blockBackup>> backList = new HashMap<Player, List<blockBackup>>();[m
+[32m +	public static Map<Player, String> nameList = new HashMap<Player, String>();[m
+[32m +[m
+[32m +	public MineCommands(JavaPlugin plugin) {[m
+[32m +		super(plugin);[m
+[32m +	}[m
+[32m +[m
+[32m +	@Override[m
+[32m +	public boolean onCommand(CommandSender sender, Command cmd, String label,[m
+[32m +			String[] args) {[m
+[32m +		[m
+[32m +		Player p = (Player) sender;[m
+[32m +[m
+[32m +		if(cmd.getName().equalsIgnoreCase("mine")){ // command label[m
+[32m +			if (p instanceof Player){ // instance of player - checks if player[m
+[32m +				if (args.length > 0){[m
+[32m +					if (args[0].equalsIgnoreCase("create")){[m
+[32m +							if(args.length == 2){[m
+[32m +								try{[m
+[32m +									p.sendMessage("Created mine outline");[m
+[32m +									p.sendMessage("Type " + ChatColor.GREEN + "/mine confirm " + [m
+[32m +										ChatColor.WHITE + "to create the mine, " +[m
+[32m +										ChatColor.RED + "/mine cancel " + ChatColor.WHITE + "to start again.");[m
+[32m +									makeMarkers(p.getWorld(), p, Material.WOOL); //makes a wool outline of the area selected[m
+[32m +									nameList.put(p, args[1]);[m
+[32m +									return true;[m
+[32m +								} catch(Exception ex) {[m
+[32m +									p.sendMessage(ChatColor.RED + "Invalid Paramters!");[m
+[32m +									return false;[m
+[32m +								}[m
+[32m +							} else {[m
+[32m +								p.sendMessage(ChatColor.RED + "Missing mine name!");[m
+[32m +								return false;[m
+[32m +							}[m
+[32m +					} else if (args[0].equalsIgnoreCase("tool")){ [m
+[32m +						[m
+[32m +						ItemStack panningTool= new ItemStack(Material.CLAY_BALL);[m
+[32m +						List<String> lore = new ArrayList<String>();[m
+[32m +						lore.add("Right click to denote start of mine");[m
+[32m +						ItemMeta meta = panningTool.getItemMeta();[m
+[32m +						meta.setLore(lore);[m
+[32m +						meta.setDisplayName("Mine Creator");[m
+[32m +						panningTool.setItemMeta(meta);[m
+[32m +						p.getInventory().addItem(panningTool);[m
+[32m +						return true;[m
+[32m +						[m
+[32m +					} else if (args[0].equalsIgnoreCase("confirm")){ [m
+[32m +						Location loc1 = MineLis.mineMin.get(p).toLocation(p.getWorld());[m
+[32m +						p.sendMessage(String.valueOf(loc1.getBlockY()));[m
+[32m +						Location loc2 = MineLis.mineMax.get(p).toLocation(p.getWorld());[m
+[32m +						p.sendMessage(String.valueOf(loc2.getBlockY()));[m
+[32m +						[m
+[32m +						List<Location> locList = new ArrayList<Location>();[m
+[32m +						locList.add(loc1);[m
+[32m +						locList.add(loc2);[m
+[32m +						if(nameList.containsKey(p)) {[m
+[32m +							try {[m
+[32m +								Mine newMine = new Mine(nameList.get(p), p.getWorld(), [m
+[32m +										locList, plugin, MineLis.mineLoc.get(p).toVector(), 2, false);[m
+[32m +							} catch (MarkerNumberException e) {[m
+[32m +								plugin.getLogger().info("GOLDRUSHMC: MarkerNumberException creating mine");[m
+[32m +							}[m
+[32m +							[m
+[32m +							SaveMines saveMines = new SaveMines(plugin);[m
+[32m +							int count = 0;[m
+[32m +							Boolean save = false;[m
+[32m +							while(!save) {[m
+[32m +								save = saveMines.save();[m
+[32m +								count++;[m
+[32m +								if(count==5) { [m
+[32m +									plugin.getLogger().info("GOLDRUSHMC: Could not save mines after 5 retrys!");[m
+[32m +									save = true;[m
+[32m +								}[m
+[32m +							}[m
+[32m +						}[m
+[32m +												[m
+[32m +						return true;[m
+[32m +					} else if (args[0].equalsIgnoreCase("load")){[m
+[32m +						if(args.length == 2){[m
+[32m +							int i = 0;[m
+[32m +							for(Mine mine : Mine.getMines()) {[m
+[32m +								p.sendMessage(mine.name);[m
+[32m +								if(mine.name == args[1]) {[m
+[32m +									LoadMines loadMines = new LoadMines(plugin, plugin);[m
+[32m +									for(Mine mine2 :loadMines.parseMinesStrings()) {[m
+[32m +										p.sendMessage(mine2.name);[m
+[32m +										if(mine.name == mine2.name) {[m
+[32m +											[m
+[32m +										}[m
+[32m +									}[m
+[32m +								}[m
+[32m +								i++;[m
+[32m +							}[m
+[32m +							[m
+[32m +							return true;[m
+[32m +						} else {[m
+[32m +							return false;[m
+[32m +						}[m
+[32m +					} else if (args[0].equalsIgnoreCase("cancel")){ [m
+[32m +						undoMarkers(p.getWorld(), p); //undoes the placement of wool outline[m
+[32m +						return true;[m
+[32m +					} else {[m
+[32m +						p.sendMessage("Not a valid command!");[m
+[32m +						return false;[m
+[32m +					}[m
+[32m +				} else {[m
+[32m +					return false;[m
+[32m +				}[m
+[32m +			} else {[m
+[32m +				return false;[m
+[32m +			}[m
+[32m +		} else {[m
+[32m +		return false;[m
+[32m +		}[m
+[32m +	}[m
+[32m +	[m
+[32m +	private void makeMarkers(World w, Player p, Material m) {[m
+[32m +		[m
+[32m +		int maxx = MineLis.mineMax.get(p).getBlockX();[m
+[32m +		int minx = MineLis.mineMin.get(p).getBlockX();[m
+[32m +		int maxz = MineLis.mineMax.get(p).getBlockZ();[m
+[32m +		int minz = MineLis.mineMin.get(p).getBlockZ();[m
+[32m +		int maxy = MineLis.mineMax.get(p).getBlockY();[m
+[32m +		int miny = MineLis.mineMin.get(p).getBlockY();[m
+[32m +		[m
+[32m +		//Backup array[m
+[32m +		List<blockBackup> temp = new ArrayList<blockBackup>();[m
+[32m +		[m
+[32m +		//if(backList.containsKey(p)){[m
+[32m +			//if(backList.get(p).size() > 0) {[m
+[32m +				//undoMarkers(w, p);[m
+[32m +			//}[m
+[32m +		//}[m
+[32m +		[m
+[32m +		//loops to only fill the edges of the cube[m
+[32m +		backList.remove(p);[m
+[32m +		for(int x = minx; x <= maxx; x++) {[m
+[32m +			for(int z = minz; z <= maxz; z++) {[m
+[32m +				for(int y = miny; y <= maxy; y++) {[m
+[32m +					if(x == minx && y == miny){[m
+[32m +						temp.add(new blockBackup(new Location(w, x, y, z), w.getBlockAt(x, y, z).getType()));[m
+[32m +						w.getBlockAt(x, y, z).setType(m);[m
+[32m +					} else if(x == maxx && y == maxy){[m
+[32m +						temp.add(new blockBackup(new Location(w, x, y, z), w.getBlockAt(x, y, z).getType()));[m
+[32m +						w.getBlockAt(x, y, z).setType(m);[m
+[32m +					} else if(x == maxx && y == miny){[m
+[32m +						temp.add(new blockBackup(new Location(w, x, y, z), w.getBlockAt(x, y, z).getType()));[m
+[32m +						w.getBlockAt(x, y, z).setType(m);[m
+[32m +					} else if(x == minx && y == maxy){[m
+[32m +						temp.add(new blockBackup(new Location(w, x, y, z), w.getBlockAt(x, y, z).getType()));[m
+[32m +						w.getBlockAt(x, y, z).setType(m);[m
+[32m +					} else if(z == minz && y == miny){[m
+[32m +						temp.add(new blockBackup(new Location(w, x, y, z), w.getBlockAt(x, y, z).getType()));[m
+[32m +						w.getBlockAt(x, y, z).setType(m);[m
+[32m +					} else if(z == maxz && y == maxy){[m
+[32m +						temp.add(new blockBackup(new Location(w, x, y, z), w.getBlockAt(x, y, z).getType()));[m
+[32m +						w.getBlockAt(x, y, z).setType(m);[m
+[32m +					} else if(z == maxz && y == miny){[m
+[32m +						temp.add(new blockBackup(new Location(w, x, y, z), w.getBlockAt(x, y, z).getType()));[m
+[32m +						w.getBlockAt(x, y, z).setType(m);[m
+[32m +					} else if(z == minz && y == maxy){[m
+[32m +						temp.add(new blockBackup(new Location(w, x, y, z), w.getBlockAt(x, y, z).getType()));[m
+[32m +						w.getBlockAt(x, y, z).setType(m);[m
+[32m +					} else if(x == minx && z == minz){[m
+[32m +						temp.add(new blockBackup(new Location(w, x, y, z), w.getBlockAt(x, y, z).getType()));[m
+[32m +						w.getBlockAt(x, y, z).setType(m);[m
+[32m +					} else if(x == maxx && z == maxz){[m
+[32m +						temp.add(new blockBackup(new Location(w, x, y, z), w.getBlockAt(x, y, z).getType()));[m
+[32m +						w.getBlockAt(x, y, z).setType(m);[m
+[32m +					} else if(x == maxx && z == minz){[m
+[32m +						temp.add(new blockBackup(new Location(w, x, y, z), w.getBlockAt(x, y, z).getType()));[m
+[32m +						w.getBlockAt(x, y, z).setType(m);[m
+[32m +					} else if(x == minx && z == maxz){[m
+[32m +						temp.add(new blockBackup(new Location(w, x, y, z), w.getBlockAt(x, y, z).getType()));[m
+[32m +						w.getBlockAt(x, y, z).setType(m);[m
+[32m +					}[m
+[32m +				}[m
+[32m +			}[m
+[32m +		}[m
+[32m +		[m
+[32m +		backList.put(p, temp);[m
+[32m +	}[m
+[32m +	[m
+[32m +	private void undoMarkers(World w, Player p) {[m
+[32m +		for(int i = 0; i < backList.get(p).size(); i++){[m
+[32m +			w.getBlockAt(backList.get(p).get(i).location).setType(backList.get(p).get(i).material);[m
+[32m +		}[m
+[32m +	}[m
+[32m +	[m
+[32m +	//class for storing the block backup data[m
+[32m +	class blockBackup {[m
+[32m +		public Location location;[m
+[32m +		public Material material;[m
+[32m +	[m
+[32m +		public blockBackup(Location loc, Material mat) {[m
+[32m +			location = loc;[m
+[32m +			material = mat;[m
+[32m +		}[m
+[32m +	}[m
+[32m +}[m
+[32m++=======[m
+[32m++package com.goldrushmc.bukkit.mines;[m
+[32m++[m
+[32m++import java.util.ArrayList;[m
+[32m++import java.util.HashMap;[m
+[32m++import java.util.List;[m
+[32m++import java.util.Map;[m
+[32m++import java.util.Random;[m
+[32m++[m
+[32m++import org.bukkit.ChatColor;[m
+[32m++import org.bukkit.Location;[m
+[32m++import org.bukkit.Material;[m
+[32m++import org.bukkit.World;[m
+[32m++import org.bukkit.block.Block;[m
+[32m++import org.bukkit.block.BlockFace;[m
+[32m++import org.bukkit.command.Command;[m
+[32m++import org.bukkit.command.CommandSender;[m
+[32m++import org.bukkit.entity.Player;[m
+[32m++import org.bukkit.inventory.ItemStack;[m
+[32m++import org.bukkit.inventory.meta.ItemMeta;[m
+[32m++import org.bukkit.plugin.java.JavaPlugin;[m
+[32m++import org.bukkit.util.BlockIterator;[m
+[32m++import org.bukkit.util.Vector;[m
+[32m++[m
+[32m++import com.goldrushmc.bukkit.defaults.BlockFinder;[m
+[32m++import com.goldrushmc.bukkit.defaults.CommandDefault;[m
+[32m++import com.goldrushmc.bukkit.main.Main;[m
+[32m++import com.goldrushmc.bukkit.train.exceptions.MarkerNumberException;[m
+[32m++[m
+[32m++public class MineCommands  extends CommandDefault {[m
+[32m++	[m
+[32m++	public static Map<Player, List<Integer>> mineSize = new HashMap<Player, List<Integer>>();[m
+[32m++	public static Map<Player, List<blockBackup>> backList = new HashMap<Player, List<blockBackup>>();[m
+[32m++	public static Map<Player, String> nameList = new HashMap<Player, String>();[m
+[32m++[m
+[32m++	public MineCommands(JavaPlugin plugin) {[m
+[32m++		super(plugin);[m
+[32m++	}[m
+[32m++[m
+[32m++	@Override[m
+[32m++	public boolean onCommand(CommandSender sender, Command cmd, String label,[m
+[32m++			String[] args) {[m
+[32m++		[m
+[32m++		Player p = (Player) sender;[m
+[32m++[m
+[32m++		if(cmd.getName().equalsIgnoreCase("mine")){ // command label[m
+[32m++			if (p instanceof Player){ // instance of player - checks if player[m
+[32m++				if (args.length > 0){[m
+[32m++					if (args[0].equalsIgnoreCase("create")){[m
+[32m++							if(args.length == 2){[m
+[32m++								try{[m
+[32m++									p.sendMessage("Created mine outline");[m
+[32m++									p.sendMessage("Type " + ChatColor.GREEN + "/mine confirm " + [m
+[32m++										ChatColor.WHITE + "to create the mine, " +[m
+[32m++										ChatColor.RED + "/mine cancel " + ChatColor.WHITE + "to start again.");[m
+[32m++									makeMarkers(p.getWorld(), p, Material.WOOL); //makes a wool outline of the area selected[m
+[32m++									nameList.put(p, args[1]);[m
+[32m++									return true;[m
+[32m++								} catch(Exception ex) {[m
+[32m++									p.sendMessage(ChatColor.RED + "Invalid Paramters!");[m
+[32m++									return false;[m
+[32m++								}[m
+[32m++							} else {[m
+[32m++								p.sendMessage(ChatColor.RED + "Missing mine name!");[m
+[32m++								return false;[m
+[32m++							}[m
+[32m++					} else if (args[0].equalsIgnoreCase("tool")){ [m
+[32m++						[m
+[32m++						ItemStack panningTool= new ItemStack(Material.CLAY_BALL);[m
+[32m++						List<String> lore = new ArrayList<String>();[m
+[32m++						lore.add("Right click to denote start of mine");[m
+[32m++						ItemMeta meta = panningTool.getItemMeta();[m
+[32m++						meta.setLore(lore);[m
+[32m++						meta.setDisplayName("Mine Creator");[m
+[32m++						panningTool.setItemMeta(meta);[m
+[32m++						p.getInventory().addItem(panningTool);[m
+[32m++						return true;[m
+[32m++						[m
+[32m++					} else if (args[0].equalsIgnoreCase("confirm")){ [m
+[32m++						Location loc1 = MineLis.mineMin.get(p).toLocation(p.getWorld());[m
+[32m++						p.sendMessage(String.valueOf(loc1.getBlockY()));[m
+[32m++						Location loc2 = MineLis.mineMax.get(p).toLocation(p.getWorld());[m
+[32m++						p.sendMessage(String.valueOf(loc2.getBlockY()));[m
+[32m++						[m
+[32m++						List<Location> locList = new ArrayList<Location>();[m
+[32m++						locList.add(loc1);[m
+[32m++						locList.add(loc2);[m
+[32m++						if(nameList.containsKey(p)) {[m
+[32m++							try {[m
+[32m++								Mine newMine = new Mine(nameList.get(p), p.getWorld(), [m
+[32m++										locList, plugin, MineLis.mineLoc.get(p).toVector(), 2, false);[m
+[32m++							} catch (MarkerNumberException e) {[m
+[32m++								plugin.getLogger().info("GOLDRUSHMC: MarkerNumberException creating mine");[m
+[32m++							}[m
+[32m++							[m
+[32m++							SaveMines saveMines = new SaveMines(plugin);[m
+[32m++							int count = 0;[m
+[32m++							Boolean save = false;[m
+[32m++							while(!save) {[m
+[32m++								save = saveMines.save();[m
+[32m++								count++;[m
+[32m++								if(count==5) { [m
+[32m++									plugin.getLogger().info("GOLDRUSHMC: Could not save mines after 5 retrys!");[m
+[32m++									save = true;[m
+[32m++								}[m
+[32m++							}[m
+[32m++						}[m
+[32m++												[m
+[32m++						return true;[m
+[32m++					} else if (args[0].equalsIgnoreCase("load")){[m
+[32m++						if(args.length == 2){[m
+[32m++							int i = 0;[m
+[32m++							for(Mine mine : Main.mineList) {[m
+[32m++								p.sendMessage(mine.name);[m
+[32m++								if(mine.name == args[1]) {[m
+[32m++									LoadMines loadMines = new LoadMines(plugin, plugin);[m
+[32m++									for(Mine mine2 :loadMines.parseMinesStrings()) {[m
+[32m++										p.sendMessage(mine2.name);[m
+[32m++										if(mine.name == mine2.name) {[m
+[32m++											Main.mineList.set(i, mine2);[m
+[32m++										}[m
+[32m++									}[m
+[32m++								}[m
+[32m++								i++;[m
+[32m++							}[m
+[32m++							[m
+[32m++							return true;[m
+[32m++						} else {[m
+[32m++							return false;[m
+[32m++						}[m
+[32m++					} else if (args[0].equalsIgnoreCase("cancel")){ [m
+[32m++						undoMarkers(p.getWorld(), p); //undoes the placement of wool outline[m
+[32m++						return true;[m
+[32m++					} else {[m
+[32m++						p.sendMessage("Not a valid command!");[m
+[32m++						return false;[m
+[32m++					}[m
+[32m++				} else {[m
+[32m++					return false;[m
+[32m++				}[m
+[32m++			} else {[m
+[32m++				return false;[m
+[32m++			}[m
+[32m++		} else {[m
+[32m++		return false;[m
+[32m++		}[m
+[32m++	}[m
+[32m++	[m
+[32m++	private void makeMarkers(World w, Player p, Material m) {[m
+[32m++		[m
+[32m++		int maxx = MineLis.mineMax.get(p).getBlockX();[m
+[32m++		int minx = MineLis.mineMin.get(p).getBlockX();[m
+[32m++		int maxz = MineLis.mineMax.get(p).getBlockZ();[m
+[32m++		int minz = MineLis.mineMin.get(p).getBlockZ();[m
+[32m++		int maxy = MineLis.mineMax.get(p).getBlockY();[m
+[32m++		int miny = MineLis.mineMin.get(p).getBlockY();[m
+[32m++		[m
+[32m++		//Backup array[m
+[32m++		List<blockBackup> temp = new ArrayList<blockBackup>();[m
+[32m++		[m
+[32m++		//if(backList.containsKey(p)){[m
+[32m++			//if(backList.get(p).size() > 0) {[m
+[32m++				//undoMarkers(w, p);[m
+[32m++			//}[m
+[32m++		//}[m
+[32m++		[m
+[32m++		//loops to only fill the edges of the cube[m
+[32m++		backList.remove(p);[m
+[32m++		for(int x = minx; x <= maxx; x++) {[m
+[32m++			for(int z = minz; z <= maxz; z++) {[m
+[32m++				for(int y = miny; y <= maxy; y++) {[m
+[32m++					if(x == minx && y == miny){[m
+[32m++						temp.add(new blockBackup(new Location(w, x, y, z), w.getBlockAt(x, y, z).getType()));[m
+[32m++						w.getBlockAt(x, y, z).setType(m);[m
+[32m++					} else if(x == maxx && y == maxy){[m
+[32m++						temp.add(new blockBackup(new Location(w, x, y, z), w.getBlockAt(x, y, z).getType()));[m
+[32m++						w.getBlockAt(x, y, z).setType(m);[m
+[32m++					} else if(x == maxx && y == miny){[m
+[32m++						temp.add(new blockBackup(new Location(w, x, y, z), w.getBlockAt(x, y, z).getType()));[m
+[32m++						w.getBlockAt(x, y, z).setType(m);[m
+[32m++					} else if(x == minx && y == maxy){[m
+[32m++						temp.add(new blockBackup(new Location(w, x, y, z), w.getBlockAt(x, y, z).getType()));[m
+[32m++						w.getBlockAt(x, y, z).setType(m);[m
+[32m++					} else if(z == minz && y == miny){[m
+[32m++						temp.add(new blockBackup(new Location(w, x, y, z), w.getBlockAt(x, y, z).getType()));[m
+[32m++						w.getBlockAt(x, y, z).setType(m);[m
+[32m++					} else if(z == maxz && y == maxy){[m
+[32m++						temp.add(new blockBackup(new Location(w, x, y, z), w.getBlockAt(x, y, z).getType()));[m
+[32m++						w.getBlockAt(x, y, z).setType(m);[m
+[32m++					} else if(z == maxz && y == miny){[m
+[32m++						temp.add(new blockBackup(new Location(w, x, y, z), w.getBlockAt(x, y, z).getType()));[m
+[32m++						w.getBlockAt(x, y, z).setType(m);[m
+[32m++					} else if(z == minz && y == maxy){[m
+[32m++						temp.add(new blockBackup(new Location(w, x, y, z), w.getBlockAt(x, y, z).getType()));[m
+[32m++						w.getBlockAt(x, y, z).setType(m);[m
+[32m++					} else if(x == minx && z == minz){[m
+[32m++						temp.add(new blockBackup(new Location(w, x, y, z), w.getBlockAt(x, y, z).getType()));[m
+[32m++						w.getBlockAt(x, y, z).setType(m);[m
+[32m++					} else if(x == maxx && z == maxz){[m
+[32m++						temp.add(new blockBackup(new Location(w, x, y, z), w.getBlockAt(x, y, z).getType()));[m
+[32m++						w.getBlockAt(x, y, z).setType(m);[m
+[32m++					} else if(x == maxx && z == minz){[m
+[32m++						temp.add(new blockBackup(new Location(w, x, y, z), w.getBlockAt(x, y, z).getType()));[m
+[32m++						w.getBlockAt(x, y, z).setType(m);[m
+[32m++					} else if(x == minx && z == maxz){[m
+[32m++						temp.add(new blockBackup(new Location(w, x, y, z), w.getBlockAt(x, y, z).getType()));[m
+[32m++						w.getBlockAt(x, y, z).setType(m);[m
+[32m++					}[m
+[32m++				}[m
+[32m++			}[m
+[32m++		}[m
+[32m++		[m
+[32m++		backList.put(p, temp);[m
+[32m++	}[m
+[32m++	[m
+[32m++	private void undoMarkers(World w, Player p) {[m
+[32m++		for(int i = 0; i < backList.get(p).size(); i++){[m
+[32m++			w.getBlockAt(backList.get(p).get(i).location).setType(backList.get(p).get(i).material);[m
+[32m++		}[m
+[32m++	}[m
+[32m++	[m
+[32m++	//class for storing the block backup data[m
+[32m++	class blockBackup {[m
+[32m++		public Location location;[m
+[32m++		public Material material;[m
+[32m++	[m
+[32m++		public blockBackup(Location loc, Material mat) {[m
+[32m++			location = loc;[m
+[32m++			material = mat;[m
+[32m++		}[m
+[32m++	}[m
+[32m++}[m
+[32m++>>>>>>> 257bbab534d278b0a66ed7c032c85252b06c98f2[m
+[1mdiff --cc src/main/java/com/goldrushmc/bukkit/mines/SaveMines.java[m
+[1mindex 85714e4,49dd3d7..0000000[m
+[1m--- a/src/main/java/com/goldrushmc/bukkit/mines/SaveMines.java[m
+[1m+++ b/src/main/java/com/goldrushmc/bukkit/mines/SaveMines.java[m
+[36m@@@ -1,66 -1,68 +1,137 @@@[m
+[31m -package com.goldrushmc.bukkit.mines;[m
+[31m -[m
+[31m -import java.io.BufferedWriter;[m
+[31m -import java.io.File;[m
+[31m -import java.io.FileWriter;[m
+[31m -import java.io.IOException;[m
+[31m -import java.util.List;[m
+[31m -[m
+[31m -import org.bukkit.plugin.Plugin;[m
+[31m -[m
+[31m -import com.goldrushmc.bukkit.main.Main;[m
+[31m -[m
+[31m -public class SaveMines {[m
+[31m -	[m
+[31m -	File file;[m
+[31m -	List<Mine> mineList;[m
+[31m -	Plugin p;[m
+[31m -	[m
+[31m -	public SaveMines(Plugin p) {[m
+[31m -		file = new File(p.getDataFolder(), "mines.txt");[m
+[31m -		this.mineList = Mine.getMines();[m
+[31m -		this.p = p;[m
+[31m -	}[m
+[31m -	[m
+[31m -	public Boolean save() {[m
+[31m -		try {[m
+[31m -			if(!mineList.isEmpty()) {[m
+[31m -			p.getLogger().info("GOLDRUSHMC: Attempting to save mines.");[m
+[31m -			file.createNewFile();[m
+[31m -			BufferedWriter out = new BufferedWriter(new FileWriter(file));[m
+[31m -			int count = 0;[m
+[31m -			[m
+[31m -			for(Mine mine : mineList) {[m
+[31m -				String name = mine.name;[m
+[31m -				String world = mine.w.getName();[m
+[31m -				String gened = mine.isGenerated.toString();[m
+[31m -				String loc1 = mine.selectedArea.get(0).getX()[m
+[31m -						+ "," +mine.selectedArea.get(0).getY()[m
+[31m -						+ "," + mine.selectedArea.get(0).getZ();[m
+[31m -				String loc2 = mine.selectedArea.get(1).getX()[m
+[31m -						+ "," +mine.selectedArea.get(1).getY()[m
+[31m -						+ "," + mine.selectedArea.get(1).getZ();[m
+[31m -				String vec = mine.mineEntrance.getBlockX()[m
+[31m -						+ "," + mine.mineEntrance.getBlockY()[m
+[31m -						+ "," + mine.mineEntrance.getBlockZ();[m
+[31m -				out.write(name + ":"[m
+[31m -						+ world + ":"[m
+[31m -						+ loc1 + ":"[m
+[31m -						+ loc2 + ":"[m
+[31m -						+ vec + ":"[m
+[31m -						+ mine.density + ":"[m
+[31m -						+ gened);[m
+[31m -				out.newLine();[m
+[31m -				count++;[m
+[31m -			}[m
+[31m -			p.getLogger().info("GOLDRUSHMC: Successfully saved all " + count + " mines!");[m
+[31m -			out.close();[m
+[31m -			}[m
+[31m -			return true;			[m
+[31m -		} catch (IOException e) {[m
+[31m -			p.getLogger().info("GOLDRUSHMC: error saving mines to file, trying again.");[m
+[31m -			return false;[m
+[31m -		} catch (Exception e) {[m
+[31m -			p.getLogger().info("No mines to save");[m
+[31m -			return true;[m
+[31m -		}[m
+[31m -	}[m
+[31m -}[m
+[32m++<<<<<<< HEAD[m
+[32m +package com.goldrushmc.bukkit.mines;[m
+[32m +[m
+[32m +import java.io.BufferedWriter;[m
+[32m +import java.io.File;[m
+[32m +import java.io.FileWriter;[m
+[32m +import java.io.IOException;[m
+[32m +import java.util.List;[m
+[32m +[m
+[32m +import org.bukkit.plugin.Plugin;[m
+[32m +[m
+[32m +public class SaveMines {[m
+[32m +	[m
+[32m +	File file;[m
+[32m +	List<Mine> mineList;[m
+[32m +	Plugin p;[m
+[32m +	[m
+[32m +	public SaveMines(Plugin p) {[m
+[32m +		file = new File(p.getDataFolder(), "mines.txt");[m
+[32m +		this.mineList = Mine.getMines();[m
+[32m +		this.p = p;[m
+[32m +	}[m
+[32m +	[m
+[32m +	public Boolean save() {[m
+[32m +		try {[m
+[32m +			if(!mineList.isEmpty()) {[m
+[32m +			p.getLogger().info("GOLDRUSHMC: Attempting to save mines.");[m
+[32m +			file.createNewFile();[m
+[32m +			BufferedWriter out = new BufferedWriter(new FileWriter(file));[m
+[32m +			int count = 0;[m
+[32m +			[m
+[32m +			for(Mine mine : this.mineList) {[m
+[32m +				String name = mine.name;[m
+[32m +				String world = mine.w.getName();[m
+[32m +				String gened = mine.isGenerated.toString();[m
+[32m +				String loc1 = mine.selectedArea.get(0).getX()[m
+[32m +						+ "," +mine.selectedArea.get(0).getY()[m
+[32m +						+ "," + mine.selectedArea.get(0).getZ();[m
+[32m +				String loc2 = mine.selectedArea.get(1).getX()[m
+[32m +						+ "," +mine.selectedArea.get(1).getY()[m
+[32m +						+ "," + mine.selectedArea.get(1).getZ();[m
+[32m +				String vec = mine.mineEntrance.getBlockX()[m
+[32m +						+ "," + mine.mineEntrance.getBlockY()[m
+[32m +						+ "," + mine.mineEntrance.getBlockZ();[m
+[32m +				out.write(name + ":"[m
+[32m +						+ world + ":"[m
+[32m +						+ loc1 + ":"[m
+[32m +						+ loc2 + ":"[m
+[32m +						+ vec + ":"[m
+[32m +						+ mine.density + ":"[m
+[32m +						+ gened);[m
+[32m +				out.newLine();[m
+[32m +				count++;[m
+[32m +			}[m
+[32m +			p.getLogger().info("GOLDRUSHMC: Successfully saved all " + count + " mines!");[m
+[32m +			out.close();[m
+[32m +			}[m
+[32m +			return true;			[m
+[32m +		} catch (IOException e) {[m
+[32m +			p.getLogger().info("GOLDRUSHMC: error saving mines to file, trying again.");[m
+[32m +			return false;[m
+[32m +		} catch (Exception e) {[m
+[32m +			p.getLogger().info("No mines to save");[m
+[32m +			return true;[m
+[32m +		}[m
+[32m +	}[m
+[32m +}[m
+[32m++=======[m
+[32m++package com.goldrushmc.bukkit.mines;[m
+[32m++[m
+[32m++import java.io.BufferedWriter;[m
+[32m++import java.io.File;[m
+[32m++import java.io.FileWriter;[m
+[32m++import java.io.IOException;[m
+[32m++import java.util.List;[m
+[32m++[m
+[32m++import org.bukkit.plugin.Plugin;[m
+[32m++[m
+[32m++import com.goldrushmc.bukkit.main.Main;[m
+[32m++[m
+[32m++public class SaveMines {[m
+[32m++	[m
+[32m++	File file;[m
+[32m++	List<Mine> mineList;[m
+[32m++	Plugin p;[m
+[32m++	[m
+[32m++	public SaveMines(Plugin p) {[m
+[32m++		file = new File(p.getDataFolder(), "mines.txt");[m
+[32m++		this.mineList = Mine.getMines();[m
+[32m++		this.p = p;[m
+[32m++	}[m
+[32m++	[m
+[32m++	public Boolean save() {[m
+[32m++		try {[m
+[32m++			if(!mineList.isEmpty()) {[m
+[32m++			p.getLogger().info("GOLDRUSHMC: Attempting to save mines.");[m
+[32m++			file.createNewFile();[m
+[32m++			BufferedWriter out = new BufferedWriter(new FileWriter(file));[m
+[32m++			int count = 0;[m
+[32m++			[m
+[32m++			for(Mine mine : mineList) {[m
+[32m++				String name = mine.name;[m
+[32m++				String world = mine.w.getName();[m
+[32m++				String gened = mine.isGenerated.toString();[m
+[32m++				String loc1 = mine.selectedArea.get(0).getX()[m
+[32m++						+ "," +mine.selectedArea.get(0).getY()[m
+[32m++						+ "," + mine.selectedArea.get(0).getZ();[m
+[32m++				String loc2 = mine.selectedArea.get(1).getX()[m
+[32m++						+ "," +mine.selectedArea.get(1).getY()[m
+[32m++						+ "," + mine.selectedArea.get(1).getZ();[m
+[32m++				String vec = mine.mineEntrance.getBlockX()[m
+[32m++						+ "," + mine.mineEntrance.getBlockY()[m
+[32m++						+ "," + mine.mineEntrance.getBlockZ();[m
+[32m++				out.write(name + ":"[m
+[32m++						+ world + ":"[m
+[32m++						+ loc1 + ":"[m
+[32m++						+ loc2 + ":"[m
+[32m++						+ vec + ":"[m
+[32m++						+ mine.density + ":"[m
+[32m++						+ gened);[m
+[32m++				out.newLine();[m
+[32m++				count++;[m
+[32m++			}[m
+[32m++			p.getLogger().info("GOLDRUSHMC: Successfully saved all " + count + " mines!");[m
+[32m++			out.close();[m
+[32m++			}[m
+[32m++			return true;			[m
+[32m++		} catch (IOException e) {[m
+[32m++			p.getLogger().info("GOLDRUSHMC: error saving mines to file, trying again.");[m
+[32m++			return false;[m
+[32m++		} catch (Exception e) {[m
+[32m++			p.getLogger().info("No mines to save");[m
+[32m++			return true;[m
+[32m++		}[m
+[32m++	}[m
+[32m++}[m
+[32m++>>>>>>> 257bbab534d278b0a66ed7c032c85252b06c98f2[m
+warning: LF will be replaced by CRLF in src/main/java/com/goldrushmc/bukkit/main/Main.java.
+The file will have its original line endings in your working directory.
+warning: LF will be replaced by CRLF in src/main/java/com/goldrushmc/bukkit/mines/Mine.java.
+The file will have its original line endings in your working directory.
+warning: LF will be replaced by CRLF in src/main/java/com/goldrushmc/bukkit/mines/MineCommands.java.
+The file will have its original line endings in your working directory.
+warning: LF will be replaced by CRLF in src/main/java/com/goldrushmc/bukkit/mines/SaveMines.java.
+The file will have its original line endings in your working directory.
