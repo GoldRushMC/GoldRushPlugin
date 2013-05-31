@@ -54,9 +54,9 @@ public class SettingsManager {
 			config.addDefault("world", "world");
 			
 			//Configure default train station schedule times
-			config.addDefault("station.times.public", 200);
-			config.addDefault("station.times.transport", 500);
-			config.addDefault("station.times.hub", 800);
+			config.addDefault("station.times.public", 2);
+			config.addDefault("station.times.transport", 5);
+			config.addDefault("station.times.hub", 8);
 			
 			saveConfig();
 

@@ -26,7 +26,6 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import com.bergerkiller.bukkit.tc.controller.MinecartGroup;
 import com.bergerkiller.bukkit.tc.controller.MinecartMember;
-import com.bergerkiller.bukkit.tc.controller.type.MinecartMemberChest;
 import com.bergerkiller.bukkit.tc.controller.type.MinecartMemberFurnace;
 import com.bergerkiller.bukkit.tc.controller.type.MinecartMemberRideable;
 import com.bergerkiller.bukkit.tc.events.MemberBlockChangeEvent;
@@ -53,15 +52,16 @@ public class PublicTrainStation extends TrainStation {
 
 		this.stopMat = defaultStop;
 		this.stopBlocks = findStopBlocks(this.stopMat);
+		this.directions = new ArrayList<BlockFace>();
+		if(this.stopBlocks.get(0).getData() == 0) { this.directions.add(BlockFace.NORTH); this.directions.add(BlockFace.SOUTH); }
+		else if(this.stopBlocks.get(0).getData() == 1) { this.directions.add(BlockFace.EAST); this.directions.add(BlockFace.WEST); }
 		for(Block b : this.stopBlocks) {
-			if(b.getRelative(this.direction).getRelative(BlockFace.DOWN).getType().equals(this.stopMat) 
-					&& b.getRelative(this.direction.getOppositeFace()).getRelative(BlockFace.DOWN).getType().equals(this.stopMat)) {
+			if(this.stopBlocks.contains(b.getRelative(this.directions.get(0))) 
+			&& this.stopBlocks.contains(b.getRelative(this.directions.get(1)))) {
 				this.mainStop = b;
 				break;
 			}
 		}
-		//Default to the first Block in the list of stopBlocks.
-		if(this.mainStop == null) this.mainStop = this.stopBlocks.get(0);
 		if(train) {
 			if(this.rails != null) {
 				if(this.stopBlocks.size() > maxStopBlocks) throw new StopBlockMismatchException();
@@ -76,15 +76,16 @@ public class PublicTrainStation extends TrainStation {
 
 		this.stopMat = stopMat;
 		this.stopBlocks = findStopBlocks(stopMat);
+		this.directions = new ArrayList<BlockFace>();
+		if(this.stopBlocks.get(0).getData() == 0) { this.directions.add(BlockFace.NORTH); this.directions.add(BlockFace.SOUTH); }
+		else if(this.stopBlocks.get(0).getData() == 1) { this.directions.add(BlockFace.EAST); this.directions.add(BlockFace.WEST); }
 		for(Block b : this.stopBlocks) {
-			if(b.getRelative(this.direction).getRelative(BlockFace.DOWN).getType().equals(stopMat) 
-					&& b.getRelative(this.direction.getOppositeFace()).getRelative(BlockFace.DOWN).getType().equals(stopMat)) {
+			if(this.stopBlocks.contains(b.getRelative(this.directions.get(0))) 
+			&& this.stopBlocks.contains(b.getRelative(this.directions.get(1)))) {
 				this.mainStop = b;
 				break;
 			}
 		}
-		//Default to the first Block in the list of stopBlocks.
-		if(this.mainStop == null) this.mainStop = this.stopBlocks.get(0);
 		if(train) {
 			if(this.rails != null) {
 				if(this.stopBlocks.size() > maxStopBlocks) throw new StopBlockMismatchException();
@@ -103,7 +104,7 @@ public class PublicTrainStation extends TrainStation {
 	public boolean buyCart(Player owner, EntityType type) {
 		if(!type.equals(EntityType.MINECART)) return false;
 		if(this.departingTrain == null) { owner.sendMessage("There is currently no train available to buy from. "); return false; }
-		
+
 		//The boolean success will be set true if a minecart is actually bought.
 		boolean success = false;
 		for(MinecartMember<?> cart : this.departingTrain) {
@@ -137,8 +138,8 @@ public class PublicTrainStation extends TrainStation {
 	@Override
 	public boolean sellCart(Player owner, EntityType type) {
 		if(!type.equals(EntityType.MINECART)) return false;
-		if(this.departingTrain == null) { owner.sendMessage("There is currently no train available to buy from. "); return false; }
-		
+		if(this.departingTrain == null) { owner.sendMessage("There is currently no train available to sell from. "); return false; }
+
 		//The boolean success will be set true if a minecart is actually bought.
 		boolean success = false;
 		for(MinecartMember<?> cart : this.departingTrain) {
@@ -168,6 +169,9 @@ public class PublicTrainStation extends TrainStation {
 		return false;
 	}
 
+	/**
+	 * Will generate a Public Transportation type train. All rideable minecarts.
+	 */
 	public void createTransport() {
 
 		if(this.trains == null) this.trains = new ArrayList<MinecartGroup>();
@@ -175,7 +179,7 @@ public class PublicTrainStation extends TrainStation {
 
 		List<EntityType> carts = new ArrayList<EntityType>();
 		SmallBlockMap sbm = new SmallBlockMap(this.mainStop);
-		BlockFace dir = this.direction.getOppositeFace();
+		BlockFace dir = this.directions.get(0).getOppositeFace(); //TODO
 		//Iterate to get the max size of minecarts, or just short of it if the rails end.
 		int i = 0;
 		while(!sbm.isEnd() || i < 14) {
@@ -187,18 +191,9 @@ public class PublicTrainStation extends TrainStation {
 			i++;
 		}
 		carts.add(EntityType.MINECART_FURNACE);
-		
+
 		//Should make the furnace spawn right on top of the stop block.
-		MinecartGroup train = MinecartGroup.spawn(this.mainStop, this.direction.getOppositeFace(), carts);
-		for(MinecartMember<?> mm : train) {
-			if(mm instanceof MinecartMemberChest) {
-				//				ItemStack coal = new ItemStack(Material.COAL, 64);
-				//				MinecartMemberChest coalChest = (MinecartMemberChest) mm;
-				//			coalChest.getEntity().getInventory().addItem(new ItemStack[]{coal, coal, coal, coal, coal, coal});			
-			}
-			if(mm instanceof MinecartMemberFurnace) {
-			}
-		}
+		MinecartGroup train = MinecartGroup.spawn(this.mainStop, this.directions.get(0).getOppositeFace(), carts); //TODO
 
 		TrainProperties tp = train.getProperties();
 		tp.setName(stationName + "_" + trainNum);
@@ -213,7 +208,8 @@ public class PublicTrainStation extends TrainStation {
 		this.addTrain(train);
 		if(this.departingTrain == null) this.departingTrain = train;
 		this.changeSignLogic(train.getProperties().getTrainName());
-		this.updateCartsAvailable(train, EntityType.MINECART_CHEST);
+		this.updateCartsAvailable(train, EntityType.MINECART);
+		this.hasStopped.put(train, true);
 	}
 
 	/**
@@ -248,23 +244,19 @@ public class PublicTrainStation extends TrainStation {
 	public boolean pushQueue() {
 		MinecartGroup mg = this.departingTrain;
 		if(mg == null) return false;
-		mg.getProperties().setSpeedLimit(0.8);
+		mg.getProperties().setSpeedLimit(0.6);
 		mg.getProperties().setColliding(false);
 		for(MinecartMember<?> mm : mg) {
 			if(mm instanceof MinecartMemberFurnace) {
 				MinecartMemberFurnace power = (MinecartMemberFurnace) mm;
 				power.addFuelTicks(1000);
-				if(!power.getDirection().equals(this.direction)) {
+				if(!power.getDirection().equals(this.directions.get(0))) { //TODO
 					mg.reverse();
 				}
 			}
 		}
 		this.trains.remove(mg);
 		this.departingTrain = null;
-		if(this.trains.isEmpty()) return true;
-		for(MinecartGroup train : this.trains) {
-			train.setForwardForce(0.4);
-		}
 		return true;
 	}
 
@@ -302,7 +294,7 @@ public class PublicTrainStation extends TrainStation {
 		if(!hasDepartingTrain()) return false;
 
 		for(MinecartMember<?> mm : this.departingTrain) {
-			if(mm instanceof MinecartMemberChest) {
+			if(mm instanceof MinecartMemberRideable) {
 				if(mm.getProperties().getOwners().isEmpty()) return true;
 			}
 		}
@@ -344,7 +336,6 @@ public class PublicTrainStation extends TrainStation {
 			TrainExitStationEvent exit = new TrainExitStationEvent(this, event.getGroup());
 			Bukkit.getServer().getPluginManager().callEvent(exit);
 		}
-
 	}
 
 	@Override

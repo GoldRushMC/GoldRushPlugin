@@ -28,22 +28,10 @@ public class CartTradeable extends Trait {
 	private TrainStation station;
 	@Persist("costPerCart") private int costOfCart = 5;
 	@Persist("markDown") private int markDown = 2;
-	private EntityType cartType = EntityType.MINECART_CHEST;
-	ItemStack gold = new ItemStack(Material.GOLD_NUGGET, 64);
+	private EntityType cartType;
 
-	/**
-	 * Every 500 ticks, update the worth of a cart.
-	 */
 	@Override
 	public void run() {
-		if(!this.npc.isSpawned()) return;
-		long current = this.getNPC().getBukkitEntity().getWorld().getTime();
-		//Every 200 ticks, update
-		if(current - gameTime == 200) {
-			gameTime = current;
-			//Put worth update here, when it is created.
-			this.costOfCart = 3;
-		}
 	}
 
 	@Override
@@ -53,6 +41,11 @@ public class CartTradeable extends Trait {
 			this.station = station;
 			Bukkit.getLogger().info(this.getNPC().getFullName() + " has join station " + this.station.getStationName());
 			hasCarts = this.station.hasCartsToSell();
+			switch(station.getType()) {
+			case DEFAULT: break;
+			case PASSENGER_TRANS: this.cartType = EntityType.MINECART; break;
+			case STORAGE_TRANS: this.cartType = EntityType.MINECART_CHEST; break;
+			}
 		}
 	}
 

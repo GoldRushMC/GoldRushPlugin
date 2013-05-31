@@ -1,8 +1,10 @@
 package com.goldrushmc.bukkit.train.station;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import net.citizensnpcs.api.CitizensAPI;
@@ -23,6 +25,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.block.Action;
+import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockDamageEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
@@ -38,7 +41,6 @@ import com.bergerkiller.bukkit.tc.controller.type.MinecartMemberFurnace;
 import com.bergerkiller.bukkit.tc.controller.type.MinecartMemberRideable;
 import com.bergerkiller.bukkit.tc.events.MemberBlockChangeEvent;
 import com.bergerkiller.bukkit.tc.properties.CartProperties;
-import com.bergerkiller.bukkit.tc.properties.TrainProperties;
 import com.goldrushmc.bukkit.db.TrainStationLocationTbl;
 import com.goldrushmc.bukkit.db.TrainStationTbl;
 import com.goldrushmc.bukkit.defaults.BlockFinder;
@@ -69,8 +71,9 @@ public abstract class TrainStation extends BlockFinder{
 
 	protected String stationName;
 	protected volatile MinecartGroup departingTrain;
+	protected volatile Map<MinecartGroup, Boolean> hasStopped = new HashMap<MinecartGroup, Boolean>();
 	protected ISignLogic signs;
-	protected final BlockFace direction;
+	protected List<BlockFace> directions;
 	protected volatile List<Player> visitors = new ArrayList<Player>();
 	protected List<NPC> workers = new ArrayList<NPC>();
 	protected final List<Block> trainArea;
@@ -98,18 +101,14 @@ public abstract class TrainStation extends BlockFinder{
 		this.trainStationBlocks = this.findNonAirBlocks();
 		this.rails = findRails();
 		this.signs = generateSignLogic();
-		Sign dir = this.signs.getSign(SignType.TRAIN_STATION_DIRECTION);
+		List<Sign> dir = this.signs.getSigns(SignType.TRAIN_STATION_DIRECTION);
 		if(dir == null) throw new MissingSignException(this.signs);
-		BlockFace tempDir = null;
-
-		if(dir != null) tempDir = TrainTools.getDirection(dir.getLine(2));
-
-		if(tempDir != null) {
-			this.direction = tempDir;	
-		}
-		else {
-			this.direction = BlockFace.SELF;
-		}
+		
+//		if(!dir.isEmpty()) {
+//			for(Sign s : dir) {
+//				tempDir.add(TrainTools.getDirection(s.getLine(2)));	
+//			}
+//		}
 	}
 
 	/**
@@ -133,17 +132,21 @@ public abstract class TrainStation extends BlockFinder{
 		this.trainStationBlocks = this.findNonAirBlocks();
 		this.rails = findRails();
 		this.signs = generateSignLogic();
-		Sign dir = this.signs.getSign(SignType.TRAIN_STATION_DIRECTION);
-		BlockFace tempDir = null;
+		List<Sign> dir = this.signs.getSigns(SignType.TRAIN_STATION_DIRECTION);
 		if(dir == null) throw new MissingSignException(this.signs);
-		if(dir != null) {
-			tempDir = TrainTools.getDirection(dir.getLine(2));
+		List<BlockFace> tempDir = new ArrayList<BlockFace>();
+		
+		if(!dir.isEmpty()) {
+			for(Sign s : dir) {
+				tempDir.add(TrainTools.getDirection(s.getLine(2)));	
+			}
 		}
-		if(tempDir != null) {
-			this.direction = tempDir;	
+
+		if(tempDir.isEmpty()) {
+			this.directions = tempDir;
 		}
 		else {
-			this.direction = BlockFace.SELF;
+			this.directions = new ArrayList<BlockFace>();
 		}
 	}
 
@@ -257,13 +260,11 @@ public abstract class TrainStation extends BlockFinder{
 	 * 
 	 * @param time
 	 */
-	public void updateDepartureTime(MinecartGroup train, long time) {
-		//If there is no departing train, set the time to N/A
-		if(train == null) this.signs.getSign(SignType.TRAIN_STATION_TIME).setLine(2, "N/A");
-		//If there is a train, set the minutes to depart.
-		else this.signs.getSign(SignType.TRAIN_STATION_TIME).setLine(2, time + " minutes");
-		//Update the sign regardless, because it needs to change.
-		this.signs.getSign(SignType.TRAIN_STATION_TIME).update();
+	public void updateDepartureTime(long time) {
+		for(Sign sign : this.signs.getSigns(SignType.TRAIN_STATION_TIME)) {
+			sign.setLine(2, time + " minutes");
+			sign.update();
+		}
 	}
 
 	/**
@@ -273,11 +274,12 @@ public abstract class TrainStation extends BlockFinder{
 	 */
 	public void updateCartsAvailable(MinecartGroup train, EntityType type) {
 		if(train == null) {
-			this.signs.getSign(SignType.TRAIN_STATION_CART_COUNT).setLine(2, "0");
-			this.signs.getSign(SignType.TRAIN_STATION_CART_COUNT).update();
+			for(Sign sign : this.signs.getSigns(SignType.TRAIN_STATION_CART_COUNT)) {
+				sign.setLine(2, "NO TRAIN");
+				sign.update();
+			}
 			return;
 		}
-		train.size(type);
 		int countAvail = 0;
 		for(MinecartMember<?> cart : train) {
 			if(cart instanceof MinecartMemberFurnace) continue;
@@ -293,40 +295,42 @@ public abstract class TrainStation extends BlockFinder{
 			default: break;
 			}
 		}
-		this.signs.getSign(SignType.TRAIN_STATION_CART_COUNT).setLine(2, String.valueOf(countAvail));
-		this.signs.getSign(SignType.TRAIN_STATION_CART_COUNT).update();
+		for(Sign sign : this.signs.getSigns(SignType.TRAIN_STATION_CART_COUNT)) {
+			sign.setLine(2, String.valueOf(countAvail));
+			sign.update();
+		}
 	}
 
-	/**
-	 * The standard train creation method. This is an optional way to create a train with one furnace and one chest cart.
-	 * 
-	 * @param stop The {@link Block} to spawn the train on.
-	 */
-	public void createBuyableTrain(Block stop) {
-
-		if(this.trains == null) this.trains = new ArrayList<MinecartGroup>();
-		int trainNum = this.trains.size() + 1;
-
-		List<EntityType> carts = new ArrayList<EntityType>();
-		carts.add(EntityType.MINECART_CHEST);
-		carts.add(EntityType.MINECART_FURNACE);
-		//Should make the furnace spawn right on top of the stop block.
-		MinecartGroup train = MinecartGroup.spawn(stop, this.direction.getOppositeFace(), carts);
-
-		TrainProperties tp = train.getProperties();
-		tp.setName(stationName + "_" + trainNum);
-		tp.setColliding(true);
-		tp.setSpeedLimit(0.4);
-		tp.setPublic(false);
-		tp.setManualMovementAllowed(false);
-		tp.setKeepChunksLoaded(true);
-		tp.setPickup(false);
-		train.setProperties(tp);
-
-		this.addTrain(train);
-		if(this.departingTrain == null) this.departingTrain = train;
-		this.changeSignLogic(train.getProperties().getTrainName());
-	}
+//	/**
+//	 * The standard train creation method. This is an optional way to create a train with one furnace and one chest cart.
+//	 * 
+//	 * @param stop The {@link Block} to spawn the train on.
+//	 */
+//	public void createBuyableTrain(Block stop) {
+//
+//		if(this.trains == null) this.trains = new ArrayList<MinecartGroup>();
+//		int trainNum = this.trains.size() + 1;
+//
+//		List<EntityType> carts = new ArrayList<EntityType>();
+//		carts.add(EntityType.MINECART_CHEST);
+//		carts.add(EntityType.MINECART_FURNACE);
+//		//Should make the furnace spawn right on top of the stop block.
+//		MinecartGroup train = MinecartGroup.spawn(stop, this.direction.getOppositeFace(), carts);
+//
+//		TrainProperties tp = train.getProperties();
+//		tp.setName(stationName + "_" + trainNum);
+//		tp.setColliding(true);
+//		tp.setSpeedLimit(0.4);
+//		tp.setPublic(false);
+//		tp.setManualMovementAllowed(false);
+//		tp.setKeepChunksLoaded(true);
+//		tp.setPickup(false);
+//		train.setProperties(tp);
+//
+//		this.addTrain(train);
+//		if(this.departingTrain == null) this.departingTrain = train;
+//		this.changeSignLogic(train.getProperties().getTrainName());
+//	}
 
 
 	/**
@@ -351,6 +355,25 @@ public abstract class TrainStation extends BlockFinder{
 	 * 
 	 */
 	protected abstract void createWorkers();
+
+	public void addTrainStopped(MinecartGroup train) {
+		this.hasStopped.put(train, true);
+	}
+
+	public void addTrainSlow(MinecartGroup train) {
+		this.hasStopped.put(train, false);
+	}
+
+	public boolean hasStopped(MinecartGroup train) {
+		if(this.hasStopped.containsKey(train)) {
+			return this.hasStopped.get(train);
+		}
+		else return false;
+	}
+
+	public void removeTrainStopped(MinecartGroup train) {
+		this.hasStopped.remove(train);
+	}
 
 	public void addVisitor(Player visitor) {
 		this.visitors.add(visitor);
@@ -387,7 +410,8 @@ public abstract class TrainStation extends BlockFinder{
 		String trainName = this.departingTrain.getProperties().getTrainName();
 		//		int trainSize = this.departingTrain.size() - 1;
 		Block toSpawn = null;
-		BlockFace dirToLook = this.direction.getOppositeFace();
+//		BlockFace dirToLook = this.direction.getOppositeFace();
+		BlockFace dirToLook = null;
 		//Make sure that we are on the right end of the train, to spawn.
 		MinecartMember<?> toJoinTo = null;
 		if(this.departingTrain.get(0) instanceof MinecartMemberFurnace) {
@@ -405,13 +429,13 @@ public abstract class TrainStation extends BlockFinder{
 		if(toSpawn == null) { owner.sendMessage("There is not enough room to spawn additonal carts."); return; }
 
 		Location fixed = toSpawn.getLocation();
-		switch(this.direction) {
-		case NORTH: fixed.setZ(fixed.getZ() + 0.75); break;
-		case SOUTH: fixed.setZ(fixed.getZ() - 0.75); break;
-		case EAST: fixed.setX(fixed.getX() - 0.75); break;
-		case WEST: fixed.setX(fixed.getX() + 0.75); break;
-		default: break;
-		}
+//		switch(this.direction) {
+//		case NORTH: fixed.setZ(fixed.getZ() + 0.75); break;
+//		case SOUTH: fixed.setZ(fixed.getZ() - 0.75); break;
+//		case EAST: fixed.setX(fixed.getX() - 0.75); break;
+//		case WEST: fixed.setX(fixed.getX() + 0.75); break;
+//		default: break;
+//		}
 
 		//Spawn the cart and join it to the train.
 		MinecartMember<?> toJoin = MinecartMemberStore.spawn(fixed, type);
@@ -557,7 +581,7 @@ public abstract class TrainStation extends BlockFinder{
 
 	public ISignLogic getSigns() {return signs;}
 
-	public BlockFace getDirection() { return direction;}
+	public BlockFace getDirection() { return directions.get(0);}
 
 	public List<Player> getVisitors() {	return visitors;}	
 
@@ -629,29 +653,43 @@ public abstract class TrainStation extends BlockFinder{
 	public abstract void onSignPlacedWithin(BlockPlaceEvent event);
 
 	@EventHandler
-	public void onPlayerBreakAttempt(BlockDamageEvent event) {
+	public void onPlayerDamageAttempt(BlockDamageEvent event) {
 		Player p = event.getPlayer();
 		Block b = event.getBlock();
 
-		//If the block to be broken is a part of a train station, we cancel it.
+		//If the block to be damaged is a part of a train station, we cancel it.
 		if(this.trainStationBlocks.contains(b)) {
 			//If the player has permission to edit the blocks, we are ok with them doing so.
 			if(p.hasPermission("goldrushmc.station.edit")) return;
-
+			p.sendMessage(ChatColor.DARK_RED + "You cannot damage this block! it belongs to a train station!");
 			event.setCancelled(true);
 		}		
 	}
 
 	@EventHandler
-	public void onPlayerPlaceAttempt(BlockPlaceEvent event) {
+	public void onPlayerBreakAttempt(BlockBreakEvent event) {
 		Player p = event.getPlayer();
 		Block b = event.getBlock();
-
 		//If the block to be broken is a part of a train station, we cancel it.
 		if(this.trainStationBlocks.contains(b)) {
 			//If the player has permission to edit the blocks, we are ok with them doing so.
 			if(p.hasPermission("goldrushmc.station.edit")) return;
 
+			p.sendMessage(ChatColor.DARK_RED + "You cannot break this block! it belongs to a train station!");
+			event.setCancelled(true);
+		}
+	}
+
+	@EventHandler
+	public void onPlayerPlaceAttempt(BlockPlaceEvent event) {
+		Player p = event.getPlayer();
+		Block b = event.getBlockAgainst();
+
+		//If the block to be broken is a part of a train station, we cancel it.
+		if(this.trainStationBlocks.contains(b)) {
+			//If the player has permission to edit the blocks, we are ok with them doing so.
+			if(p.hasPermission("goldrushmc.station.edit")) return;
+			p.sendMessage(ChatColor.DARK_RED + "You cannot blocks here! The area belongs to a train station!");
 			event.setCancelled(true);
 		}
 	}
