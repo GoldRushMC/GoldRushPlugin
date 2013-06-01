@@ -29,4 +29,8 @@ public interface IDirectedMap {
 	public List<Material> getSearchTypes();
 	
 	public void setSearchTypes(List<Material> types);
+	
+	public boolean isDone();
+	
+	public void goOtherWay();
 }

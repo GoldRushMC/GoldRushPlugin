@@ -7,7 +7,7 @@ import org.bukkit.block.BlockFace;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 
-import com.goldrushmc.bukkit.train.SmallBlockMap;
+import com.goldrushmc.bukkit.train.station.tracks.SmallBlockMap;
 
 public class TrainTools {
 	

@@ -22,6 +22,8 @@ import com.bergerkiller.bukkit.tc.controller.MinecartMember;
 import com.bergerkiller.bukkit.tc.controller.type.MinecartMemberChest;
 import com.bergerkiller.bukkit.tc.controller.type.MinecartMemberRideable;
 import com.bergerkiller.bukkit.tc.properties.TrainProperties;
+import com.goldrushmc.bukkit.train.station.tracks.Discoverable;
+import com.goldrushmc.bukkit.train.station.tracks.SmallBlockMap;
 import com.goldrushmc.bukkit.train.util.TrainTools;
 import com.goldrushmc.bukkit.train.util.TrainTools.TrainType;
 

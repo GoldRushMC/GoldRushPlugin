@@ -46,12 +46,12 @@ import com.goldrushmc.bukkit.db.TrainStationTbl;
 import com.goldrushmc.bukkit.defaults.BlockFinder;
 import com.goldrushmc.bukkit.defaults.DBAccess;
 import com.goldrushmc.bukkit.defaults.DBTrainsAccessible;
-import com.goldrushmc.bukkit.train.SmallBlockMap;
 import com.goldrushmc.bukkit.train.event.StationSignEvent;
 import com.goldrushmc.bukkit.train.exceptions.MissingSignException;
 import com.goldrushmc.bukkit.train.signs.ISignLogic;
 import com.goldrushmc.bukkit.train.signs.SignLogic;
 import com.goldrushmc.bukkit.train.signs.SignType;
+import com.goldrushmc.bukkit.train.station.tracks.SmallBlockMap;
 import com.goldrushmc.bukkit.train.util.TrainTools;
 
 /**
