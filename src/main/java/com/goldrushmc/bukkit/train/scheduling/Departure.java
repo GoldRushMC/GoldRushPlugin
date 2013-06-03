@@ -26,16 +26,6 @@ public class Departure implements Runnable {
 //			if(!hasTrain) Bukkit.broadcastMessage(station.getStationName() + " has no trains to depart...");
 		}
 	}
-	
-	public static long findTimeRemaining(TrainStation station) {
-		
-		if(station.getDepartingTrain() != null) {
-			
-		}
-			
-		
-		return 0;
-	}
 
 
 	public static int getTaskID() {

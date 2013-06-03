@@ -35,23 +35,19 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import com.bergerkiller.bukkit.tc.controller.MinecartGroup;
 import com.bergerkiller.bukkit.tc.controller.MinecartMember;
-import com.bergerkiller.bukkit.tc.controller.MinecartMemberStore;
 import com.bergerkiller.bukkit.tc.controller.type.MinecartMemberChest;
 import com.bergerkiller.bukkit.tc.controller.type.MinecartMemberFurnace;
 import com.bergerkiller.bukkit.tc.controller.type.MinecartMemberRideable;
 import com.bergerkiller.bukkit.tc.events.MemberBlockChangeEvent;
-import com.bergerkiller.bukkit.tc.properties.CartProperties;
 import com.goldrushmc.bukkit.db.TrainStationLocationTbl;
 import com.goldrushmc.bukkit.db.TrainStationTbl;
 import com.goldrushmc.bukkit.defaults.BlockFinder;
 import com.goldrushmc.bukkit.defaults.DBAccess;
 import com.goldrushmc.bukkit.defaults.DBTrainsAccessible;
 import com.goldrushmc.bukkit.train.event.StationSignEvent;
-import com.goldrushmc.bukkit.train.exceptions.MissingSignException;
 import com.goldrushmc.bukkit.train.signs.ISignLogic;
 import com.goldrushmc.bukkit.train.signs.SignLogic;
 import com.goldrushmc.bukkit.train.signs.SignType;
-import com.goldrushmc.bukkit.train.station.tracks.SmallBlockMap;
 import com.goldrushmc.bukkit.train.util.TrainTools;
 
 /**
@@ -66,11 +62,12 @@ public abstract class TrainStation extends BlockFinder{
 
 	//For tracking of the stations.
 	protected static List<TrainStation> trainStations = new ArrayList<TrainStation>();
+	
 	public static final Material defaultStop = Material.BEDROCK;
 	public static DBTrainsAccessible db;
 
 	protected String stationName;
-	protected volatile MinecartGroup departingTrain;
+	protected volatile List<MinecartGroup> departingTrains;
 	protected volatile Map<MinecartGroup, Boolean> hasStopped = new HashMap<MinecartGroup, Boolean>();
 	protected ISignLogic signs;
 	protected List<BlockFace> directions;
@@ -101,8 +98,8 @@ public abstract class TrainStation extends BlockFinder{
 		this.trainStationBlocks = this.findNonAirBlocks();
 		this.rails = findRails();
 		this.signs = generateSignLogic();
-		List<Sign> dir = this.signs.getSigns(SignType.TRAIN_STATION_DIRECTION);
-		if(dir == null) throw new MissingSignException(this.signs);
+//		List<Sign> dir = this.signs.getSigns(SignType.TRAIN_STATION_DIRECTION);
+//		if(dir == null) throw new MissingSignException(this.signs);
 		
 //		if(!dir.isEmpty()) {
 //			for(Sign s : dir) {
@@ -132,22 +129,22 @@ public abstract class TrainStation extends BlockFinder{
 		this.trainStationBlocks = this.findNonAirBlocks();
 		this.rails = findRails();
 		this.signs = generateSignLogic();
-		List<Sign> dir = this.signs.getSigns(SignType.TRAIN_STATION_DIRECTION);
-		if(dir == null) throw new MissingSignException(this.signs);
-		List<BlockFace> tempDir = new ArrayList<BlockFace>();
+//		List<Sign> dir = this.signs.getSigns(SignType.TRAIN_STATION_DIRECTION);
+//		if(dir == null) throw new MissingSignException(this.signs);
+//		List<BlockFace> tempDir = new ArrayList<BlockFace>();
 		
-		if(!dir.isEmpty()) {
-			for(Sign s : dir) {
-				tempDir.add(TrainTools.getDirection(s.getLine(2)));	
-			}
-		}
+//		if(!dir.isEmpty()) {
+//			for(Sign s : dir) {
+//				tempDir.add(TrainTools.getDirection(s.getLine(2)));	
+//			}
+//		}
 
-		if(tempDir.isEmpty()) {
-			this.directions = tempDir;
-		}
-		else {
-			this.directions = new ArrayList<BlockFace>();
-		}
+//		if(tempDir.isEmpty()) {
+//			this.directions = tempDir;
+//		}
+//		else {
+//			this.directions = new ArrayList<BlockFace>();
+//		}
 	}
 
 	/**
@@ -185,7 +182,7 @@ public abstract class TrainStation extends BlockFinder{
 		}
 
 		//Clear trains.
-		this.departingTrain = null;
+		this.departingTrains = null;
 		this.trains = null;
 
 		//Clear visitors
@@ -393,7 +390,7 @@ public abstract class TrainStation extends BlockFinder{
 	 */
 	public abstract boolean findStillTrains();
 
-	/**
+	/*
 	 * Spawns a cart onto the train scheduled for departure
 	 * <p>
 	 * DEFAULT IMPLEMENTATION.
@@ -401,81 +398,85 @@ public abstract class TrainStation extends BlockFinder{
 	 * @param type
 	 * @param owner
 	 */
-	public void addCart(EntityType type, Player owner) {
+//	public abstract void addCart(EntityType type, Player owner);
+//	public void addCart(EntityType type, Player owner) {
 
-		//Check if the departing train does not exist. this may happen, for a brief period, between the departing train leaving and the arriving train arriving.
-		if(this.departingTrain == null) { owner.sendMessage("There are currently no trains to buy carts for."); return; }
-
-		//Get train name, in case the departing train forgets!
-		String trainName = this.departingTrain.getProperties().getTrainName();
-		//		int trainSize = this.departingTrain.size() - 1;
-		Block toSpawn = null;
-//		BlockFace dirToLook = this.direction.getOppositeFace();
-		BlockFace dirToLook = null;
-		//Make sure that we are on the right end of the train, to spawn.
-		MinecartMember<?> toJoinTo = null;
-		if(this.departingTrain.get(0) instanceof MinecartMemberFurnace) {
-			toJoinTo = this.departingTrain.get(this.departingTrain.size() - 1);
-		}
-		else {
-			toJoinTo = this.departingTrain.get(0);
-		}
-		//Set the block map to the correct minecart member's block.
-		SmallBlockMap sbm = new SmallBlockMap(toJoinTo.getBlock());
-		if(sbm.isRail(sbm.getBlockAt(dirToLook))) {
-			toSpawn = sbm.getBlockAt(dirToLook);
-		}
-		//If there is no room, do not spawn additional carts.
-		if(toSpawn == null) { owner.sendMessage("There is not enough room to spawn additonal carts."); return; }
-
-		Location fixed = toSpawn.getLocation();
-//		switch(this.direction) {
-//		case NORTH: fixed.setZ(fixed.getZ() + 0.75); break;
-//		case SOUTH: fixed.setZ(fixed.getZ() - 0.75); break;
-//		case EAST: fixed.setX(fixed.getX() - 0.75); break;
-//		case WEST: fixed.setX(fixed.getX() + 0.75); break;
-//		default: break;
+//		//Check if the departing train does not exist. this may happen, for a brief period, between the departing train leaving and the arriving train arriving.
+//		if(this.departingTrains == null) { owner.sendMessage("There are currently no trains to buy carts for."); return; }
+//
+//		//Get train name, in case the departing train forgets!
+//		String trainName = this.departingTrains.getProperties().getTrainName();
+//		//		int trainSize = this.departingTrain.size() - 1;
+//		Block toSpawn = null;
+////		BlockFace dirToLook = this.direction.getOppositeFace();
+//		BlockFace dirToLook = null;
+//		//Make sure that we are on the right end of the train, to spawn.
+//		MinecartMember<?> toJoinTo = null;
+//		if(this.departingTrains.get(0) instanceof MinecartMemberFurnace) {
+//			toJoinTo = this.departingTrains.get(this.departingTrains.size() - 1);
 //		}
+//		else {
+//			toJoinTo = this.departingTrains.get(0);
+//		}
+//		//Set the block map to the correct minecart member's block.
+//		SmallBlockMap sbm = new SmallBlockMap(toJoinTo.getBlock());
+//		if(sbm.isRail(sbm.getBlockAt(dirToLook))) {
+//			toSpawn = sbm.getBlockAt(dirToLook);
+//		}
+//		//If there is no room, do not spawn additional carts.
+//		if(toSpawn == null) { owner.sendMessage("There is not enough room to spawn additonal carts."); return; }
+//
+//		Location fixed = toSpawn.getLocation();
+////		switch(this.direction) {
+////		case NORTH: fixed.setZ(fixed.getZ() + 0.75); break;
+////		case SOUTH: fixed.setZ(fixed.getZ() - 0.75); break;
+////		case EAST: fixed.setX(fixed.getX() - 0.75); break;
+////		case WEST: fixed.setX(fixed.getX() + 0.75); break;
+////		default: break;
+////		}
+//
+//		//Spawn the cart and join it to the train.
+//		MinecartMember<?> toJoin = MinecartMemberStore.spawn(fixed, type);
+//		//Set the new minecarts group properties to the same as the departing train.
+//		toJoin.getGroup().setProperties(this.departingTrains.getProperties());
+//		//Set the owner (hoping this works) to the person who bought the cart.
+//		toJoin.getProperties().setOwner(owner.getName().toLowerCase());
+//		MinecartGroup.link(toJoin, toJoinTo);
+//		//Re-set the name of the departing train, after linking.
+//		this.departingTrains.getProperties().setName(trainName);
+//
+//		//Send a message saying it has been done.
+//		if(type.equals(EntityType.MINECART)) owner.sendMessage("You bought a passenger cart");
+//		else if(type.equals(EntityType.MINECART_CHEST)) owner.sendMessage("You bought a storage cart");
+//	}
 
-		//Spawn the cart and join it to the train.
-		MinecartMember<?> toJoin = MinecartMemberStore.spawn(fixed, type);
-		//Set the new minecarts group properties to the same as the departing train.
-		toJoin.getGroup().setProperties(this.departingTrain.getProperties());
-		//Set the owner (hoping this works) to the person who bought the cart.
-		toJoin.getProperties().setOwner(owner.getName().toLowerCase());
-		MinecartGroup.link(toJoin, toJoinTo);
-		//Re-set the name of the departing train, after linking.
-		this.departingTrain.getProperties().setName(trainName);
 
-		//Send a message saying it has been done.
-		if(type.equals(EntityType.MINECART)) owner.sendMessage("You bought a passenger cart");
-		else if(type.equals(EntityType.MINECART_CHEST)) owner.sendMessage("You bought a storage cart");
-	}
-
-
-	/**
+	/*
 	 * Removes a cart from the departing train.
 	 * 
 	 * @param type
 	 * @param remover
 	 */
-	public void removeCart(EntityType type, Player remover) {
-		if(this.departingTrain == null) { remover.sendMessage("There is no train in the station."); return; }
-		MinecartGroup train = this.departingTrain;
-		for(MinecartMember<?> cart : train) {
-			CartProperties cartP = cart.getProperties();
-			if(cartP.getOwners().contains(remover.getName().toLowerCase())) {
-				train.removeSilent(cart); 
-				cart.getGroup().destroy();
-				return;
-			}
-		}
-		remover.sendMessage("You have no train carts to remove.");
-	}
+//	public void removeCart(EntityType type, Player remover) {
+//		if(this.departingTrains == null) { remover.sendMessage("There is no train in the station."); return; }
+//		MinecartGroup train = this.departingTrains;
+//		for(MinecartMember<?> cart : train) {
+//			CartProperties cartP = cart.getProperties();
+//			if(cartP.getOwners().contains(remover.getName().toLowerCase())) {
+//				train.removeSilent(cart); 
+//				cart.getGroup().destroy();
+//				return;
+//			}
+//		}
+//		remover.sendMessage("You have no train carts to remove.");
+//	}
 
-	public MinecartGroup getDepartingTrain() {
-		return departingTrain;
-	}
+	/**
+	 * returns a list of trains (may only contain one train if the station is designed to only have one.
+	 * 
+	 * @return
+	 */
+	public abstract List<MinecartGroup> getDepartingTrains();
 
 	/**
 	 * Shows whether or not the station's departing train has any carts left to sell.
@@ -491,9 +492,12 @@ public abstract class TrainStation extends BlockFinder{
 	 */
 	public abstract boolean hasDepartingTrain();
 
-	public void setDepartingTrain(MinecartGroup train) {
-		this.departingTrain = train;
-	}
+	/**
+	 * Adds a departing train to the list. Only truly applies if the station has more than one stop location.
+	 * 
+	 * @param train
+	 */
+	public abstract void addDepartingTrain(MinecartGroup train);
 
 	/**
 	 * Intended for departing the current queued train, and moving all of the others (if any) closer to the stop block.
@@ -550,6 +554,11 @@ public abstract class TrainStation extends BlockFinder{
 		this.trains.remove(train);
 	}
 
+	/**
+	 * Returns the area 50 blocks above, and 10 blocks below, the train station minimum y value.
+	 * 
+	 * @return A {@code List<Block>}
+	 */
 	public List<Block> getTrainArea() { return trainArea; }
 
 	public static TrainStation getTrainStationAt(Location loc) {

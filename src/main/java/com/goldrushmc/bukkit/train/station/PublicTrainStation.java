@@ -103,11 +103,11 @@ public class PublicTrainStation extends TrainStation {
 	@Override
 	public boolean buyCart(Player owner, EntityType type) {
 		if(!type.equals(EntityType.MINECART)) return false;
-		if(this.departingTrain == null) { owner.sendMessage("There is currently no train available to buy from. "); return false; }
+		if(this.departingTrains.get(0) == null) { owner.sendMessage("There is currently no train available to buy from. "); return false; }
 
 		//The boolean success will be set true if a minecart is actually bought.
 		boolean success = false;
-		for(MinecartMember<?> cart : this.departingTrain) {
+		for(MinecartMember<?> cart : this.departingTrains.get(0)) {
 			//If the cart is an instance of the furnace, skip it.
 			if(cart instanceof MinecartMemberFurnace) continue;
 			//If the player wants a passenger minecart, do this.
@@ -121,8 +121,8 @@ public class PublicTrainStation extends TrainStation {
 				if(success) {
 					//If the buy was successful, send a confirmation.
 					owner.sendMessage("You bought" + ChatColor.BLUE + " passenger cart" + ChatColor.GREEN + " [#" + (cart.getIndex() + 1) + "]"
-							+ " from train " + this.departingTrain.getProperties().getTrainName());
-					this.updateCartsAvailable(this.departingTrain, type);
+							+ " from train " + this.departingTrains.get(0).getProperties().getTrainName());
+					this.updateCartsAvailable(this.departingTrains.get(0), type);
 					return true;
 				}
 			}
@@ -130,7 +130,7 @@ public class PublicTrainStation extends TrainStation {
 		//If the buy wasn't successful, send a message.
 		if(!success) {
 			owner.sendMessage("There are no" + ChatColor.BLUE + " passenger cart(s) " + ChatColor.RESET + "for sale"
-					+ " on train " + this.departingTrain.getProperties().getTrainName());
+					+ " on train " + this.departingTrains.get(0).getProperties().getTrainName());
 		}
 		return false;
 	}
@@ -138,11 +138,11 @@ public class PublicTrainStation extends TrainStation {
 	@Override
 	public boolean sellCart(Player owner, EntityType type) {
 		if(!type.equals(EntityType.MINECART)) return false;
-		if(this.departingTrain == null) { owner.sendMessage("There is currently no train available to sell from. "); return false; }
+		if(this.departingTrains.get(0) == null) { owner.sendMessage("There is currently no train available to sell from. "); return false; }
 
 		//The boolean success will be set true if a minecart is actually bought.
 		boolean success = false;
-		for(MinecartMember<?> cart : this.departingTrain) {
+		for(MinecartMember<?> cart : this.departingTrains.get(0)) {
 			//If the cart is an instance of the furnace, skip it.
 			if(cart instanceof MinecartMemberFurnace) continue;
 			//If the player wants a passenger minecart, do this.
@@ -158,7 +158,7 @@ public class PublicTrainStation extends TrainStation {
 			if(success) {
 				//If the sell was successful, send a confirmation.
 				owner.sendMessage("You sold" + ChatColor.BLUE + " passenger cart" + ChatColor.GREEN + " [#" + (cart.getIndex() + 1) + "]");
-				this.updateCartsAvailable(this.departingTrain, type);
+				this.updateCartsAvailable(this.departingTrains.get(0), type);
 				return true;
 			}
 		}
@@ -206,7 +206,7 @@ public class PublicTrainStation extends TrainStation {
 		train.setProperties(tp);
 
 		this.addTrain(train);
-		if(this.departingTrain == null) this.departingTrain = train;
+		if(this.departingTrains.get(0) == null) this.departingTrains.add(train);
 		this.changeSignLogic(train.getProperties().getTrainName());
 		this.updateCartsAvailable(train, EntityType.MINECART);
 		this.hasStopped.put(train, true);
@@ -242,7 +242,7 @@ public class PublicTrainStation extends TrainStation {
 
 	@Override
 	public boolean pushQueue() {
-		MinecartGroup mg = this.departingTrain;
+		MinecartGroup mg = this.departingTrains.get(0);
 		if(mg == null) return false;
 		mg.getProperties().setSpeedLimit(0.6);
 		mg.getProperties().setColliding(false);
@@ -256,7 +256,7 @@ public class PublicTrainStation extends TrainStation {
 			}
 		}
 		this.trains.remove(mg);
-		this.departingTrain = null;
+		this.departingTrains.remove(0);
 		return true;
 	}
 
@@ -285,7 +285,7 @@ public class PublicTrainStation extends TrainStation {
 
 	@Override
 	public boolean hasDepartingTrain() {
-		if(this.departingTrain == null) return false;
+		if(this.departingTrains.get(0) == null) return false;
 		else return true;
 	}
 
@@ -293,7 +293,7 @@ public class PublicTrainStation extends TrainStation {
 	public boolean hasCartsToSell() {
 		if(!hasDepartingTrain()) return false;
 
-		for(MinecartMember<?> mm : this.departingTrain) {
+		for(MinecartMember<?> mm : this.departingTrains.get(0)) {
 			if(mm instanceof MinecartMemberRideable) {
 				if(mm.getProperties().getOwners().isEmpty()) return true;
 			}
@@ -324,7 +324,7 @@ public class PublicTrainStation extends TrainStation {
 			//The train has hit the stop block, and needs to stop.
 			else if(getStopBlocks().contains(to)) {
 				//Check to see if there is already a departing train assigned. If so, we don't need to add it again.
-				if(this.departingTrain == null) {
+				if(this.departingTrains.get(0) == null) {
 					//If there is no departing train yet, we need to add this one.
 					TrainFullStopEvent stop = new TrainFullStopEvent(this, event.getGroup());
 					Bukkit.getServer().getPluginManager().callEvent(stop);
@@ -355,7 +355,7 @@ public class PublicTrainStation extends TrainStation {
 
 				String trainName = "N/A";
 				int cartCount = 0;
-				MinecartGroup train = this.getDepartingTrain();
+				MinecartGroup train = this.departingTrains.get(0);
 				if(train != null) {
 					trainName = train.getProperties().getTrainName();
 					cartCount = train.size() - 1;	
@@ -422,7 +422,7 @@ public class PublicTrainStation extends TrainStation {
 					if(!(mm instanceof MinecartMemberFurnace)) continue;
 
 					if(this.stopBlocks.contains(mm.getBlock())) {
-						this.departingTrain = trains[i];
+						this.departingTrains.add(trains[i]);
 						foundTrain = true;
 						Bukkit.getLogger().info("Found a still train! Added to departing.");
 						break;
@@ -442,5 +442,17 @@ public class PublicTrainStation extends TrainStation {
 			}
 		}
 		return false;
+	}
+
+	@Override
+	public List<MinecartGroup> getDepartingTrains() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public void addDepartingTrain(MinecartGroup train) {
+		// TODO Auto-generated method stub
+		
 	}
 }

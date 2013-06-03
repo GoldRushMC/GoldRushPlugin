@@ -116,7 +116,7 @@ public class TrainStationLis extends DefaultListener {
 				if(mm instanceof MinecartMemberFurnace) {
 					if(mm.getBlock().equals(toStop)) {
 						train.getProperties().setSpeedLimit(0);
-						station.setDepartingTrain(train);
+						station.addDepartingTrain(train);
 						station.changeSignLogic(event.getTrain().getProperties().getTrainName());
 						station.updateCartsAvailable(train, EntityType.MINECART_CHEST);
 						station.addTrainStopped(train);
@@ -139,7 +139,7 @@ public class TrainStationLis extends DefaultListener {
 				if(mm instanceof MinecartMemberFurnace) {
 					if(mm.getBlock().equals(toStop)) {
 						train.getProperties().setSpeedLimit(0);
-						station.setDepartingTrain(train);
+						station.addDepartingTrain(train);
 						station.changeSignLogic(event.getTrain().getProperties().getTrainName());
 						station.updateCartsAvailable(train, EntityType.MINECART);
 						train.eject();
