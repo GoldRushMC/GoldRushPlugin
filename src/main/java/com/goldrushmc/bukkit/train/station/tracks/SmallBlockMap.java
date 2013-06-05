@@ -1,4 +1,4 @@
-package com.goldrushmc.bukkit.train;
+package com.goldrushmc.bukkit.train.station.tracks;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -7,7 +7,6 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
-import org.bukkit.material.Rails;
 
 @SuppressWarnings("null")
 public class SmallBlockMap implements Discoverable {
@@ -60,8 +59,7 @@ public class SmallBlockMap implements Discoverable {
 	@Override
 	public Block getSouth() {return south;}
 	
-	@Override
-	public Block calcEastBlock() {
+	private Block calcEastBlock() {
 		Location loc = block.getLocation();
 		loc.setX(loc.getX() + 1);
 		Block b = checkUpDown(loc);
@@ -72,8 +70,7 @@ public class SmallBlockMap implements Discoverable {
 
 	}
 
-	@Override
-	public Block calcWestBlock() {
+	private Block calcWestBlock() {
 		Location loc = block.getLocation();
 		loc.setX(loc.getX() - 1);
 		Block b = checkUpDown(loc);
@@ -83,8 +80,7 @@ public class SmallBlockMap implements Discoverable {
 		return b;
 	}
 
-	@Override
-	public Block calcNorthBlock() {
+	private Block calcNorthBlock() {
 		Location loc = block.getLocation();
 		loc.setZ(loc.getZ() - 1);
 		Block b = checkUpDown(loc);
@@ -94,8 +90,7 @@ public class SmallBlockMap implements Discoverable {
 		return b;
 	}
 
-	@Override
-	public Block calcSouthBlock() {
+	private Block calcSouthBlock() {
 		Location loc = block.getLocation();
 		loc.setZ(loc.getZ() + 1);
 		Block b = checkUpDown(loc);
@@ -155,23 +150,17 @@ public class SmallBlockMap implements Discoverable {
 	@Override
 	public boolean isEnd() {
 		int count = 0;
-		if((!isRail(east)) || (!isRail(west)) || (!isRail(south)) || (!isRail(north))) count++;
+		if(!isRail(east)) count++;
+		if(!isRail(west)) count++;
+		if(!isRail(south)) count++;
+		if(!isRail(north)) count++;
 		
-		if(count > 2) return true;
+		if(count > 3) return true;
 		return false;	
 	}
 
 	public boolean isRail(Block block) {
 		return (block.getType().equals(Material.ACTIVATOR_RAIL) || block.getType().equals(Material.RAILS) || 
 				block.getType().equals(Material.DETECTOR_RAIL) || block.getType().equals(Material.POWERED_RAIL));
-	}
-
-
-	@Override
-	public BlockFace getBearing() {
-		if(isRail(block)) {
-			return ((Rails)block).getDirection();
-		}
-		return null;
 	}
 }

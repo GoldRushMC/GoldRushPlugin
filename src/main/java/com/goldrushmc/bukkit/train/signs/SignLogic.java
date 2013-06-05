@@ -39,11 +39,11 @@ public class SignLogic implements ISignLogic {
 		
 		//If it is a type we need, add it to the lists.
 		switch(lookFor) {
-		case ADD_RIDE_CART:
-		case ADD_STORAGE_CART:
+//		case ADD_RIDE_CART:
+//		case ADD_STORAGE_CART:
 		case FIX_BRIDGE:
-		case REMOVE_RIDE_CART:
-		case REMOVE_STORAGE_CART:
+//		case REMOVE_RIDE_CART:
+//		case REMOVE_STORAGE_CART:
 		case TRAIN_STATION:
 		case TRAIN_STATION_CART_COUNT:
 		case TRAIN_STATION_DIRECTION:
@@ -82,26 +82,26 @@ public class SignLogic implements ISignLogic {
 							this.signTypes.put(s, SignType.TRAIN_STATION);
 							this.signs.put(lines[1], s);
 						}
-						if(lines[1].equals("buy storage")) {
-							this.signList.add(s);
-							this.signTypes.put(s, SignType.ADD_STORAGE_CART);
-							this.signs.put(lines[1], s);
-						}
-						else if(lines[1].equals("sell storage")) {
-							this.signList.add(s);
-							this.signTypes.put(s, SignType.REMOVE_STORAGE_CART);
-							this.signs.put(lines[1], s);
-						}
-						else if(lines[1].equals("buy ride")) {
-							this.signList.add(s);
-							this.signTypes.put(s, SignType.ADD_RIDE_CART);
-							this.signs.put(lines[1], s);
-						}
-						else if(lines[1].equals("sell ride")) {
-							this.signList.add(s);
-							this.signTypes.put(s, SignType.REMOVE_RIDE_CART);
-							this.signs.put(lines[1], s);
-						}
+//						if(lines[1].equals("buy storage")) {
+//							this.signList.add(s);
+//							this.signTypes.put(s, SignType.ADD_STORAGE_CART);
+//							this.signs.put(lines[1], s);
+//						}
+//						else if(lines[1].equals("sell storage")) {
+//							this.signList.add(s);
+//							this.signTypes.put(s, SignType.REMOVE_STORAGE_CART);
+//							this.signs.put(lines[1], s);
+//						}
+//						else if(lines[1].equals("buy ride")) {
+//							this.signList.add(s);
+//							this.signTypes.put(s, SignType.ADD_RIDE_CART);
+//							this.signs.put(lines[1], s);
+//						}
+//						else if(lines[1].equals("sell ride")) {
+//							this.signList.add(s);
+//							this.signTypes.put(s, SignType.REMOVE_RIDE_CART);
+//							this.signs.put(lines[1], s);
+//						}
 						else if(lines[1].equals("direction")) {
 							this.signList.add(s);
 							this.signTypes.put(s, SignType.TRAIN_STATION_DIRECTION);
@@ -149,13 +149,15 @@ public class SignLogic implements ISignLogic {
 	}
 
 	@Override
-	public Sign getSign(SignType type) {
+	public List<Sign> getSigns(SignType type) {
+		List<Sign> signsToReturn = new ArrayList<Sign>();
+		
 		for(Sign sign : this.signTypes.keySet()) {
 			if(this.signTypes.get(sign).equals(type)) {
-				return sign;
+				signsToReturn.add(sign);
 			}
 		}
-		return null;
+		return signsToReturn;
 	}
 
 	@Override
@@ -165,11 +167,11 @@ public class SignLogic implements ISignLogic {
 		for(Sign sign : this.signTypes.keySet()) {
 			SignType s = this.signTypes.get(sign);
 			switch(s) {
-			case ADD_RIDE_CART:
-			case ADD_STORAGE_CART:
+//			case ADD_RIDE_CART:
+//			case ADD_STORAGE_CART:
 			case FIX_BRIDGE:
-			case REMOVE_RIDE_CART:
-			case REMOVE_STORAGE_CART:
+//			case REMOVE_RIDE_CART:
+//			case REMOVE_STORAGE_CART:
 			case TRAIN_STATION:
 			case TRAIN_STATION_CART_COUNT:
 			case TRAIN_STATION_DIRECTION:
@@ -202,22 +204,22 @@ public class SignLogic implements ISignLogic {
 				this.signTypes.put(s, SignType.TRAIN_STATION);
 				this.signs.put(lines[1], s);
 			}
-			if(lines[1].equals("buy storage")) {
-				this.signTypes.put(s, SignType.ADD_STORAGE_CART);
-				this.signs.put(lines[1], s);
-			}
-			else if(lines[1].equals("sell storage")) {
-				this.signTypes.put(s, SignType.REMOVE_STORAGE_CART);
-				this.signs.put(lines[1], s);
-			}
-			else if(lines[1].equals("buy ride")) {
-				this.signTypes.put(s, SignType.ADD_RIDE_CART);
-				this.signs.put(lines[1], s);
-			}
-			else if(lines[1].equals("sell ride")) {
-				this.signTypes.put(s, SignType.REMOVE_RIDE_CART);
-				this.signs.put(lines[1], s);
-			}
+//			if(lines[1].equals("buy storage")) {
+//				this.signTypes.put(s, SignType.ADD_STORAGE_CART);
+//				this.signs.put(lines[1], s);
+//			}
+//			else if(lines[1].equals("sell storage")) {
+//				this.signTypes.put(s, SignType.REMOVE_STORAGE_CART);
+//				this.signs.put(lines[1], s);
+//			}
+//			else if(lines[1].equals("buy ride")) {
+//				this.signTypes.put(s, SignType.ADD_RIDE_CART);
+//				this.signs.put(lines[1], s);
+//			}
+//			else if(lines[1].equals("sell ride")) {
+//				this.signTypes.put(s, SignType.REMOVE_RIDE_CART);
+//				this.signs.put(lines[1], s);
+//			}
 			else if(lines[1].equals("Time Remaining")) {
 				this.signTypes.put(s, SignType.TRAIN_STATION_TIME);
 				this.signs.put(lines[1], s);
