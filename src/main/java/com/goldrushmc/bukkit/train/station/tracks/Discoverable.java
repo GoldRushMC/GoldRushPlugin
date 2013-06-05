@@ -1,11 +1,10 @@
-package com.goldrushmc.bukkit.train;
+package com.goldrushmc.bukkit.train.station.tracks;
 
 import java.util.List;
 
 import org.bukkit.Location;
-import org.bukkit.block.Block;
-import org.bukkit.block.BlockFace;
 import org.bukkit.Material;
+import org.bukkit.block.Block;
 
 /**
  * Will be used to determine each cardinal direction of a {@link Block}, and whether or not each cardinal {@link Block} is a rail.
@@ -51,34 +50,6 @@ public interface Discoverable {
 	public Block getMainBlock();
 
 	/**
-	 * Calculates the {@link Block} east of the main {@link Block}
-	 * 
-	 * @return The east {@link Block}
-	 */
-	public Block calcEastBlock();
-
-	/**
-	 * Calculates the {@link Block} west of the main {@link Block}
-	 * 
-	 * @return The west {@link Block}
-	 */
-	public Block calcWestBlock();
-
-	/**
-	 * Calculates the {@link Block} north of the main {@link Block}
-	 * 
-	 * @return The north {@link Block}
-	 */
-	public Block calcNorthBlock();
-
-	/**
-	 * Calculates the {@link Block} south of the main {@link Block}
-	 * 
-	 * @return The south {@link Block}
-	 */
-	public Block calcSouthBlock();
-
-	/**
 	 * Checks to see if the {@link Block} has another connected {@link Block} that is a rail.
 	 * 
 	 * @return {@code true} if there is a rail connection, {@code false} if not.
@@ -86,12 +57,12 @@ public interface Discoverable {
 	 */
 	public boolean hasRailConnection();
 
-	/**
-	 * Determines, if any, which direction the railway is going.
-	 * 
-	 * @return The {@link Direction} the railway is heading
-	 */
-	public BlockFace getBearing();
+//	/**
+//	 * Determines, if any, which direction the railway is going.
+//	 * 
+//	 * @return The {@link Direction} the railway is heading
+//	 */
+//	public BlockFace getBearing();
 
 	/**
 	 * <p>Returns the amount of rails that are around the main {@link Block}.</p>

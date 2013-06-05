@@ -53,12 +53,12 @@ public interface ISignLogic {
 	
 	
 	/**
-	 * Gets a {@link Sign} with the specified {@link SignType}
+	 * Gets the {@link Sign}s with the specified {@link SignType}
 	 * 
 	 * @param signName The {@link SignType}.
 	 * @return The {@link Sign}
 	 */
-	public Sign getSign(SignType type);
+	public List<Sign> getSigns(SignType type);
 	
 	/**
 	 * Gets the type with the specified sign.

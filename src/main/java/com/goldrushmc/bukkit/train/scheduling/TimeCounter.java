@@ -22,10 +22,12 @@ import com.goldrushmc.bukkit.train.station.TrainStation;
  */
 public class TimeCounter implements Runnable {
 
-	public long currentTime = 0, publik = 0, transport = 0, hub = 0;
+	public static boolean reset = false;
+	public volatile long timeCount = 0;
+	public volatile long currentTime = 0, publik = 0, transport = 0, hub = 0;
 	private final JavaPlugin plugin;
 	private Map<String, Long> times = new HashMap<String, Long>();
-	private final Map<String, List<TrainStation>> stations = new HashMap<String, List<TrainStation>>();
+	private Map<String, List<TrainStation>> stations = new HashMap<String, List<TrainStation>>();
 
 	private final World world;
 
@@ -45,9 +47,11 @@ public class TimeCounter implements Runnable {
 		//Load config
 		FileConfiguration fc =  plugin.getConfig();
 		if(fc != null) {
-			times.put("Public", fc.getLong("station.times.public"));
-			times.put("Transport", fc.getLong("station.times.transport"));
-			times.put("Hub", fc.getLong("station.times.hub"));
+			//Corrects the time to mintues, so that we dont have things running at a tick time.
+			int timeCorrector = 1200;
+			times.put("Public", fc.getLong("station.times.public") * timeCorrector);
+			times.put("Transport", fc.getLong("station.times.transport") * timeCorrector);
+			times.put("Hub", fc.getLong("station.times.hub") * timeCorrector);
 		}
 	}
 
@@ -56,23 +60,47 @@ public class TimeCounter implements Runnable {
 	 */
 	@Override
 	public void run() {
+
 		//Get current time
 		long update = this.world.getTime();
-		
-		if(update == 0) {
+
+		//if the time is changed, we will know. This also applies for new days.
+		if((this.timeCount + 1) != update) reset();
+
+		this.timeCount = update;
+
+		if(reset)  {
 			this.publik = this.times.get("Public");
 			this.transport = this.times.get("Transport");
 			this.hub = this.times.get("Hub");
-			this.currentTime = update;
+			this.currentTime = 0;
+			this.timeCount = 0;
+			reset = false;
 		}
 
-		//Every 200 ticks, do this.
-		if(Math.abs(update - currentTime) == 200) {
+		//Every 5 minutes, do this.
+		if(Math.abs(update - currentTime) == 6000) {
 			onUpdateTick();
 			this.currentTime = update;
 		}
 
-		if(Math.abs(this.times.get("Public") - this.publik) == update) {
+		//TODO update the departure times for each station. This will be a bit expensive. Every minute, we update ALL time signs.
+		if(Math.abs(update - this.currentTime) == 1200) {
+			for(TrainStation station : this.stations.get("Public")) {
+				if(station.hasDepartingTrain()) {
+					long timeSet = this.times.get("Public");
+					station.updateDepartureTime(0);
+				}
+			}
+			for(TrainStation station : this.stations.get("Transport")) {
+
+			}
+			for(TrainStation station : this.stations.get("Hub")) {
+
+			}
+		}
+
+		if(Math.abs(update - this.publik) == this.times.get("Public")) {
 			if(!this.stations.get("Public").isEmpty()) {
 				for(TrainStation station : this.stations.get("Public")) {
 					station.pushQueue();
@@ -80,7 +108,7 @@ public class TimeCounter implements Runnable {
 			}
 			this.publik = update;
 		}
-		if(Math.abs(this.times.get("Transport") - this.transport) == update) {
+		if(Math.abs(update - this.transport) == this.times.get("Transport")) {
 			if(!this.stations.get("Transport").isEmpty()) {
 				Bukkit.getLogger().info("Sending Transport Trains!"); //TODO
 				for(TrainStation station : this.stations.get("Transport")) {
@@ -89,7 +117,7 @@ public class TimeCounter implements Runnable {
 			}
 			this.transport = update;
 		}
-		if(Math.abs(this.times.get("Hub") - this.hub) == update) {
+		if(Math.abs(update - this.hub) == this.times.get("Hub")) {
 			if(!this.stations.get("Hub").isEmpty()) {
 			}
 			hub = update;
@@ -97,7 +125,6 @@ public class TimeCounter implements Runnable {
 	}
 
 	public void onUpdateTick() {
-		Bukkit.getLogger().info("Running update!"); //TODO
 		List<TrainStation> stations = TrainStation.getTrainStations();
 		//If no stations exist, we don't run an update.
 		if(stations.isEmpty()) return;
@@ -119,5 +146,9 @@ public class TimeCounter implements Runnable {
 				}
 			}
 		}
+	}
+
+	public static void reset() {
+		reset = true;
 	}
 }

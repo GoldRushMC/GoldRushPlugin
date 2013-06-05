@@ -40,7 +40,7 @@ public class TrainStationLis extends DefaultListener {
 	public TrainStationLis(JavaPlugin plugin) {
 		super(plugin);
 	}
-	
+
 	/**
 	 * Handles the {@link StationSignEvent} for each station.
 	 * 
@@ -88,6 +88,7 @@ public class TrainStationLis extends DefaultListener {
 	public void onTrainDepart(TrainExitStationEvent event) {
 		MinecartGroup mg = event.getTrain();
 		mg.getProperties().setColliding(false);
+		event.getTrainStation().removeTrainStopped(mg);
 	}
 
 	@EventHandler
@@ -97,7 +98,7 @@ public class TrainStationLis extends DefaultListener {
 		mg.getProperties().setSpeedLimit(0.2);
 		mg.getProperties().setColliding(true);
 		station.addTrain(mg);
-
+		station.addTrainSlow(mg);
 	}
 
 	@EventHandler
@@ -107,38 +108,46 @@ public class TrainStationLis extends DefaultListener {
 		Block toStop = null;
 		if(station.getType().equals(StationType.STORAGE_TRANS)) {
 			toStop = ((TrainStationTransport) station).getMainStopBlock();
+
+			//We check to see if the train has already stopped. if it has, we don't want to bug it!
+			if(station.hasStopped(train)) return;
 			
 			for(MinecartMember<?> mm : train) {
 				if(mm instanceof MinecartMemberFurnace) {
 					if(mm.getBlock().equals(toStop)) {
 						train.getProperties().setSpeedLimit(0);
-						station.setDepartingTrain(train);
-						event.getTrainStation().changeSignLogic(event.getTrain().getProperties().getTrainName());
+						station.addDepartingTrain(train);
+						station.changeSignLogic(event.getTrain().getProperties().getTrainName());
+						station.updateCartsAvailable(train, EntityType.MINECART_CHEST);
+						station.addTrainStopped(train);
 						break;
 					}
 					else {
 						train.getProperties().setSpeedLimit(0.1);
-						break;
 					}
 				}
 			}
 		}
-		
+
 		if(station.getType().equals(StationType.PASSENGER_TRANS)) {
 			toStop = ((PublicTrainStation) station).getMainStopBlock();
+
+			//We check to see if the train has already stopped. if it has, we don't want to bug it!
+			if(station.hasStopped(train)) return;
 			
 			for(MinecartMember<?> mm : train) {
 				if(mm instanceof MinecartMemberFurnace) {
 					if(mm.getBlock().equals(toStop)) {
 						train.getProperties().setSpeedLimit(0);
-						station.setDepartingTrain(train);
-						event.getTrainStation().changeSignLogic(event.getTrain().getProperties().getTrainName());
+						station.addDepartingTrain(train);
+						station.changeSignLogic(event.getTrain().getProperties().getTrainName());
+						station.updateCartsAvailable(train, EntityType.MINECART);
 						train.eject();
+						station.addTrainStopped(train);
 						break;
 					}
 					else {
 						train.getProperties().setSpeedLimit(0.1);
-						break;
 					}
 				}
 			}
