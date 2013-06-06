@@ -1,4 +1,4 @@
-package com.goldrushmc.bukkit.guns;
+package com.goldrushmc.bukkit.weapons;
 
 import java.util.HashMap;
 import java.util.List;
@@ -12,21 +12,19 @@ import org.bukkit.entity.Player;
 import org.bukkit.entity.Snowball;
 import org.bukkit.plugin.Plugin;
 
-import com.goldrushmc.bukkit.guns.Shotgun.DestroyAfter;
-
-public class Revolver {
+public class Rifle {
 	Player p;
 	Plugin plugin;
 
 	public HashMap<Player, Boolean> cockHash = new HashMap<Player, Boolean>();
 	public HashMap<Player, Boolean> hasReloadedHash = new HashMap<Player, Boolean>();
 	public GunTools gunTools = new GunTools();
-	public int fireDelay = 20;
+	public int fireDelay = 60;
 	public int firedEntity = 0;
-	public int damage = 8;
+	public int damage = 12;
 	boolean canFire = true;
 
-	public Revolver(Player player, Plugin plu) {
+	public Rifle(Player player, Plugin plu) {
 		p = player;
 		plugin = plu;
 	}
@@ -60,9 +58,9 @@ public class Revolver {
 				
 				firedEntity = snowball.getEntityId();
 				
-				Bukkit.getServer().getScheduler().runTaskLater(plugin, new DestroyAfter(snowball), 20);
+				Bukkit.getServer().getScheduler().runTaskLater(plugin, new DestroyAfter(snowball), 40);
 				
-				p.getItemInHand().setDurability((short) (p.getItemInHand().getDurability() + 6));
+				p.getItemInHand().setDurability((short) (p.getItemInHand().getDurability() + 30));
 				cockHash.put(p, false);
 				
 				FiringDelay fd = new FiringDelay();
@@ -78,7 +76,7 @@ public class Revolver {
 
 	public void reload() {
 		hasReloadedHash.put(p, false);
-		if (p.getItemInHand().getDurability() > 1 && p.getItemInHand().getDurability() < 33) {
+		if (p.getItemInHand().getDurability() > 1 && p.getItemInHand().getDurability() < 32) {
 			for (int i = 0; i < 36; i++) {
 				if (p.getInventory().getItem(i) != null) {
 					if (p.getInventory().getItem(i).getTypeId() == 332) {
@@ -88,7 +86,7 @@ public class Revolver {
 							p.getInventory().getItem(i).setAmount(p.getInventory().getItem(i).getAmount() - 1);
 						}
 						p.playSound(p.getLocation(), Sound.CLICK, 5, 2f);
-						p.getItemInHand().setDurability((short) (p.getItemInHand().getDurability() - 6));
+						p.getItemInHand().setDurability((short) (p.getItemInHand().getDurability() - 30));
 						hasReloadedHash.put(p, true);
 						break;
 					}

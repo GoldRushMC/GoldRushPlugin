@@ -1,4 +1,4 @@
-package com.goldrushmc.bukkit.guns;
+package com.goldrushmc.bukkit.weapons;
 
 import java.util.ArrayList;
 import java.util.List;

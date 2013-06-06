@@ -58,7 +58,7 @@ public class SaveMines {
 			}
 			return true;			
 		} catch (IOException e) {
-			p.getLogger().info("GOLDRUSHMC: error saving mines to file, trying again.");
+			p.getLogger().info("error saving mines to file, trying again.");
 			return false;
 		} catch (Exception e) {
 			p.getLogger().info("No mines to save");

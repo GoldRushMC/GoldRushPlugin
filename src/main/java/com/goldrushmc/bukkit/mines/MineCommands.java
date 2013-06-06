@@ -6,10 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
-import org.bukkit.ChatColor;
-import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.World;
+import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.command.Command;
@@ -91,12 +88,11 @@ public class MineCommands  extends CommandDefault {
 							} catch (MarkerNumberException e) {
 								plugin.getLogger().info("GOLDRUSHMC: MarkerNumberException creating mine");
 							}
-							
-							SaveMines saveMines = new SaveMines(plugin);
+
 							int count = 0;
 							Boolean save = false;
 							while(!save) {
-								save = saveMines.save();
+                                Bukkit.getServer().getScheduler().runTask(plugin, new SaveMinesObject(plugin));
 								count++;
 								if(count==5) { 
 									plugin.getLogger().info("GOLDRUSHMC: Could not save mines after 5 retrys!");
@@ -107,27 +103,9 @@ public class MineCommands  extends CommandDefault {
 												
 						return true;
 					} else if (args[0].equalsIgnoreCase("load")){
-						if(args.length == 2){
-							int i = 0;
-							for(Mine mine : Main.mineList) {
-								p.sendMessage(mine.name);
-								if(mine.name == args[1]) {
-									LoadMines loadMines = new LoadMines(plugin, plugin);
-									for(Mine mine2 :loadMines.parseMinesStrings()) {
-										p.sendMessage(mine2.name);
-										if(mine.name == mine2.name) {
-											Main.mineList.set(i, mine2);
-										}
-									}
-								}
-								i++;
-							}
-							
-							return true;
-						} else {
-							return false;
-						}
-					} else if (args[0].equalsIgnoreCase("cancel")){ 
+                        Bukkit.getServer().getScheduler().runTaskLater(plugin, new LoadMinesObject(plugin), 10);
+                        return true;
+					} else if (args[0].equalsIgnoreCase("cancel")){
 						undoMarkers(p.getWorld(), p); //undoes the placement of wool outline
 						return true;
 					} else {

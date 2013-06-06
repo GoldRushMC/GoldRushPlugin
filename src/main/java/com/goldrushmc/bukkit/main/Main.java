@@ -3,8 +3,8 @@ package com.goldrushmc.bukkit.main;
 import com.goldrushmc.bukkit.bank.InventoryLis;
 import com.goldrushmc.bukkit.commands.*;
 import com.goldrushmc.bukkit.db.*;
-import com.goldrushmc.bukkit.guns.GunLis;
-import com.goldrushmc.bukkit.guns.GunTool;
+import com.goldrushmc.bukkit.weapons.GunLis;
+import com.goldrushmc.bukkit.weapons.GunTool;
 import com.goldrushmc.bukkit.mines.*;
 import com.goldrushmc.bukkit.panning.PanningLis;
 import com.goldrushmc.bukkit.panning.PanningTool;
@@ -23,9 +23,6 @@ import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import javax.persistence.PersistenceException;
-import java.util.ArrayList;
-import java.util.List;
-
 
 
 public final class Main extends JavaPlugin{
@@ -38,8 +35,6 @@ public final class Main extends JavaPlugin{
 	public final PanningLis pl = new PanningLis(this);
 	public final InventoryLis il = new InventoryLis(this);
 	public final MineLis ml = new MineLis(this);
-	
-	public static List<Mine> mineList;
 
 	@Override
 	public void onEnable() {
@@ -85,13 +80,10 @@ public final class Main extends JavaPlugin{
 		//Populate the train station listener maps
 		//This only works if the database has data to make train stations with....
 //		tsl.populate();
-		
-		//load mines
-		mineList = new ArrayList<Mine>();
 
 		//run load task later once world has loaded
 		Bukkit.getServer().broadcastMessage("Loading Mines.. Prepare for Lag..");
-		Bukkit.getServer().getScheduler().runTaskLater(this, new LoadMinesTask(this), 100);
+		Bukkit.getServer().getScheduler().runTaskLater(this, new LoadMinesObject(this), 100);
 		
 		getLogger().info(getDescription().getName() + " " + getDescription().getVersion() + " Enabled!");		
 	}
@@ -143,10 +135,10 @@ public final class Main extends JavaPlugin{
 		int count = 0;
 		Boolean saved = false;
 		while(saved == false) {
-			saved = saveMines.save();
+			Bukkit.getScheduler().runTask(this, new SaveMinesObject(this));
 			count++;
 			if(count==5) { 
-				this.getLogger().info("GOLDRUSHMC: Could not save mines after 5 retrys! Exiting..");
+				this.getLogger().info("Could not save mines after 5 retry's! Exiting..");
 				break; 
 			}
 		}
