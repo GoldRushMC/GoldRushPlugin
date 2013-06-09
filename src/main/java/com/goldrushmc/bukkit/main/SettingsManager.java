@@ -1,85 +1,85 @@
 package com.goldrushmc.bukkit.main;
 
-import java.io.File;
-import java.io.IOException;
-
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.Plugin;
 
+import java.io.File;
+import java.io.IOException;
+
 public class SettingsManager {
 
-	private SettingsManager() {
-	}
+    private SettingsManager() {
+    }
 
-	static SettingsManager instance = new SettingsManager();
+    static SettingsManager instance = new SettingsManager();
 
-	Plugin p;
+    Plugin p;
 
-	FileConfiguration config;
-	File cfile;
+    FileConfiguration config;
+    File cfile;
 
-	public static SettingsManager getInstance() {
+    public static SettingsManager getInstance() {
 
-		return instance;
-	}
-	
-	public FileConfiguration getFileConfig() {
-		return config;
-	}
+        return instance;
+    }
 
-	public void setup(Plugin p) {
+    public FileConfiguration getFileConfig() {
+        return config;
+    }
 
-		if (!p.getDataFolder().exists()) {
+    public void setup(Plugin p) {
 
-			p.getDataFolder().mkdir();
-		}
+        if (!p.getDataFolder().exists()) {
 
-		cfile = new File(p.getDataFolder(), "config.yml");
+            p.getDataFolder().mkdir();
+        }
 
-		if (!cfile.exists()) {
+        cfile = new File(p.getDataFolder(), "config.yml");
 
-			config = p.getConfig();
-			config.options().copyDefaults(true);
+        if (!cfile.exists()) {
 
-			//Configure tunnel collapse defaults
-			config.addDefault("collapse.depth", 38);
-			config.addDefault("collapse.chance", 5);
-			config.addDefault("collapse.radius", 25);
-			config.addDefault("collapse.delay", 30L);
-			
-			//Configure default world
-			config.addDefault("world", "world");
-			
-			//Configure default train station schedule times
-			config.addDefault("station.times.public", 2);
-			config.addDefault("station.times.transport", 5);
-			config.addDefault("station.times.hub", 8);
-			
-			saveConfig();
+            config = p.getConfig();
+            config.options().copyDefaults(true);
 
-		}
-	}
+            //Configure tunnel collapse defaults
+            config.addDefault("collapse.depth", 38);
+            config.addDefault("collapse.chance", 5);
+            config.addDefault("collapse.radius", 25);
+            config.addDefault("collapse.delay", 30L);
 
-	public void saveConfig() {
-		try {
+            //Configure default world
+            config.addDefault("world", "world");
 
-			this.config.save(cfile);
+            //Configure default train station schedule times
+            config.addDefault("station.times.public", 2);
+            config.addDefault("station.times.transport", 5);
+            config.addDefault("station.times.hub", 8);
 
-		} catch (IOException e) {
+            saveConfig();
 
-			Bukkit.getServer()
-					.getLogger()
-					.severe(ChatColor.RED
-							+ "The config.yml file could not be saved");
-		}
-	}
+        }
+    }
 
-	public void reloadConfig() {
+    public void saveConfig() {
+        try {
+            Bukkit.getLogger().info("Creating Default Config...");
+            this.config.save(cfile);
 
-		config = YamlConfiguration.loadConfiguration(cfile);
-	}
+        } catch (IOException e) {
+
+            Bukkit.getServer()
+                    .getLogger()
+                    .severe(ChatColor.RED
+                            + "The config.yml file could not be saved");
+        }
+    }
+
+    public void reloadConfig() {
+
+        config = YamlConfiguration.loadConfiguration(cfile);
+    }
 
 }
