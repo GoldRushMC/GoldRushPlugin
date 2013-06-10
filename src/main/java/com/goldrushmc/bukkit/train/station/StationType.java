@@ -4,7 +4,8 @@ package com.goldrushmc.bukkit.train.station;
 public enum StationType {
 	DEFAULT("Default"),
 	STORAGE_TRANS("Storage"),
-	PASSENGER_TRANS("Passenger");
+	PASSENGER_TRANS("Passenger"),
+	HYBRID_TRANS("Hybrid");
 
 	final String type;
 

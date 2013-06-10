@@ -24,6 +24,8 @@ import com.goldrushmc.bukkit.train.event.TrainEnterStationEvent;
 import com.goldrushmc.bukkit.train.event.TrainExitStationEvent;
 import com.goldrushmc.bukkit.train.event.TrainFullStopEvent;
 import com.goldrushmc.bukkit.train.signs.SignType;
+import com.goldrushmc.bukkit.train.station.PublicTrainStation;
+import com.goldrushmc.bukkit.train.station.StationType;
 import com.goldrushmc.bukkit.train.station.TrainStation;
 import com.goldrushmc.bukkit.train.station.TrainStationTransport;
 
@@ -86,7 +88,7 @@ public class TrainStationLis extends DefaultListener {
 	public void onTrainDepart(TrainExitStationEvent event) {
 		MinecartGroup mg = event.getTrain();
 		mg.getProperties().setColliding(false);
-		mg.getProperties().setSpeedLimit(0.4);
+		event.getTrainStation().removeTrainStopped(mg);
 	}
 
 	@EventHandler
@@ -96,7 +98,7 @@ public class TrainStationLis extends DefaultListener {
 		mg.getProperties().setSpeedLimit(0.2);
 		mg.getProperties().setColliding(true);
 		station.addTrain(mg);
-
+		station.addTrainSlow(mg);
 	}
 
 	@EventHandler
@@ -104,19 +106,49 @@ public class TrainStationLis extends DefaultListener {
 		TrainStation station = event.getTrainStation();
 		MinecartGroup train = event.getTrain();
 		Block toStop = null;
-		//TODO Starting to get a little non-polymorphic. Need to rework stopblocks, or just make many different TrainFullStopEvents.
-		if(station instanceof TrainStationTransport) {
+		if(station.getType().equals(StationType.STORAGE_TRANS)) {
 			toStop = ((TrainStationTransport) station).getMainStopBlock();
-		}
-		for(MinecartMember<?> mm : train) {
-			if(mm instanceof MinecartMemberFurnace) {
-				if(mm.getBlock().equals(toStop)) {
-					train.getProperties().setSpeedLimit(0);
-					station.setDepartingTrain(train);
-					event.getTrainStation().changeSignLogic(event.getTrain().getProperties().getTrainName());
+
+			//We check to see if the train has already stopped. if it has, we don't want to bug it!
+			if(station.hasStopped(train)) return;
+			
+			for(MinecartMember<?> mm : train) {
+				if(mm instanceof MinecartMemberFurnace) {
+					if(mm.getBlock().equals(toStop)) {
+						train.getProperties().setSpeedLimit(0);
+						station.addDepartingTrain(train);
+						station.changeSignLogic(event.getTrain().getProperties().getTrainName());
+						station.updateCartsAvailable(train, EntityType.MINECART_CHEST);
+						station.addTrainStopped(train);
+						break;
+					}
+					else {
+						train.getProperties().setSpeedLimit(0.1);
+					}
 				}
-				else {
-					train.getProperties().setSpeedLimit(0.1);
+			}
+		}
+
+		if(station.getType().equals(StationType.PASSENGER_TRANS)) {
+			toStop = ((PublicTrainStation) station).getMainStopBlock();
+
+			//We check to see if the train has already stopped. if it has, we don't want to bug it!
+			if(station.hasStopped(train)) return;
+			
+			for(MinecartMember<?> mm : train) {
+				if(mm instanceof MinecartMemberFurnace) {
+					if(mm.getBlock().equals(toStop)) {
+						train.getProperties().setSpeedLimit(0);
+						station.addDepartingTrain(train);
+						station.changeSignLogic(event.getTrain().getProperties().getTrainName());
+						station.updateCartsAvailable(train, EntityType.MINECART);
+						train.eject();
+						station.addTrainStopped(train);
+						break;
+					}
+					else {
+						train.getProperties().setSpeedLimit(0.1);
+					}
 				}
 			}
 		}

@@ -1,28 +1,51 @@
 package com.goldrushmc.bukkit.main;
 
+import javax.persistence.PersistenceException;
+
+import net.citizensnpcs.api.CitizensAPI;
+import net.citizensnpcs.api.trait.TraitInfo;
+
+import org.bukkit.Bukkit;
+import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.plugin.PluginManager;
+import org.bukkit.plugin.java.JavaPlugin;
+
 import com.goldrushmc.bukkit.bank.InventoryLis;
-import com.goldrushmc.bukkit.commands.*;
-import com.goldrushmc.bukkit.db.*;
-import com.goldrushmc.bukkit.weapons.GunLis;
-import com.goldrushmc.bukkit.weapons.GunTool;
-import com.goldrushmc.bukkit.mines.*;
+import com.goldrushmc.bukkit.commands.CreateTrainStation;
+import com.goldrushmc.bukkit.commands.RemoveTrainStation;
+import com.goldrushmc.bukkit.commands.ShowVisitorsCommand;
+import com.goldrushmc.bukkit.commands.StationWand;
+import com.goldrushmc.bukkit.commands.TrainCycleCommand;
+import com.goldrushmc.bukkit.commands.TrainStationListCommand;
+import com.goldrushmc.bukkit.db.BankTbl;
+import com.goldrushmc.bukkit.db.CartListTbl;
+import com.goldrushmc.bukkit.db.ItemForeignKeyTbl;
+import com.goldrushmc.bukkit.db.ItemTbl;
+import com.goldrushmc.bukkit.db.JobTbl;
+import com.goldrushmc.bukkit.db.PlayerTbl;
+import com.goldrushmc.bukkit.db.TownTbl;
+import com.goldrushmc.bukkit.db.TrainScheduleTbl;
+import com.goldrushmc.bukkit.db.TrainStationLocationTbl;
+import com.goldrushmc.bukkit.db.TrainStationTbl;
+import com.goldrushmc.bukkit.db.TrainStatusTbl;
+import com.goldrushmc.bukkit.db.TrainTbl;
+import com.goldrushmc.bukkit.guns.GunLis;
+import com.goldrushmc.bukkit.guns.GunTool;
+import com.goldrushmc.bukkit.mines.LoadMinesTask;
+import com.goldrushmc.bukkit.mines.MineCommands;
+import com.goldrushmc.bukkit.mines.MineLis;
+import com.goldrushmc.bukkit.mines.SaveMines;
 import com.goldrushmc.bukkit.panning.PanningLis;
 import com.goldrushmc.bukkit.panning.PanningTool;
 import com.goldrushmc.bukkit.train.listeners.TrainLis;
 import com.goldrushmc.bukkit.train.listeners.TrainStationLis;
 import com.goldrushmc.bukkit.train.listeners.WandLis;
+import com.goldrushmc.bukkit.train.scheduling.TimeCounter;
 import com.goldrushmc.bukkit.train.station.TrainStation;
 import com.goldrushmc.bukkit.train.station.npc.CartTradeable;
-import com.goldrushmc.bukkit.tunnelcollapse.SettingsManager;
 import com.goldrushmc.bukkit.tunnelcollapse.TunnelCollapseCommand;
 import com.goldrushmc.bukkit.tunnelcollapse.TunnelsListener;
-import net.citizensnpcs.api.CitizensAPI;
-import net.citizensnpcs.api.trait.TraitInfo;
-import org.bukkit.Bukkit;
-import org.bukkit.plugin.PluginManager;
-import org.bukkit.plugin.java.JavaPlugin;
 
-import javax.persistence.PersistenceException;
 
 
 public final class Main extends JavaPlugin{
@@ -63,9 +86,13 @@ public final class Main extends JavaPlugin{
 		pm.registerEvents(il, this);
 		pm.registerEvents(ml, this);
 		
-		//Add settings for Tunnel Collapse
-		SettingsManager settings = SettingsManager.getInstance();
-		settings.setup(this);
+		//Add settings for Tunnel Collapse		
+		FileConfiguration fc = this.getConfig();
+		if(fc == null) {
+			SettingsManager settings = SettingsManager.getInstance();
+			settings.setup(this);
+			fc = settings.getFileConfig();
+		}
 
 		//Register traits for the NPCs.
 		if(getServer().getPluginManager().getPlugin("Citizens") == null || getServer().getPluginManager().getPlugin("Citizens").isEnabled() == false) {
@@ -80,7 +107,11 @@ public final class Main extends JavaPlugin{
 		//Populate the train station listener maps
 		//This only works if the database has data to make train stations with....
 //		tsl.populate();
-
+		
+		//Start the time counter, so that we can measure the time remaining for each train.
+		//We need to get the worlds from the config file.
+		Bukkit.getScheduler().scheduleSyncRepeatingTask(this, new TimeCounter(this, Bukkit.getWorld(fc.getString("world"))), 0, 1);
+		
 		//run load task later once world has loaded
 		Bukkit.getServer().broadcastMessage("Loading Mines.. Prepare for Lag..");
 		Bukkit.getServer().getScheduler().runTaskLater(this, new LoadMinesObject(this), 100);
@@ -142,6 +173,7 @@ public final class Main extends JavaPlugin{
 				break; 
 			}
 		}
-		this.getLogger().info("GoldRush Plugin Disabled!");
+		
+		getLogger().info("GoldRush Plugin Disabled!");
 	}
 }
