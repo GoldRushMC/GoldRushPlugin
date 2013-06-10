@@ -56,7 +56,7 @@ public final class Main extends JavaPlugin {
         getCommand("PanningTool").setExecutor(new PanningTool(this));
         getCommand("Mine").setExecutor(new MineCommands(this));
         getCommand("ShowVisitors").setExecutor(new ShowVisitorsCommand(this));
-//        getCommand("TrainCycle").setExecutor(new TrainCycleCommand(this));
+        getCommand("TrainCycle").setExecutor(new TrainCycleCommand(this));
         getCommand("RemoveStation").setExecutor(new RemoveTrainStation(this));
         getCommand("ListStations").setExecutor(new TrainStationListCommand(this));
 

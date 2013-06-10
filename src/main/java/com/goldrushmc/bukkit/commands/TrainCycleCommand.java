@@ -33,9 +33,9 @@ public class TrainCycleCommand extends CommandDefault {
         int taskID = Departure.getTaskID();
         BukkitScheduler s = Bukkit.getScheduler();
 
-        if (args[0].equalsIgnoreCase("Start") && taskID == 0) {
+        if (args[0].equalsIgnoreCase("Start") && taskID == -1) {
             sender.sendMessage("Starting Train Cycle...");
-            taskID = Bukkit.getScheduler().scheduleSyncRepeatingTask(plugin, new Departure(plugin), 100, 400);
+            Departure.setTaskID(Bukkit.getScheduler().scheduleSyncRepeatingTask(plugin, new Departure(plugin), 100, 400));
             return true;
         } else if (taskID != 0) {
             sender.sendMessage("Train Cycle already started!");
@@ -45,9 +45,10 @@ public class TrainCycleCommand extends CommandDefault {
             Bukkit.getScheduler().cancelTask(taskID);
             Departure.resetTaskID();
             return true;
-        } else {
+        } else if(taskID == -1) {
             sender.sendMessage("Train Cycle is not running.");
             return true;
         }
+        return false;
     }
 }

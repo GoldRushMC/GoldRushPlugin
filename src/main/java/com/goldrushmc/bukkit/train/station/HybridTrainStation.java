@@ -414,7 +414,7 @@ public class HybridTrainStation extends TrainStation {
         }
         if (this.goodsTrain != null) {
             //Iterate, find the fuel cart, and add fuel ticks. This is about 4 1/2 minutes of fuel time. Guesstimate.
-            for (MinecartMember<?> mm : this.publicTrain) {
+            for (MinecartMember<?> mm : this.goodsTrain) {
                 if (!(mm instanceof MinecartMemberFurnace)) continue;
                 ((MinecartMemberFurnace) mm).addFuelTicks(5600);
             }

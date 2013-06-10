@@ -8,7 +8,7 @@ import java.util.List;
 public class Departure implements Runnable {
 
     //	private final DBTrainsAccessible db;
-    private static int taskID = 0;
+    private static int taskID = -1;
 
     public Departure(final JavaPlugin plugin) {
 //		this.db = new DBAccess(plugin);
@@ -32,6 +32,10 @@ public class Departure implements Runnable {
     }
 
     public static void resetTaskID() {
-        taskID = 0;
+        taskID = -1;
+    }
+
+    public static void setTaskID(int id) {
+        taskID = id;
     }
 }

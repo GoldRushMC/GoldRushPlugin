@@ -1,8 +1,10 @@
 package com.goldrushmc.bukkit.train.scheduling;
 
+import com.goldrushmc.bukkit.train.signs.SignType;
 import com.goldrushmc.bukkit.train.station.TrainStation;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
+import org.bukkit.block.Sign;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -22,7 +24,7 @@ public class TimeCounter implements Runnable {
 
     public static boolean reset = false;
     public volatile long timeCount = 0;
-    public volatile long currentTime = 0, publik = 0, transport = 0, hub = 0;
+    public volatile long currentTime = 0, publik = 0, transport = 0, hub = 0, hybrid = 0;
     private final JavaPlugin plugin;
     private Map<String, Long> times = new HashMap<String, Long>();
     private Map<String, List<TrainStation>> stations = new HashMap<String, List<TrainStation>>();
@@ -41,15 +43,17 @@ public class TimeCounter implements Runnable {
         //Initialize Lists
         stations.put("Public", new ArrayList<TrainStation>());
         stations.put("Transport", new ArrayList<TrainStation>());
+        stations.put("Hybrid", new ArrayList<TrainStation>());
         stations.put("Hub", new ArrayList<TrainStation>());
         //Load config
         FileConfiguration fc = plugin.getConfig();
         if (fc != null) {
-            //Corrects the time to mintues, so that we dont have things running at a tick time.
+            //Corrects the time to minutes, so that we don't have things running at a tick time.
             int timeCorrector = 1200;
             times.put("Public", fc.getLong("station.times.public") * timeCorrector);
             times.put("Transport", fc.getLong("station.times.transport") * timeCorrector);
             times.put("Hub", fc.getLong("station.times.hub") * timeCorrector);
+            times.put("Hybrid", fc.getLong("station.times.hybrid") * timeCorrector);
         }
     }
 
@@ -71,6 +75,7 @@ public class TimeCounter implements Runnable {
             this.publik = this.times.get("Public");
             this.transport = this.times.get("Transport");
             this.hub = this.times.get("Hub");
+            this.hybrid = this.times.get("Hybrid");
             this.currentTime = 0;
             this.timeCount = 0;
             reset = false;
@@ -82,10 +87,11 @@ public class TimeCounter implements Runnable {
             this.currentTime = update;
         }
 
-        //TODO update the departure times for each station. This will be a bit expensive. Every minute, we update ALL time signs.
+        //Update the departure times for each station. This will be a bit expensive. Every minute, we update ALL time signs.
         if (Math.abs(update - this.currentTime) == 1200) {
             for (TrainStation station : this.stations.get("Public")) {
                 if (station.hasDepartingTrain()) {
+                    List<Sign> signs = station.getSigns().getSigns(SignType.TRAIN_STATION_TIME);
                     long timeSet = this.times.get("Public");
                     station.updateDepartureTime(0);
                 }
@@ -93,8 +99,12 @@ public class TimeCounter implements Runnable {
             for (TrainStation station : this.stations.get("Transport")) {
 
             }
-            for (TrainStation station : this.stations.get("Hub")) {
+            for (TrainStation station : this.stations.get("Hybrid")) {
+                if (station.hasDepartingTrain()) {
+                    List<Sign> signs = station.getSigns().getSigns(SignType.TRAIN_STATION_TIME);
+                    long timeSet = this.times.get("Hybrid");
 
+                }
             }
         }
 
@@ -115,10 +125,10 @@ public class TimeCounter implements Runnable {
             }
             this.transport = update;
         }
-        if (Math.abs(update - this.hub) == this.times.get("Hub")) {
-            if (!this.stations.get("Hub").isEmpty()) {
+        if (Math.abs(update - this.hybrid) == this.times.get("Hybrid")) {
+            if (!this.stations.get("Hybrid").isEmpty()) {
             }
-            hub = update;
+            hybrid = update;
         }
     }
 
@@ -146,6 +156,8 @@ public class TimeCounter implements Runnable {
                     case STORAGE_TRANS:
                         this.stations.get("Transport").add(station);
                         break;
+                    case HYBRID_TRANS:
+                        this.stations.get("Hybrid").add(station);
                 }
             }
         }
