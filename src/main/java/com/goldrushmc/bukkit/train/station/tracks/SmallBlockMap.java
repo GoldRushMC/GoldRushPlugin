@@ -1,12 +1,12 @@
 package com.goldrushmc.bukkit.train.station.tracks;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @SuppressWarnings("null")
 public class SmallBlockMap implements Discoverable {
@@ -137,7 +137,7 @@ public class SmallBlockMap implements Discoverable {
 
 	@Override
 	public List<Block> connectedRails() {
-		List<Block> rails = new ArrayList<Block>();
+		List<Block> rails = new ArrayList<>();
 
 		if(isRail(east)) rails.add(east);
 		if(isRail(west)) rails.add(west);

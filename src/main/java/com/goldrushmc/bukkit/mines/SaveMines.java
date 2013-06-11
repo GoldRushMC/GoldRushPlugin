@@ -1,14 +1,12 @@
 package com.goldrushmc.bukkit.mines;
 
+import org.bukkit.plugin.Plugin;
+
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.List;
-
-import org.bukkit.plugin.Plugin;
-
-import com.goldrushmc.bukkit.main.Main;
 
 public class SaveMines {
 	

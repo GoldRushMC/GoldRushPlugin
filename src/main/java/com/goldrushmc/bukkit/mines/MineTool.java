@@ -1,11 +1,6 @@
 package com.goldrushmc.bukkit.mines;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
-
+import com.goldrushmc.bukkit.defaults.CommandDefault;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -21,12 +16,12 @@ import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.util.BlockIterator;
 import org.bukkit.util.Vector;
 
-import com.goldrushmc.bukkit.defaults.CommandDefault;
+import java.util.*;
 
 public class MineTool  extends CommandDefault {
 	
-	public static Map<Player, List<Integer>> mineSize = new HashMap<Player, List<Integer>>();
-	public static Map<Player, List<blockBackup>> backList = new HashMap<Player, List<blockBackup>>();
+	public static Map<Player, List<Integer>> mineSize = new HashMap<>();
+	public static Map<Player, List<blockBackup>> backList = new HashMap<>();
 
 	public MineTool(JavaPlugin plugin) {
 		super(plugin);
@@ -56,7 +51,7 @@ public class MineTool  extends CommandDefault {
 					} else if (args[0].equalsIgnoreCase("tool")){ 
 						
 						ItemStack panningTool= new ItemStack(Material.CLAY_BALL);
-						List<String> lore = new ArrayList<String>();
+						List<String> lore = new ArrayList<>();
 						lore.add("Right click to denote start of mine");
 						ItemMeta meta = panningTool.getItemMeta();
 						meta.setLore(lore);
@@ -309,7 +304,7 @@ public class MineTool  extends CommandDefault {
 		int miny = MineLis.mineMin.get(p).getBlockY();
 		
 		//Backup array
-		List<blockBackup> temp = new ArrayList<blockBackup>();
+		List<blockBackup> temp = new ArrayList<>();
 		
 		if(backList.containsKey(p)){
 			if(backList.get(p).size() > 0) {

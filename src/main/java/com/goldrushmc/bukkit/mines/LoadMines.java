@@ -1,21 +1,17 @@
 package com.goldrushmc.bukkit.mines;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-
+import com.goldrushmc.bukkit.train.exceptions.MarkerNumberException;
 import org.bukkit.Location;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.util.Vector;
 
-import com.goldrushmc.bukkit.train.exceptions.MarkerNumberException;
+import java.io.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public class LoadMines {
+
 	List<String> mineString = new ArrayList<>();
 	Plugin plugin;
 	JavaPlugin jPlugin;
