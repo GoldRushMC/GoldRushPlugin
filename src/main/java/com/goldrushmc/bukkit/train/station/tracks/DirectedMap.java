@@ -22,6 +22,7 @@ public class DirectedMap implements IDirectedMap {
     private BlockFace originalDir;
     private Block block;
     private boolean done = false;
+    private List<Block> nodes;
 
     public DirectedMap(BlockFace dir, Block start) {
         this.block = start;
@@ -46,26 +47,15 @@ public class DirectedMap implements IDirectedMap {
         } else {
             //Check the top and bottom blocks of the relative block.
             Block check = check(focus.getRelative(toSearch));
-            //If it comes back null, we know that a direction change is in order.
-            if (check == null) {
-                //We try to find a new direction, and if it succeeds, we run getNext() again.
-                if (newDirection()) {
-                    //Recursive, not sure if this will work. it should though, in theory :P
-                    return getNext();
-                }
-                //This should only happen once. ever.
-                else {
-                    done = true;
-                    return null;
-                }
-            } else if (types.contains(check.getType())) {
+        if (types.contains(check.getType())) {
                 last = focus;
                 focus = check;
             }
-        }
         //Add the new block to the focus list.
         mapped.add(focus);
         return focus;
+    }
+        return null;
     }
 
     public boolean isDone() {
@@ -108,7 +98,7 @@ public class DirectedMap implements IDirectedMap {
         if (!types.contains(focus.getRelative(toSearch).getType())) {
             Block check = check(focus.getRelative(toSearch));
             if (check == null) return false;
-            else return types.contains(check);
+            else return types.contains(check.getType());
         } else return types.contains(focus.getRelative(toSearch).getType());
     }
 
@@ -137,59 +127,13 @@ public class DirectedMap implements IDirectedMap {
         return focus;
     }
 
-    public boolean newDirection() {
-        switch (toSearch) {
-            case NORTH:
-            case SOUTH: {
-                if (this.types.contains(focus.getRelative(BlockFace.WEST).getType())) {
-                    setDirection(BlockFace.WEST);
-                } else if (this.types.contains(focus.getRelative(BlockFace.EAST).getType())) {
-                    setDirection(BlockFace.EAST);
-                } else if (!this.types.contains(focus.getRelative(BlockFace.WEST).getType())
-                        && !this.types.contains(focus.getRelative(BlockFace.EAST).getType())) {
-                    Block west = check(focus.getRelative(BlockFace.WEST)),
-                            east = check(focus.getRelative(BlockFace.EAST));
-                    if (this.types.contains(west.getType())) {
-                        setDirection(BlockFace.WEST);
-                    } else if (this.types.contains(east.getType())) {
-                        setDirection(BlockFace.EAST);
-                    }
-                }
-                break;
-            }
-            case EAST:
-            case WEST: {
-                if (this.types.contains(focus.getRelative(BlockFace.NORTH).getType())) {
-                    setDirection(BlockFace.NORTH);
-                } else if (this.types.contains(focus.getRelative(BlockFace.SOUTH).getType())) {
-                    setDirection(BlockFace.SOUTH);
-                } else if (!this.types.contains(focus.getRelative(BlockFace.NORTH).getType())
-                        && !this.types.contains(focus.getRelative(BlockFace.NORTH).getType())) {
-                    Block north = check(focus.getRelative(BlockFace.NORTH)),
-                            south = check(focus.getRelative(BlockFace.SOUTH));
-                    if (this.types.contains(north.getType())) {
-                        setDirection(BlockFace.WEST);
-                    } else if (this.types.contains(south.getType())) {
-                        setDirection(BlockFace.EAST);
-                    }
-                }
-                break;
-            }
-            default:
-                break;
-        }
-        //If the new direction has a block of the type we want, yay!
-        if (hasNext()) return true;
-            //If not, not yay....
-        else return false;
-    }
-
     @Override
     public void goOtherWay() {
         this.focus = block;
         setDirection(originalDir.getOppositeFace());
         done = false;
     }
+<<<<<<< HEAD
 =======
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -381,4 +325,11 @@ public class DirectedMap implements IDirectedMap {
 		done = false;
 	}
 >>>>>>> 93bfc5d008ddd8eda936225ffba6512a35afac98
+=======
+
+    @Override
+    public List<Block> getNodes() {
+        return nodes;
+    }
+>>>>>>> master
 }

@@ -6,12 +6,16 @@ import com.goldrushmc.bukkit.town.Town;
 import com.goldrushmc.bukkit.train.station.TrainStation;
 import org.bukkit.block.Block;
 
+<<<<<<< HEAD
 =======
 >>>>>>> 93bfc5d008ddd8eda936225ffba6512a35afac98
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+=======
+import java.util.*;
+>>>>>>> master
 
 <<<<<<< HEAD
 /**
@@ -51,7 +55,8 @@ class Crawler implements Runnable {
 
     @Override
     public void run() {
-        for (IDirectedMap map : this.maps) {
+        for (ListIterator<IDirectedMap> iterator = this.maps.listIterator(); iterator.hasNext(); ) {
+            IDirectedMap map = iterator.next();
             //Find ALL boundaries involved with this rail system.
             while (!map.isDone()) {
                 Block next = map.getNext();

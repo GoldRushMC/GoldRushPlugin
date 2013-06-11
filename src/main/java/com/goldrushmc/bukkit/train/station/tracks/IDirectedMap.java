@@ -39,6 +39,7 @@ public interface IDirectedMap {
     public boolean isDone();
 
     public void goOtherWay();
+<<<<<<< HEAD
 =======
 public interface IDirectedMap {
 	
@@ -68,4 +69,8 @@ public interface IDirectedMap {
 	
 	public void goOtherWay();
 >>>>>>> 93bfc5d008ddd8eda936225ffba6512a35afac98
+=======
+
+    public List<Block> getNodes();
+>>>>>>> master
 }
