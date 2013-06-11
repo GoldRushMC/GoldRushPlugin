@@ -33,4 +33,6 @@ public interface IDirectedMap {
     public boolean isDone();
 
     public void goOtherWay();
+
+    public List<Block> getNodes();
 }
