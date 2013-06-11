@@ -1,12 +1,11 @@
-package com.goldrushmc.bukkit.guns;
+package com.goldrushmc.bukkit.weapons;
 
 import com.bergerkiller.bukkit.common.events.EntityMoveEvent;
 import com.goldrushmc.bukkit.defaults.DefaultListener;
-import com.goldrushmc.bukkit.weapons.GunTools;
-import com.goldrushmc.bukkit.weapons.Revolver;
-import com.goldrushmc.bukkit.weapons.Rifle;
-import com.goldrushmc.bukkit.weapons.Shotgun;
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
+import org.bukkit.block.Block;
+import org.bukkit.block.BlockFace;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
@@ -14,13 +13,16 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.event.entity.ProjectileHitEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.util.Vector;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 
 public class GunLis extends DefaultListener {
@@ -35,6 +37,7 @@ public class GunLis extends DefaultListener {
     public HashMap<Player, Shotgun> shotgunHash = new HashMap<>();
 
     public HashMap<Integer, Integer> firedEntityHash = new HashMap<>();
+    public HashMap<Integer, Integer> thrownEntityHash = new HashMap<>();
 
     public HashMap<Entity, Vector> velocityHash = new HashMap<>();
     public GunTools gunTools = new GunTools();
@@ -103,7 +106,9 @@ public class GunLis extends DefaultListener {
                     }
                 }
             } else {
-                p.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, 30, 20));
+                if (p.getItemInHand().getType().equals(Material.GOLD_HOE) || p.getItemInHand().getType().equals(Material.GOLD_SPADE) || p.getItemInHand().getType().equals(Material.GOLD_AXE)) {
+                    p.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, 30, 20));
+                }
             }
 
         }
@@ -212,10 +217,14 @@ public class GunLis extends DefaultListener {
     @EventHandler(priority = EventPriority.HIGHEST)
     public void OnEntityMove(EntityMoveEvent e) {
         if (e.getEntityType().equals(EntityType.SNOWBALL)) {
-            if (!velocityHash.containsKey(e.getEntity())) {
-                velocityHash.put(e.getEntity(), e.getEntity().getVelocity());
-            } else {
-                e.getEntity().setVelocity(velocityHash.get(e.getEntity()));
+            if (firedEntityHash.containsKey(e.getEntity().getEntityId())) {
+                if (!velocityHash.containsKey(e.getEntity())) {
+                    velocityHash.put(e.getEntity(), e.getEntity().getVelocity());
+                } else {
+                    e.getEntity().setVelocity(velocityHash.get(e.getEntity()));
+                }
+            //} else if(thrownEntityHash.containsKey(e.getEntity().getEntityId())) {
+
             }
         }
     }
@@ -225,6 +234,44 @@ public class GunLis extends DefaultListener {
         if (e.getDamager().getType().equals(EntityType.SNOWBALL)) {
             int damager = e.getDamager().getEntityId();
             e.setDamage(firedEntityHash.get(damager));
+        }
+    }
+
+    @EventHandler(priority = EventPriority.HIGHEST)
+    public void onHit(ProjectileHitEvent e) {
+        List<Block> bList = new ArrayList<>();
+        Block b = e.getEntity().getLocation().getBlock();
+        bList.add(b);
+        bList.add(b.getRelative(BlockFace.DOWN));
+        bList.add(b.getRelative(BlockFace.EAST));
+        bList.add(b.getRelative(BlockFace.NORTH));
+        bList.add(b.getRelative(BlockFace.SOUTH));
+        bList.add(b.getRelative(BlockFace.WEST));
+        bList.add(b.getRelative(BlockFace.UP));
+        bList.add(b.getRelative(BlockFace.NORTH_EAST));
+        bList.add(b.getRelative(BlockFace.NORTH_WEST));
+        bList.add(b.getRelative(BlockFace.SOUTH_EAST));
+        bList.add(b.getRelative(BlockFace.SOUTH_WEST));
+
+        for(Block bl : bList){
+            if(bl.getType().equals(Material.GLASS) || bl.getType().equals(Material.THIN_GLASS)) {
+                Bukkit.getServer().getScheduler().runTaskLater(plugin, new ReplaceGlass(bl, bl.getType()), 1000);
+                bl.breakNaturally();
+            }
+        }
+    }
+
+    class ReplaceGlass implements Runnable{
+        Block b;
+        Material m;
+        public ReplaceGlass(Block bl, Material m) {
+            b = bl;
+            this.m = m;
+        }
+
+        @Override
+        public void run() {
+            b.setType(m);
         }
     }
 }

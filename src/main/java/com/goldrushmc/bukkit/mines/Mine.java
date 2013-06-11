@@ -1,8 +1,7 @@
 package com.goldrushmc.bukkit.mines;
 
-import java.util.ArrayList;
-import java.util.List;
-
+import com.goldrushmc.bukkit.defaults.BlockFinder;
+import com.goldrushmc.bukkit.train.exceptions.MarkerNumberException;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
@@ -10,16 +9,15 @@ import org.bukkit.block.Block;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.util.Vector;
 
-import com.goldrushmc.bukkit.defaults.BlockFinder;
-import com.goldrushmc.bukkit.main.Main;
-import com.goldrushmc.bukkit.train.exceptions.MarkerNumberException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Mine extends BlockFinder{
 	
 	/*The reason this is private is because we don't want anyone to be able to add/remove from it.
 	 *The mine class itself can facilitate this.
 	 */
-	private static List<Mine> mines = new ArrayList<Mine>();
+	private static List<Mine> mines = new ArrayList<>();
 	
 	public Vector mineMin, mineMax, mineEntrance;
 	Location recCoordOne, recCoordTwo;
@@ -110,27 +108,28 @@ public class Mine extends BlockFinder{
         mines = mineList;
     }
 
-	public void getGoldLeft() {
-		goldLeft = 0;
-		for(Block b : this.selectedArea) {
-			if(b.getType() == Material.GOLD_ORE) {
-				goldLeft++;
-			}
-		}
-	}
+    public void getGoldLeft() {
+        goldLeft = 0;
+        for (Block b : this.selectedArea) {
+            if (b.getType() == Material.GOLD_ORE) {
+                goldLeft++;
+            }
+        }
+    }
+
+    public void reGenerate() {
+        plugin.getServer().broadcastMessage(mineMin.toString());
+        plugin.getServer().broadcastMessage(mineMax.toString());
+        MineGenerator mineGen = new MineGenerator(w, mineMin, mineMax, mineEntrance);
+        mineGen.generate(density);
+    }
+
+    @Override
+    public List<Block> findNonAirBlocks() {
+        // TODO Auto-generated method stub
+        return null;
+    }
 	
 	public String getName() { return name; }
-	
-	public void reGenerate() {
-		plugin.getServer().broadcastMessage(mineMin.toString());
-		plugin.getServer().broadcastMessage(mineMax.toString());
-		MineGenerator mineGen = new MineGenerator(w, mineMin, mineMax, mineEntrance);
-		mineGen.generate(density);
-	}
 
-	@Override
-	public List<Block> findNonAirBlocks() {
-		// TODO Auto-generated method stub
-		return null;
-	}
 }
