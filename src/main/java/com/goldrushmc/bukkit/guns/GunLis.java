@@ -2,6 +2,10 @@ package com.goldrushmc.bukkit.guns;
 
 import com.bergerkiller.bukkit.common.events.EntityMoveEvent;
 import com.goldrushmc.bukkit.defaults.DefaultListener;
+import com.goldrushmc.bukkit.weapons.GunTools;
+import com.goldrushmc.bukkit.weapons.Revolver;
+import com.goldrushmc.bukkit.weapons.Rifle;
+import com.goldrushmc.bukkit.weapons.Shotgun;
 import org.bukkit.Material;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
@@ -26,13 +30,13 @@ public class GunLis extends DefaultListener {
         // TODO Auto-generated constructor stub
     }
 
-    public HashMap<Player, Revolver> revolverHash = new HashMap<Player, Revolver>();
-    public HashMap<Player, Rifle> rifleHash = new HashMap<Player, Rifle>();
-    public HashMap<Player, Shotgun> shotgunHash = new HashMap<Player, Shotgun>();
+    public HashMap<Player, Revolver> revolverHash = new HashMap<>();
+    public HashMap<Player, Rifle> rifleHash = new HashMap<>();
+    public HashMap<Player, Shotgun> shotgunHash = new HashMap<>();
 
-    public HashMap<Integer, Integer> firedEntityHash = new HashMap<Integer, Integer>();
+    public HashMap<Integer, Integer> firedEntityHash = new HashMap<>();
 
-    public HashMap<Entity, Vector> velocityHash = new HashMap<Entity, Vector>();
+    public HashMap<Entity, Vector> velocityHash = new HashMap<>();
     public GunTools gunTools = new GunTools();
 
     @EventHandler(priority = EventPriority.HIGHEST)

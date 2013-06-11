@@ -1,9 +1,7 @@
 package com.goldrushmc.bukkit.weapons;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-
+import com.bergerkiller.bukkit.common.events.EntityMoveEvent;
+import com.goldrushmc.bukkit.defaults.DefaultListener;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -11,7 +9,6 @@ import org.bukkit.block.BlockFace;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
-import org.bukkit.entity.Snowball;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.block.Action;
@@ -23,8 +20,9 @@ import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.util.Vector;
 
-import com.bergerkiller.bukkit.common.events.EntityMoveEvent;
-import com.goldrushmc.bukkit.defaults.DefaultListener;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 
 
 public class GunLis extends DefaultListener {
@@ -34,14 +32,14 @@ public class GunLis extends DefaultListener {
         // TODO Auto-generated constructor stub
     }
 
-    public HashMap<Player, Revolver> revolverHash = new HashMap<Player, Revolver>();
-    public HashMap<Player, Rifle> rifleHash = new HashMap<Player, Rifle>();
-    public HashMap<Player, Shotgun> shotgunHash = new HashMap<Player, Shotgun>();
+    public HashMap<Player, Revolver> revolverHash = new HashMap<>();
+    public HashMap<Player, Rifle> rifleHash = new HashMap<>();
+    public HashMap<Player, Shotgun> shotgunHash = new HashMap<>();
 
-    public HashMap<Integer, Integer> firedEntityHash = new HashMap<Integer, Integer>();
-    public HashMap<Integer, Integer> thrownEntityHash = new HashMap<Integer, Integer>();
+    public HashMap<Integer, Integer> firedEntityHash = new HashMap<>();
+    public HashMap<Integer, Integer> thrownEntityHash = new HashMap<>();
 
-    public HashMap<Entity, Vector> velocityHash = new HashMap<Entity, Vector>();
+    public HashMap<Entity, Vector> velocityHash = new HashMap<>();
     public GunTools gunTools = new GunTools();
 
     @EventHandler(priority = EventPriority.HIGHEST)
@@ -241,7 +239,7 @@ public class GunLis extends DefaultListener {
 
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onHit(ProjectileHitEvent e) {
-        List<Block> bList = new ArrayList<Block>();
+        List<Block> bList = new ArrayList<>();
         Block b = e.getEntity().getLocation().getBlock();
         bList.add(b);
         bList.add(b.getRelative(BlockFace.DOWN));

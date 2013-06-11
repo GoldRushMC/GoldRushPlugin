@@ -24,7 +24,7 @@ public class TunnelsListener extends DefaultListener {
 
     Countdown c = new Countdown(plugin);
 
-    private List<Player> players = new ArrayList<Player>();
+    private List<Player> players = new ArrayList<>();
 
     @EventHandler
     public void onPlayerMove(PlayerMoveEvent evt) {

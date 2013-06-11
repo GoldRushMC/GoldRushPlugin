@@ -20,20 +20,7 @@ import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 
-<<<<<<< HEAD
 import java.util.*;
-=======
-import com.bergerkiller.bukkit.tc.CollisionMode;
-import com.bergerkiller.bukkit.tc.controller.MinecartGroup;
-import com.bergerkiller.bukkit.tc.controller.MinecartMember;
-import com.bergerkiller.bukkit.tc.controller.type.MinecartMemberChest;
-import com.bergerkiller.bukkit.tc.controller.type.MinecartMemberRideable;
-import com.bergerkiller.bukkit.tc.properties.TrainProperties;
-import com.goldrushmc.bukkit.train.station.tracks.Discoverable;
-import com.goldrushmc.bukkit.train.station.tracks.SmallBlockMap;
-import com.goldrushmc.bukkit.train.util.TrainTools;
-import com.goldrushmc.bukkit.train.util.TrainTools.TrainType;
->>>>>>> 93bfc5d008ddd8eda936225ffba6512a35afac98
 
 /**
  * <p>This class is in charge of facilitating the TrainCarts plugin.</p>
@@ -46,18 +33,18 @@ import com.goldrushmc.bukkit.train.util.TrainTools.TrainType;
 public class TrainFactory {
 
     //References the train groups and their names.
-    public static Map<String, MinecartGroup> trains = new HashMap<String, MinecartGroup>();
+    public static Map<String, MinecartGroup> trains = new HashMap<>();
 
     //References the owners to a list of minecarts they own.
     //Chest Minecart owners
-    public static Map<Player, List<MinecartMemberChest>> ownerStorage = new HashMap<Player, List<MinecartMemberChest>>();
+    public static Map<Player, List<MinecartMemberChest>> ownerStorage = new HashMap<>();
     //Rideable Minecart owners
-    public static Map<Player, List<MinecartMemberRideable>> ownerRideable = new HashMap<Player, List<MinecartMemberRideable>>();
+    public static Map<Player, List<MinecartMemberRideable>> ownerRideable = new HashMap<>();
 
     public static List<Sign> trainStations;
 
     //Stores the player's rail selections
-    public static Map<Player, Location[]> selections = new HashMap<Player, Location[]>();
+    public static Map<Player, Location[]> selections = new HashMap<>();
 
     /**
      * <p><b>FOR TESTING PURPOSES ONLY</b></p>
@@ -90,7 +77,7 @@ public class TrainFactory {
         if (!TrainTools.singleRailCheck(trainSpawn)) return;
 
         //Specifying the cart types to be created. This is simply one of each.
-        List<EntityType> carts = new LinkedList<EntityType>();
+        List<EntityType> carts = new LinkedList<>();
         carts.add(EntityType.MINECART_FURNACE);
         carts.add(EntityType.MINECART);
         carts.add(EntityType.MINECART_CHEST);
@@ -145,7 +132,7 @@ public class TrainFactory {
         }
 
         //Specifying the cart types to be created. This is simply one of each.
-        List<EntityType> carts = new LinkedList<EntityType>();
+        List<EntityType> carts = new LinkedList<>();
 
         carts.add(EntityType.MINECART_FURNACE);
         for (int i = 0; i < numOfPassengers; i++) {
@@ -203,7 +190,7 @@ public class TrainFactory {
         }
 
         //Specifying the cart types to be created.
-        List<EntityType> carts = new LinkedList<EntityType>();
+        List<EntityType> carts = new LinkedList<>();
 
         carts.add(EntityType.MINECART_FURNACE);
         for (int i = 0; i < numOfPassengers; i++) {
@@ -255,7 +242,7 @@ public class TrainFactory {
         }
 
         //Specifying the cart types to be created.
-        List<EntityType> carts = new LinkedList<EntityType>();
+        List<EntityType> carts = new LinkedList<>();
         carts.add(EntityType.MINECART_FURNACE);
         for (int i = 0; i < numOfChests; i++) {
             carts.add(EntityType.MINECART_CHEST);
@@ -286,7 +273,7 @@ public class TrainFactory {
         }
 
         //Specifying the cart types to be created.
-        List<EntityType> carts = new LinkedList<EntityType>();
+        List<EntityType> carts = new LinkedList<>();
         carts.add(EntityType.MINECART_FURNACE);
         for (int i = 0; i < numOfChests; i++) {
             carts.add(EntityType.MINECART_CHEST);
@@ -429,7 +416,7 @@ public class TrainFactory {
         if (m2.getClass().isInstance(new MinecartMemberChest())) {
             //If they are not there, initialize a list and put the first cart in there.
             if (!ownerStorage.containsKey(owner)) {
-                List<MinecartMemberChest> addThis = new ArrayList<MinecartMemberChest>();
+                List<MinecartMemberChest> addThis = new ArrayList<>();
                 addThis.add((MinecartMemberChest) m2);
                 ownerStorage.put(owner, addThis);
             }
@@ -441,7 +428,7 @@ public class TrainFactory {
         } else {
             //If they are not there, initialize a list and put the first cart in there.
             if (!ownerRideable.containsKey(owner)) {
-                List<MinecartMemberRideable> addThis = new ArrayList<MinecartMemberRideable>();
+                List<MinecartMemberRideable> addThis = new ArrayList<>();
                 addThis.add((MinecartMemberRideable) m2);
                 ownerRideable.put(owner, addThis);
             }

@@ -20,7 +20,7 @@ import java.util.Map;
 
 public class WandLis extends DefaultListener {
 
-    public static Map<Player, List<Location>> wandLoc = new HashMap<Player, List<Location>>();
+    public static Map<Player, List<Location>> wandLoc = new HashMap<>();
 
     public WandLis(JavaPlugin plugin) {
         super(plugin);

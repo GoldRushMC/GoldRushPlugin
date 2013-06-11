@@ -27,9 +27,9 @@ public class PanningLis extends DefaultListener {
     }
 
     int panDuration = 100;
-    public static HashMap<Player, Boolean> panningHash = new HashMap<Player, Boolean>();
-    public static HashMap<Player, Location> panningMoveHash = new HashMap<Player, Location>();
-    public static HashMap<Player, Location> panningLocHash = new HashMap<Player, Location>();
+    public static HashMap<Player, Boolean> panningHash = new HashMap<>();
+    public static HashMap<Player, Location> panningMoveHash = new HashMap<>();
+    public static HashMap<Player, Location> panningLocHash = new HashMap<>();
 
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onRightClick(PlayerInteractEvent e) {
@@ -83,7 +83,7 @@ public class PanningLis extends DefaultListener {
         panningLocHash.put(p, e.getClickedBlock().getLocation());
 
         //uses logic
-        List<String> lore = new ArrayList<String>();
+        List<String> lore = new ArrayList<>();
         ItemMeta meta = e.getItem().getItemMeta();
         int usesLeft = Integer.valueOf(meta.getLore().get(0).substring(0, meta.getLore().get(0).indexOf(' ')));
         lore.add(usesLeft - 1 + " uses left");

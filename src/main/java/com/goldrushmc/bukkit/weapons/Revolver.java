@@ -5,18 +5,15 @@ import org.bukkit.entity.Player;
 import org.bukkit.entity.Snowball;
 import org.bukkit.plugin.Plugin;
 
-<<<<<<< HEAD:src/main/java/com/goldrushmc/bukkit/guns/Revolver.java
 import java.util.HashMap;
 import java.util.List;
 
-=======
->>>>>>> 93bfc5d008ddd8eda936225ffba6512a35afac98:src/main/java/com/goldrushmc/bukkit/weapons/Revolver.java
 public class Revolver {
     Player p;
     Plugin plugin;
 
-    public HashMap<Player, Boolean> cockHash = new HashMap<Player, Boolean>();
-    public HashMap<Player, Boolean> hasReloadedHash = new HashMap<Player, Boolean>();
+    public HashMap<Player, Boolean> cockHash = new HashMap<>();
+    public HashMap<Player, Boolean> hasReloadedHash = new HashMap<>();
     public GunTools gunTools = new GunTools();
     public int fireDelay = 20;
     public int firedEntity = 0;

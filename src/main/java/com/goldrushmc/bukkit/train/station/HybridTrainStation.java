@@ -152,7 +152,7 @@ public class HybridTrainStation extends TrainStation {
 
     public void createGoodsTransport() {
 
-        if (this.trains == null) this.trains = new ArrayList<MinecartGroup>();
+        if (this.trains == null) this.trains = new ArrayList<>();
         int trainNum = this.trains.size() + 1;
 
         List<EntityType> carts = new ArrayList<>();

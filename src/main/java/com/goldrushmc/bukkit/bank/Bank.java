@@ -18,7 +18,7 @@ import java.util.Map;
  */
 public abstract class Bank extends BlockFinder {
 
-    private Map<Player, Account> accountHolders = new HashMap<Player, Account>();
+    private Map<Player, Account> accountHolders = new HashMap<>();
 
     public Bank(World world, List<Location> coords, JavaPlugin plugin) throws MarkerNumberException {
         super(world, coords, plugin);

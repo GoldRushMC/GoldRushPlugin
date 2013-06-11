@@ -23,7 +23,7 @@ public class PanningTool extends CommandDefault {
 
         Player p = (Player) sender;
         ItemStack panningTool = new ItemStack(Material.BOWL);
-        List<String> lore = new ArrayList<String>();
+        List<String> lore = new ArrayList<>();
         lore.add("10 used left");
         ItemMeta meta = panningTool.getItemMeta();
         meta.setLore(lore);

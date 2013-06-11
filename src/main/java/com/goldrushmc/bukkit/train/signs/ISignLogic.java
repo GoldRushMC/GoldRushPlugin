@@ -14,7 +14,6 @@ import java.util.Map;
  */
 public interface ISignLogic {
 
-<<<<<<< HEAD
     /**
      * Gets the stored {@code Map<?,?>} of {@link Sign} and {@link SignType}
      *
@@ -90,78 +89,4 @@ public interface ISignLogic {
      */
     public void updateTrain(String trainName);
 
-=======
-	/**
-	 * Gets the stored {@code Map<?,?>} of {@link Sign} and {@link SignType}
-	 * 
-	 * @return The set of signs, {@code Set<Sign>}.
-	 */
-	public Map<Sign, SignType> getSignTypes();
-	
-	/**
-	 * Add a {@link Sign} to the permission mapping.
-	 * 
-	 * @param sign The {@link Sign} to add.
-	 */
-	public void addSign(Sign sign, SignType type);
-	
-	/**
-	 * Adds a {@link Sign} to the set of signs.
-	 * 
-	 * @param signName The {@link Sign}'s name
-	 * @param sign The {@link Sign}
-	 */
-	public boolean addSign(String signName, Sign sign);
-	/**
-	 * Removes all references to the specified sign.
-	 * 
-	 * @param signName The name of the {@link Sign} to remove.
-	 */
- 	public void removeSign(String signName);
-	
-	/**
-	 * Gets a {@link Sign} with the specified name.
-	 * 
-	 * @param signName The {@link Sign} name.
-	 * @return The {@link Sign}
-	 */
-	public Sign getSign(String signName);
-	
-	
-	/**
-	 * Gets the {@link Sign}s with the specified {@link SignType}
-	 * 
-	 * @param signName The {@link SignType}.
-	 * @return The {@link Sign}
-	 */
-	public List<Sign> getSigns(SignType type);
-	
-	/**
-	 * Gets the type with the specified sign.
-	 * 
-	 * @param type
-	 * @return
-	 */
-	SignType getSignType(Sign sign);
-	/**
-	 * Finds all of the relevant {@link Sign}s to Gold Rush MC, within a given chunk.
-	 * 
-	 * @param chunk The {@link Chunk} to search.
-	 */
-	public void findRelevantSigns(List<Block> blocks);
-	
-	/**
-	 * Gets the {@link Chunk} associated with this logic.
-	 * @return
-	 */
-	public List<Sign> getSigns();
-	
-	/**
-	 * Updates all the signs with the right train name, so players can buy and sell properly from that train.
-	 * 
-	 * @param trainName
-	 */
-	public void updateTrain(String trainName);
-	
->>>>>>> 93bfc5d008ddd8eda936225ffba6512a35afac98
 }

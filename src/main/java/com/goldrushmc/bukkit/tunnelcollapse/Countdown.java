@@ -10,7 +10,7 @@ import java.util.List;
 public class Countdown extends BukkitRunnable {
 
     public Player player = null;
-    public List<Player> ps = new ArrayList<Player>();
+    public List<Player> ps = new ArrayList<>();
 
     public Plugin plugin;
 

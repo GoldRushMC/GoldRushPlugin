@@ -23,7 +23,6 @@ public class Departure implements Runnable {
         for (TrainStation station : stations) {
             station.pushQueue();
 //			if(!hasTrain) Bukkit.broadcastMessage(station.getStationName() + " has no trains to depart...");
-<<<<<<< HEAD
         }
     }
 
@@ -39,17 +38,4 @@ public class Departure implements Runnable {
     public static void setTaskID(int id) {
         taskID = id;
     }
-=======
-		}
-	}
-
-
-	public static int getTaskID() {
-		return taskID;
-	}
-	
-	public static void resetTaskID() {
-		taskID = 0;
-	}
->>>>>>> 93bfc5d008ddd8eda936225ffba6512a35afac98
 }

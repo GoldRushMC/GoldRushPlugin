@@ -8,11 +8,6 @@ import org.bukkit.block.BlockFace;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 
-<<<<<<< HEAD
-=======
-import com.goldrushmc.bukkit.train.station.tracks.SmallBlockMap;
-
->>>>>>> 93bfc5d008ddd8eda936225ffba6512a35afac98
 public class TrainTools {
 
     public static EntityType getTrainType(String trainType) {

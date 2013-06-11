@@ -15,11 +15,11 @@ public class Shotgun {
     Player p;
     Plugin plugin;
 
-    public HashMap<Player, Boolean> cockHash = new HashMap<Player, Boolean>();
-    public HashMap<Player, Boolean> hasReloadedHash = new HashMap<Player, Boolean>();
+    public HashMap<Player, Boolean> cockHash = new HashMap<>();
+    public HashMap<Player, Boolean> hasReloadedHash = new HashMap<>();
     public GunTools gunTools = new GunTools();
     public int fireDelay = 60;
-    public List<Integer> firedEntity = new ArrayList<Integer>();
+    public List<Integer> firedEntity = new ArrayList<>();
     public int damage = 16;
     public int shotNo = 6;
     boolean canFire = true;
