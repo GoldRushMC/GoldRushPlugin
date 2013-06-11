@@ -1,4 +1,4 @@
-package com.goldrushmc.bukkit.guns;
+package com.goldrushmc.bukkit.weapons;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;

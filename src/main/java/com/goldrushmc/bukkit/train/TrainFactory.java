@@ -20,7 +20,20 @@ import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 
+<<<<<<< HEAD
 import java.util.*;
+=======
+import com.bergerkiller.bukkit.tc.CollisionMode;
+import com.bergerkiller.bukkit.tc.controller.MinecartGroup;
+import com.bergerkiller.bukkit.tc.controller.MinecartMember;
+import com.bergerkiller.bukkit.tc.controller.type.MinecartMemberChest;
+import com.bergerkiller.bukkit.tc.controller.type.MinecartMemberRideable;
+import com.bergerkiller.bukkit.tc.properties.TrainProperties;
+import com.goldrushmc.bukkit.train.station.tracks.Discoverable;
+import com.goldrushmc.bukkit.train.station.tracks.SmallBlockMap;
+import com.goldrushmc.bukkit.train.util.TrainTools;
+import com.goldrushmc.bukkit.train.util.TrainTools.TrainType;
+>>>>>>> 93bfc5d008ddd8eda936225ffba6512a35afac98
 
 /**
  * <p>This class is in charge of facilitating the TrainCarts plugin.</p>

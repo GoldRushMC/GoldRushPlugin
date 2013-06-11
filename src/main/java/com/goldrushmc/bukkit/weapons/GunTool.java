@@ -1,4 +1,4 @@
-package com.goldrushmc.bukkit.guns;
+package com.goldrushmc.bukkit.weapons;
 
 import com.goldrushmc.bukkit.defaults.CommandDefault;
 import org.bukkit.Material;

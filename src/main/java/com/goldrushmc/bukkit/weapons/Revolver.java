@@ -1,30 +1,29 @@
-package com.goldrushmc.bukkit.guns;
+package com.goldrushmc.bukkit.weapons;
 
 import org.bukkit.*;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Snowball;
 import org.bukkit.plugin.Plugin;
-import org.bukkit.util.Vector;
 
-import java.util.ArrayList;
+<<<<<<< HEAD:src/main/java/com/goldrushmc/bukkit/guns/Revolver.java
 import java.util.HashMap;
 import java.util.List;
-import java.util.Random;
 
-public class Shotgun {
+=======
+>>>>>>> 93bfc5d008ddd8eda936225ffba6512a35afac98:src/main/java/com/goldrushmc/bukkit/weapons/Revolver.java
+public class Revolver {
     Player p;
     Plugin plugin;
 
     public HashMap<Player, Boolean> cockHash = new HashMap<Player, Boolean>();
     public HashMap<Player, Boolean> hasReloadedHash = new HashMap<Player, Boolean>();
     public GunTools gunTools = new GunTools();
-    public int fireDelay = 60;
-    public List<Integer> firedEntity = new ArrayList<Integer>();
-    public int damage = 16;
-    public int shotNo = 6;
+    public int fireDelay = 20;
+    public int firedEntity = 0;
+    public int damage = 8;
     boolean canFire = true;
 
-    public Shotgun(Player player, Plugin plu) {
+    public Revolver(Player player, Plugin plu) {
         p = player;
         plugin = plu;
     }
@@ -52,30 +51,15 @@ public class Shotgun {
                         }
                     }
 
-                    Random randomGenerator = new Random();
-                    for (int i = 0; i < shotNo; i++) {
-                        Snowball snowball = p.launchProjectile(Snowball.class);
-                        snowball.setVelocity(p.getLocation().getDirection().multiply(5));
+                    Snowball snowball = p.launchProjectile(Snowball.class);
+                    snowball.setVelocity(p.getLocation().getDirection().multiply(5));
+                    snowball.setShooter(p);
 
-                        int randomInt = randomGenerator.nextInt(2);
-                        switch (randomInt) {
-                            case 0:
-                                snowball.setVelocity(snowball.getVelocity().add(new Vector(0, 0, snowball.getVelocity().getZ() / 4)));
-                                break;
-                            case 1:
-                                snowball.setVelocity(snowball.getVelocity().add(new Vector(snowball.getVelocity().getX() / 4, 0, 0)));
-                                break;
-                            case 2:
-                                snowball.setVelocity(snowball.getVelocity().add(new Vector(0, snowball.getVelocity().getY() / 4, 0)));
-                                break;
-                        }
+                    firedEntity = snowball.getEntityId();
 
-                        snowball.setShooter(p);
-                        firedEntity.add(snowball.getEntityId());
-                        Bukkit.getServer().getScheduler().runTaskLater(plugin, new DestroyAfter(snowball), 6);
-                    }
+                    Bukkit.getServer().getScheduler().runTaskLater(plugin, new DestroyAfter(snowball), 20);
 
-                    p.getItemInHand().setDurability((short) (p.getItemInHand().getDurability() + 30));
+                    p.getItemInHand().setDurability((short) (p.getItemInHand().getDurability() + 6));
                     cockHash.put(p, false);
 
                     FiringDelay fd = new FiringDelay();
@@ -91,17 +75,17 @@ public class Shotgun {
 
     public void reload() {
         hasReloadedHash.put(p, false);
-        if (p.getItemInHand().getDurability() > 1 && p.getItemInHand().getDurability() < 32) {
+        if (p.getItemInHand().getDurability() > 1 && p.getItemInHand().getDurability() < 33) {
             for (int i = 0; i < 36; i++) {
                 if (p.getInventory().getItem(i) != null) {
                     if (p.getInventory().getItem(i).getTypeId() == 332) {
-                        if (p.getInventory().getItem(i).getAmount() == 1 || p.getInventory().getItem(i).getAmount() == 2) {
+                        if (p.getInventory().getItem(i).getAmount() == 1) {
                             p.getInventory().clear(i);
                         } else {
-                            p.getInventory().getItem(i).setAmount(p.getInventory().getItem(i).getAmount() - 2);
+                            p.getInventory().getItem(i).setAmount(p.getInventory().getItem(i).getAmount() - 1);
                         }
                         p.playSound(p.getLocation(), Sound.CLICK, 5, 2f);
-                        p.getItemInHand().setDurability((short) (p.getItemInHand().getDurability() - 30));
+                        p.getItemInHand().setDurability((short) (p.getItemInHand().getDurability() - 6));
                         hasReloadedHash.put(p, true);
                         break;
                     }

@@ -1,13 +1,16 @@
-package com.goldrushmc.bukkit.guns;
+package com.goldrushmc.bukkit.weapons;
 
 import org.bukkit.*;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Snowball;
 import org.bukkit.plugin.Plugin;
 
+<<<<<<< HEAD:src/main/java/com/goldrushmc/bukkit/guns/Rifle.java
 import java.util.HashMap;
 import java.util.List;
 
+=======
+>>>>>>> 93bfc5d008ddd8eda936225ffba6512a35afac98:src/main/java/com/goldrushmc/bukkit/weapons/Rifle.java
 public class Rifle {
     Player p;
     Plugin plugin;
