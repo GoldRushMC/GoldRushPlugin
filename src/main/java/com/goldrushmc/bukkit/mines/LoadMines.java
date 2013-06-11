@@ -1,55 +1,51 @@
 package com.goldrushmc.bukkit.mines;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-
+import com.goldrushmc.bukkit.train.exceptions.MarkerNumberException;
 import org.bukkit.Location;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.util.Vector;
 
-import com.goldrushmc.bukkit.train.exceptions.MarkerNumberException;
+import java.io.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public class LoadMines {
-	List<String> mineString = new ArrayList<String>();
+
+	List<String> mineString = new ArrayList<>();
 	Plugin plugin;
 	JavaPlugin jPlugin;
 	public LoadMines(Plugin p, JavaPlugin pl){
 		plugin = p;
 		jPlugin = pl;
 		File file = new File(p.getDataFolder(), "mines.txt");
-		BufferedReader in = null;
+		BufferedReader in;
 		try {
 			in = new BufferedReader(new FileReader(file));
 			
-			String line = null;
+			String line;
 			try {
 				while((line = in.readLine())!=null){
 				  mineString.add(line);
 				}
 			} catch (IOException e) {
-				p.getLogger().info("GOLDRUSHMC: error reading mines file");
+				p.getLogger().info("error reading mines file");
 			}
 		} catch (FileNotFoundException e) {
-			p.getLogger().info("GOLDRUSHMC: mines file not found, creating now");
+			p.getLogger().info("mines file not found, creating now");
 			
 			File newFile = new File(p.getDataFolder(), "mines.txt");
 			try {
 				newFile.createNewFile();
 			} catch (IOException e1) {
 				// TODO Auto-generated catch block
-				p.getLogger().info("GOLDRUSHMC: error creating mines file");
+				p.getLogger().info("error creating mines file");
 			}
 		}		
 	}
 	
 	public List<Mine> parseMinesStrings() {
-		List<Mine> mines = new ArrayList<Mine>();
+		List<Mine> mines = new ArrayList<>();
 		for(String mine : mineString) {
 			String[] mineParse = mine.split(":");
 			//get world name
@@ -60,7 +56,7 @@ public class LoadMines {
 			String[] loc2 = mineParse[3].split(",");
 			
 			//list for storing both locations
-			List<Location> locList= new ArrayList<Location>();
+			List<Location> locList= new ArrayList<>();
 			
 			//create first location at given world
 			locList.add(new Location(plugin.getServer().getWorld(world), 

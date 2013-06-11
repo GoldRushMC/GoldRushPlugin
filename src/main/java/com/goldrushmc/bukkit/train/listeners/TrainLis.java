@@ -1,38 +1,37 @@
 package com.goldrushmc.bukkit.train.listeners;
 
+import com.bergerkiller.bukkit.tc.controller.MinecartGroup;
+import com.bergerkiller.bukkit.tc.events.GroupLinkEvent;
+import com.goldrushmc.bukkit.defaults.DefaultListener;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import com.bergerkiller.bukkit.tc.controller.MinecartGroup;
-import com.bergerkiller.bukkit.tc.events.GroupLinkEvent;
-import com.goldrushmc.bukkit.defaults.DefaultListener;
-
 public class TrainLis extends DefaultListener {
 
-	public TrainLis(JavaPlugin plugin) {
-		super(plugin);
-	}
+    public TrainLis(JavaPlugin plugin) {
+        super(plugin);
+    }
 
-	/**
-	 * Checks to make sure that the groups connecting are of the same train, and if they aren't, cancel the event.
-	 * 
-	 * @param event The {@link GroupLinkEvent} in question.
-	 */
-	@EventHandler(priority = EventPriority.HIGHEST)
-	public void onCartLink(GroupLinkEvent event) {
+    /**
+     * Checks to make sure that the groups connecting are of the same train, and if they aren't, cancel the event.
+     *
+     * @param event The {@link GroupLinkEvent} in question.
+     */
+    @EventHandler(priority = EventPriority.HIGHEST)
+    public void onCartLink(GroupLinkEvent event) {
 
-		//Cancelled by default
-		event.setCancelled(true);
+        //Cancelled by default
+        event.setCancelled(true);
 
-		MinecartGroup mg1 = event.getGroup1(), mg2 = event.getGroup2();
-		String train1 = mg1.getProperties().getTrainName(), train2 = mg2.getProperties().getTrainName();
+        MinecartGroup mg1 = event.getGroup1(), mg2 = event.getGroup2();
+        String train1 = mg1.getProperties().getTrainName(), train2 = mg2.getProperties().getTrainName();
 
-		if(train1.equals(train2)) {
-			event.setCancelled(false);
-		}
-	}
-	
+        if (train1.equals(train2)) {
+            event.setCancelled(false);
+        }
+    }
+
 //	@EventHandler
 //	public void onCartDerailed(MemberBlockChangeEvent event) {
 //		if(event.getMember().isDerailed()) {
@@ -43,7 +42,7 @@ public class TrainLis extends DefaultListener {
 //	}
 
 	/*
-	/**
+    /**
 	 *  THIS EVENT IS NOT BEING USED AT THE MOMENT. WE NEED TO FIGURE OUT WHAT TO DO WITH BROKEN CARTS
 	 * @param event
 
@@ -117,7 +116,7 @@ public class TrainLis extends DefaultListener {
 
 	 */
 
-	
+
 //	/**
 //	 * Handles the interaction of each player, determines what method should be called in each case.
 //	 * 
@@ -193,8 +192,6 @@ public class TrainLis extends DefaultListener {
 		}
 	}
 	 */
-
-
 
 
 }

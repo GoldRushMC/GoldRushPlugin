@@ -1,14 +1,12 @@
 package com.goldrushmc.bukkit.mines;
 
+import org.bukkit.plugin.Plugin;
+
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.List;
-
-import org.bukkit.plugin.Plugin;
-
-import com.goldrushmc.bukkit.main.Main;
 
 public class SaveMines {
 	
@@ -58,7 +56,7 @@ public class SaveMines {
 			}
 			return true;			
 		} catch (IOException e) {
-			p.getLogger().info("GOLDRUSHMC: error saving mines to file, trying again.");
+			p.getLogger().info("error saving mines to file, trying again.");
 			return false;
 		} catch (Exception e) {
 			p.getLogger().info("No mines to save");

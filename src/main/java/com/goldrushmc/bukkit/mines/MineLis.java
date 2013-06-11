@@ -1,8 +1,9 @@
 package com.goldrushmc.bukkit.mines;
 
-import java.util.HashMap;
-import java.util.Map;
-
+import com.goldrushmc.bukkit.defaults.DefaultListener;
+import com.sk89q.worldedit.bukkit.WorldEditPlugin;
+import com.sk89q.worldedit.bukkit.selections.CuboidSelection;
+import com.sk89q.worldedit.bukkit.selections.Selection;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
@@ -15,16 +16,14 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.util.Vector;
 
-import com.goldrushmc.bukkit.defaults.DefaultListener;
-import com.sk89q.worldedit.bukkit.WorldEditPlugin;
-import com.sk89q.worldedit.bukkit.selections.CuboidSelection;
-import com.sk89q.worldedit.bukkit.selections.Selection;
+import java.util.HashMap;
+import java.util.Map;
 
-public class MineLis extends DefaultListener{
+public class MineLis extends DefaultListener {
 
-	public static Map<Player, Location> mineLoc = new HashMap<Player, Location>();
-	public static Map<Player, Vector> mineMin = new HashMap<Player, Vector>();
-	public static Map<Player, Vector> mineMax = new HashMap<Player, Vector>();
+	public static Map<Player, Location> mineLoc = new HashMap<>();
+	public static Map<Player, Vector> mineMin = new HashMap<>();
+	public static Map<Player, Vector> mineMax = new HashMap<>();
 	public static WorldEditPlugin worldEditPlugin = null;
 	
 	public MineLis(JavaPlugin plugin) {
@@ -33,7 +32,7 @@ public class MineLis extends DefaultListener{
 	}
 	
 	@EventHandler(priority = EventPriority.HIGHEST)
-	public void onRightClick(PlayerInteractEvent e) {		
+	public void onRightClick(PlayerInteractEvent e) {
 		Action eAction = e.getAction();
 		Player p = e.getPlayer();
 		

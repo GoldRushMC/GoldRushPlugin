@@ -1,14 +1,8 @@
 package com.goldrushmc.bukkit.mines;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import org.bukkit.ChatColor;
-import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.World;
+import com.goldrushmc.bukkit.defaults.CommandDefault;
+import com.goldrushmc.bukkit.train.exceptions.MarkerNumberException;
+import org.bukkit.*;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -16,14 +10,16 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import com.goldrushmc.bukkit.defaults.CommandDefault;
-import com.goldrushmc.bukkit.train.exceptions.MarkerNumberException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class MineCommands  extends CommandDefault {
-	
-	public static Map<Player, List<Integer>> mineSize = new HashMap<Player, List<Integer>>();
-	public static Map<Player, List<blockBackup>> backList = new HashMap<Player, List<blockBackup>>();
-	public static Map<Player, String> nameList = new HashMap<Player, String>();
+
+	public static Map<Player, List<Integer>> mineSize = new HashMap<>();
+	public static Map<Player, List<blockBackup>> backList = new HashMap<>();
+	public static Map<Player, String> nameList = new HashMap<>();
 
 	public MineCommands(JavaPlugin plugin) {
 		super(plugin);
@@ -32,7 +28,7 @@ public class MineCommands  extends CommandDefault {
 	@Override
 	public boolean onCommand(CommandSender sender, Command cmd, String label,
 			String[] args) {
-		
+
 		Player p = (Player) sender;
 
 		if(cmd.getName().equalsIgnoreCase("mine")){ // command label
@@ -42,7 +38,7 @@ public class MineCommands  extends CommandDefault {
 							if(args.length == 2){
 								try{
 									p.sendMessage("Created mine outline");
-									p.sendMessage("Type " + ChatColor.GREEN + "/mine confirm " + 
+									p.sendMessage("Type " + ChatColor.GREEN + "/mine confirm " +
 										ChatColor.WHITE + "to create the mine, " +
 										ChatColor.RED + "/mine cancel " + ChatColor.WHITE + "to start again.");
 									makeMarkers(p.getWorld(), p, Material.WOOL); //makes a wool outline of the area selected
@@ -56,10 +52,10 @@ public class MineCommands  extends CommandDefault {
 								p.sendMessage(ChatColor.RED + "Missing mine name!");
 								return false;
 							}
-					} else if (args[0].equalsIgnoreCase("tool")){ 
-						
+					} else if (args[0].equalsIgnoreCase("tool")){
+
 						ItemStack panningTool= new ItemStack(Material.CLAY_BALL);
-						List<String> lore = new ArrayList<String>();
+						List<String> lore = new ArrayList<>();
 						lore.add("Right click to denote start of mine");
 						ItemMeta meta = panningTool.getItemMeta();
 						meta.setLore(lore);
@@ -67,60 +63,41 @@ public class MineCommands  extends CommandDefault {
 						panningTool.setItemMeta(meta);
 						p.getInventory().addItem(panningTool);
 						return true;
-						
-					} else if (args[0].equalsIgnoreCase("confirm")){ 
+
+					} else if (args[0].equalsIgnoreCase("confirm")){
 						Location loc1 = MineLis.mineMin.get(p).toLocation(p.getWorld());
 						p.sendMessage(String.valueOf(loc1.getBlockY()));
 						Location loc2 = MineLis.mineMax.get(p).toLocation(p.getWorld());
 						p.sendMessage(String.valueOf(loc2.getBlockY()));
-						
-						List<Location> locList = new ArrayList<Location>();
+
+						List<Location> locList = new ArrayList<>();
 						locList.add(loc1);
 						locList.add(loc2);
 						if(nameList.containsKey(p)) {
 							try {
-								Mine newMine = new Mine(nameList.get(p), p.getWorld(), 
+								Mine newMine = new Mine(nameList.get(p), p.getWorld(),
 										locList, plugin, MineLis.mineLoc.get(p).toVector(), 2, false);
 							} catch (MarkerNumberException e) {
 								plugin.getLogger().info("GOLDRUSHMC: MarkerNumberException creating mine");
 							}
-							
-							SaveMines saveMines = new SaveMines(plugin);
+
 							int count = 0;
 							Boolean save = false;
 							while(!save) {
-								save = saveMines.save();
+                                Bukkit.getServer().getScheduler().runTask(plugin, new SaveMinesObject(plugin));
 								count++;
-								if(count==5) { 
+								if(count==5) {
 									plugin.getLogger().info("GOLDRUSHMC: Could not save mines after 5 retrys!");
 									save = true;
 								}
 							}
 						}
-												
+
 						return true;
 					} else if (args[0].equalsIgnoreCase("load")){
-						if(args.length == 2){
-							int i = 0;
-							for(Mine mine : Mine.getMines()) {
-								p.sendMessage(mine.name);
-								if(mine.name == args[1]) {
-									LoadMines loadMines = new LoadMines(plugin, plugin);
-									for(Mine mine2 :loadMines.parseMinesStrings()) {
-										p.sendMessage(mine2.name);
-										if(mine.name == mine2.name) {
-											Mine.getMines().set(i, mine2);
-										}
-									}
-								}
-								i++;
-							}
-							
-							return true;
-						} else {
-							return false;
-						}
-					} else if (args[0].equalsIgnoreCase("cancel")){ 
+                        Bukkit.getServer().getScheduler().runTaskLater(plugin, new LoadMinesObject(plugin), 10);
+                        return true;
+					} else if (args[0].equalsIgnoreCase("cancel")){
 						undoMarkers(p.getWorld(), p); //undoes the placement of wool outline
 						return true;
 					} else {
@@ -137,25 +114,25 @@ public class MineCommands  extends CommandDefault {
 		return false;
 		}
 	}
-	
+
 	private void makeMarkers(World w, Player p, Material m) {
-		
+
 		int maxx = MineLis.mineMax.get(p).getBlockX();
 		int minx = MineLis.mineMin.get(p).getBlockX();
 		int maxz = MineLis.mineMax.get(p).getBlockZ();
 		int minz = MineLis.mineMin.get(p).getBlockZ();
 		int maxy = MineLis.mineMax.get(p).getBlockY();
 		int miny = MineLis.mineMin.get(p).getBlockY();
-		
+
 		//Backup array
-		List<blockBackup> temp = new ArrayList<blockBackup>();
-		
+		List<blockBackup> temp = new ArrayList<>();
+
 		//if(backList.containsKey(p)){
 			//if(backList.get(p).size() > 0) {
 				//undoMarkers(w, p);
 			//}
 		//}
-		
+
 		//loops to only fill the edges of the cube
 		backList.remove(p);
 		for(int x = minx; x <= maxx; x++) {
@@ -201,21 +178,21 @@ public class MineCommands  extends CommandDefault {
 				}
 			}
 		}
-		
+
 		backList.put(p, temp);
 	}
-	
+
 	private void undoMarkers(World w, Player p) {
 		for(int i = 0; i < backList.get(p).size(); i++){
 			w.getBlockAt(backList.get(p).get(i).location).setType(backList.get(p).get(i).material);
 		}
 	}
-	
+
 	//class for storing the block backup data
 	class blockBackup {
 		public Location location;
 		public Material material;
-	
+
 		public blockBackup(Location loc, Material mat) {
 			location = loc;
 			material = mat;
