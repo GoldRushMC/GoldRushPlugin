@@ -2,7 +2,7 @@ name: GoldRushMC
 version: 1.5
 description: The plugin created to facilitate the Gold Rush Server Features
 author: Diremonsoon, lexwebb, 1SmallVille1
-database: false
+database: true
 #Make sure you have a database ready!!! otherwise errors will fly!
 #website: http://forums.bukkit.org/threads/ GET NEW WEBSITE ADDRESS AND APPEND
 
@@ -11,6 +11,7 @@ depend:
  - Citizens
  - Train Carts
  - BKCommonLib
+ - WorldEdit
 
 commands:
   fall:
