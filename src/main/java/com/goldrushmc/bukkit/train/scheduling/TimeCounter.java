@@ -2,7 +2,6 @@ package com.goldrushmc.bukkit.train.scheduling;
 
 import com.goldrushmc.bukkit.train.signs.SignType;
 import com.goldrushmc.bukkit.train.station.TrainStation;
-import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.block.Sign;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -22,7 +21,7 @@ import java.util.Map;
  */
 public class TimeCounter implements Runnable {
 
-    public static boolean reset = false;
+    public boolean reset = false;
     public volatile long timeCount = 0;
     public volatile long currentTime = 0, publik = 0, transport = 0, hub = 0, hybrid = 0;
     private final JavaPlugin plugin;
@@ -69,46 +68,37 @@ public class TimeCounter implements Runnable {
         //if the time is changed, we will know. This also applies for new days.
         if ((this.timeCount + 1) != update) reset();
 
-        this.timeCount = update;
+        timeCount = update;
 
         if (reset) {
-            this.publik = this.times.get("Public");
-            this.transport = this.times.get("Transport");
-            this.hub = this.times.get("Hub");
-            this.hybrid = this.times.get("Hybrid");
-            this.currentTime = 0;
-            this.timeCount = 0;
+            timeCount = 0;
             reset = false;
         }
 
         //Every 5 minutes, do this.
-        if (Math.abs(update - currentTime) == 6000) {
+        if (update % 6000 == 1) {
             onUpdateTick();
-            this.currentTime = update;
         }
 
         //Update the departure times for each station. This will be a bit expensive. Every minute, we update ALL time signs.
-        if (Math.abs(update - this.currentTime) == 1200) {
+        if (update % 1200 == 1) {
             for (TrainStation station : this.stations.get("Public")) {
                 if (station.hasDepartingTrain()) {
                     List<Sign> signs = station.getSigns().getSigns(SignType.TRAIN_STATION_TIME);
                     long timeSet = this.times.get("Public");
-                    station.updateDepartureTime(0);
+                    station.updateDepartureTime(timeSet - publik);
                 }
             }
             for (TrainStation station : this.stations.get("Transport")) {
-
-            }
-            for (TrainStation station : this.stations.get("Hybrid")) {
                 if (station.hasDepartingTrain()) {
                     List<Sign> signs = station.getSigns().getSigns(SignType.TRAIN_STATION_TIME);
-                    long timeSet = this.times.get("Hybrid");
-
+                    long timeSet = this.times.get("Transport");
+                    station.updateDepartureTime(timeSet - transport);
                 }
             }
         }
 
-        if (Math.abs(update - this.publik) == this.times.get("Public")) {
+        if (update % this.times.get("Public") == 1) {
             if (!this.stations.get("Public").isEmpty()) {
                 for (TrainStation station : this.stations.get("Public")) {
                     station.pushQueue();
@@ -116,20 +106,19 @@ public class TimeCounter implements Runnable {
             }
             this.publik = update;
         }
-        if (Math.abs(update - this.transport) == this.times.get("Transport")) {
+        if (update % this.times.get("Transport") == 1) {
             if (!this.stations.get("Transport").isEmpty()) {
-                Bukkit.getLogger().info("Sending Transport Trains!"); //TODO
                 for (TrainStation station : this.stations.get("Transport")) {
                     station.pushQueue();
                 }
             }
-            this.transport = update;
+            transport = update;
         }
-        if (Math.abs(update - this.hybrid) == this.times.get("Hybrid")) {
-            if (!this.stations.get("Hybrid").isEmpty()) {
-            }
-            hybrid = update;
-        }
+//        if (update % this.times.get("Hybrid") == 1) {
+//            if (!this.stations.get("Hybrid").isEmpty()) {
+//            }
+//            hybrid = update;
+//        }
     }
 
     public void onUpdateTick() {
@@ -138,14 +127,15 @@ public class TimeCounter implements Runnable {
         if (stations.isEmpty()) return;
 
         boolean add = true;
+
         for (TrainStation station : stations) {
             for (List<TrainStation> stationList : this.stations.values()) {
-                if (stationList.contains(station)) {
+                if (stationList.contains(station) || !station.getWorld().equals(world)) {
                     add = false;
-                    continue;
+                    break;
                 }
             }
-            if (add) {
+            if(add){
                 //TODO Need to add a Hub station class, and add logic to add it to scheduling.
                 switch (station.getType()) {
                     case DEFAULT:
@@ -163,7 +153,7 @@ public class TimeCounter implements Runnable {
         }
     }
 
-    public static void reset() {
+    public void reset() {
         reset = true;
     }
 }

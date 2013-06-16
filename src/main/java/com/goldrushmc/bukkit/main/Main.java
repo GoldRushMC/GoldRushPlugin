@@ -20,7 +20,6 @@ import net.citizensnpcs.api.CitizensAPI;
 import net.citizensnpcs.api.trait.TraitInfo;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
-import org.bukkit.WorldType;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -70,7 +69,7 @@ public final class Main extends JavaPlugin {
 
 
         //Add settings for Tunnel Collapse
-        FileConfiguration fc = this.getConfig();
+        FileConfiguration fc = getConfig();
         File f = new File("config.yml");
         if(!(f.exists())) {
             SettingsManager settings = SettingsManager.getInstance();
@@ -100,8 +99,8 @@ public final class Main extends JavaPlugin {
         List<World> worlds = this.getServer().getWorlds();
         for(World world : worlds) {
             //Start the time counter, so that we can measure the time remaining for each train.
-            //We need to get the worlds from the config file. ONLY CARES ABOUT NORMAL TYPE WORLDS
-            if(world.getWorldType().equals(WorldType.NORMAL)) Bukkit.getScheduler().scheduleSyncRepeatingTask(this, new TimeCounter(this, world), 0, 1);
+            //We need to get the worlds from the config file. ONLY CARES ABOUT NON-NETHER AND NON-END WORLDS.
+            if(world.getEnvironment().equals(World.Environment.NORMAL)) Bukkit.getScheduler().scheduleSyncRepeatingTask(this, new TimeCounter(this, world), 0, 1);
         }
 
 
@@ -118,8 +117,8 @@ public final class Main extends JavaPlugin {
             getDatabase().find(TrainTbl.class).findRowCount();
             getDatabase().find(TrainScheduleTbl.class).findRowCount();
             getDatabase().find(TrainStatusTbl.class).findRowCount();
-            getDatabase().find(TrainStationTbl.class).findRowCount();
-            getDatabase().find(TrainStationLocationTbl.class).findRowCount();
+            getDatabase().find(BlockFinderTbl.class).findRowCount();
+            getDatabase().find(LocationTbl.class).findRowCount();
             getDatabase().find(PlayerTbl.class).findRowCount();
             getDatabase().find(TownTbl.class).findRowCount();
             getDatabase().find(BankTbl.class).findRowCount();
@@ -139,8 +138,8 @@ public final class Main extends JavaPlugin {
 //		list.add(TrainTbl.class);
 //		list.add(TrainScheduleTbl.class);
 //		list.add(TrainStatusTbl.class);
-//		list.add(TrainStationTbl.class);
-//		list.add(TrainStationLocationTbl.class);
+//		list.add(BlockFinderTbl.class);
+//		list.add(LocationTbl.class);
 //		list.add(PlayerTbl.class);
 //		list.add(TownTbl.class);
 //		list.add(BankTbl.class);
