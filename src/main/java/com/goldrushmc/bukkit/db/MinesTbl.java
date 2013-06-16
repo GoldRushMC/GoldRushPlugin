@@ -28,13 +28,13 @@ public class MinesTbl {
     private String worldName;
     @Column(name = "LOC_ONE")
     @NotEmpty
-    private Location locOne;
+    private String locOne;
     @Column(name = "LOC_TWO")
     @NotEmpty
-    private Location locTwo;
+    private String locTwo;
     @Column(name = "ENTRANCE_POS")
     @NotEmpty
-    private Vector entrancePos;
+    private String entrancePos;
     @Column(name = "DENSITY")
     @NotEmpty
     private Integer density;
@@ -58,28 +58,28 @@ public class MinesTbl {
         this.worldName = worldName;
     }
 
-    public Location getLocOne() {
+    public String getLocOne() {
         return locOne;
     }
 
     public void setLocOne(Location locOne) {
-        this.locOne = locOne;
+        this.locOne = locOne.toString();
     }
 
-    public Location getLocTwo() {
+    public String getLocTwo() {
         return locTwo;
     }
 
     public void setLocTwo(Location locTwo) {
-        this.locTwo = locTwo;
+        this.locTwo = locTwo.toString();
     }
 
-    public Vector getEntrancePos() {
+    public String getEntrancePos() {
         return entrancePos;
     }
 
     public void setEntrancePos(Vector entrancePos) {
-        this.entrancePos = entrancePos;
+        this.entrancePos = entrancePos.toString();
     }
 
     public Integer getDensity() {
