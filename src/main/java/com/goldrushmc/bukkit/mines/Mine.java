@@ -6,9 +6,13 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
+import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.event.block.BlockDamageEvent;
+import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.util.Vector;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -129,7 +133,22 @@ public class Mine extends BlockFinder{
         // TODO Auto-generated method stub
         return null;
     }
-	
-	public String getName() { return name; }
+
+    @Override
+    public void onPlayerDamageAttempt(BlockDamageEvent event) {
+        //To change body of implemented methods use File | Settings | File Templates.
+    }
+
+    @Override
+    public void onPlayerBreakAttempt(BlockBreakEvent event) {
+        //To change body of implemented methods use File | Settings | File Templates.
+    }
+
+    @Override
+    public void onPlayerPlaceAttempt(BlockPlaceEvent event) {
+        //To change body of implemented methods use File | Settings | File Templates.
+    }
+
+    public String getName() { return name; }
 
 }

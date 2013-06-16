@@ -20,25 +20,25 @@ public class LoadMines {
         //temp list to stop repeated re-queering of the database
         List<MinesTbl> mineTableList = p.getDatabase().find(MinesTbl.class).findList();
 
-        for(MinesTbl mineEnt: mineTableList) {
-            //map list values to variables for use in mine creation
-            String name = mineEnt.getName();
-            String worldName = mineEnt.getWorldName();
-            List<Location> locList = new ArrayList<>();
-                locList.add(mineEnt.getLocOne());
-                locList.add(mineEnt.getLocTwo());
-            Vector entrancePos = mineEnt.getEntrancePos();
-            int density = mineEnt.getDensity();
-            Boolean isGen = mineEnt.getGenerated();
-
-            //attempt to recreate the mine into a temporary mine variable
-            try {
-                Mine tempMine =  new Mine(name, p.getServer().getWorld(worldName), locList, pl, entrancePos, density, isGen);
-                mines.add(tempMine);
-            } catch (MarkerNumberException e) {
-                p.getLogger().info("Error creating Mine, incorrect number of Coords!");
-            }
-        }
+//        for(MinesTbl mineEnt: mineTableList) {
+//            //map list values to variables for use in mine creation
+//            String name = mineEnt.getName();
+//            String worldName = mineEnt.getWorldName();
+//            List<Location> locList = new ArrayList<>();
+//                locList.add(mineEnt.getLocOne());
+//                locList.add(mineEnt.getLocTwo());
+//            Vector entrancePos = new Vector(mineEnt.getEntrancePos());
+//            int density = mineEnt.getDensity();
+//            Boolean isGen = mineEnt.getGenerated();
+//
+//            //attempt to recreate the mine into a temporary mine variable
+//            try {
+//                Mine tempMine =  new Mine(name, p.getServer().getWorld(worldName), locList, pl, entrancePos, density, isGen);
+//                mines.add(tempMine);
+//            } catch (MarkerNumberException e) {
+//                p.getLogger().info("Error creating Mine, incorrect number of Coords!");
+//            }
+//        }
 
         //reset global mines list to loaded mines.
         Mine.setMines(mines);

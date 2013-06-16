@@ -94,7 +94,7 @@ public final class Main extends JavaPlugin {
 
         //run load task later once world has loaded
         Bukkit.getServer().broadcastMessage("Loading Mines.. Prepare for Lag..");
-        //Bukkit.getServer().getScheduler().runTaskLater(this, new LoadMinesObject(this), 100);
+        //Bukkit.getServer().getScheduler().runTaskLater(this, new LoadData(this), 100);
 
         //Just get a list. this way, every world that is "normal" has the capability of scheduling.
         List<World> worlds = this.getServer().getWorlds();
@@ -104,7 +104,8 @@ public final class Main extends JavaPlugin {
             if(world.getEnvironment().equals(World.Environment.NORMAL)) Bukkit.getScheduler().scheduleSyncRepeatingTask(this, new TimeCounter(this, world), 0, 1);
         }
 
-
+        //Enabling time increase
+        Bukkit.getServer().getScheduler().runTaskLater(this, new TimeManager(this), 2);
 
         //run load task later once world has loaded
         Bukkit.getServer().broadcastMessage("Loading Mines.. Prepare for Lag..");
@@ -161,7 +162,7 @@ public final class Main extends JavaPlugin {
         int count = 0;
         Boolean saved = false;
         while(saved == false) {
-            //Bukkit.getScheduler().runTask(this, new SaveMinesObject(this));
+            //Bukkit.getScheduler().runTask(this, new SaveData(this));
             count++;
             if(count==5) {
                 this.getLogger().info("Could not save mines after 5 retry's! Exiting..");
