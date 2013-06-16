@@ -84,7 +84,7 @@ public class MineCommands  extends CommandDefault {
 							int count = 0;
 							Boolean save = false;
 							while(!save) {
-                                Bukkit.getServer().getScheduler().runTask(plugin, new SaveMinesObject(plugin));
+                                //TODO Bukkit.getServer().getScheduler().runTask(plugin, new SaveMinesObject(plugin));
 								count++;
 								if(count==5) {
 									plugin.getLogger().info("GOLDRUSHMC: Could not save mines after 5 retrys!");
@@ -95,7 +95,7 @@ public class MineCommands  extends CommandDefault {
 
 						return true;
 					} else if (args[0].equalsIgnoreCase("load")){
-                        Bukkit.getServer().getScheduler().runTaskLater(plugin, new LoadMinesObject(plugin), 10);
+                        //TODO Bukkit.getServer().getScheduler().runTaskLater(plugin, new LoadMinesObject(plugin), 10);
                         return true;
 					} else if (args[0].equalsIgnoreCase("cancel")){
 						undoMarkers(p.getWorld(), p); //undoes the placement of wool outline
