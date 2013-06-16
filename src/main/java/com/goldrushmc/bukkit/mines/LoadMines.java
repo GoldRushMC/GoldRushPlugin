@@ -1,5 +1,6 @@
 package com.goldrushmc.bukkit.mines;
 
+import com.goldrushmc.bukkit.db.MinesTbl;
 import com.goldrushmc.bukkit.train.exceptions.MarkerNumberException;
 import org.bukkit.Location;
 import org.bukkit.plugin.Plugin;
@@ -12,74 +13,35 @@ import java.util.List;
 
 public class LoadMines {
 
-	List<String> mineString = new ArrayList<>();
-	Plugin plugin;
-	JavaPlugin jPlugin;
+	List<Mine> mines = new ArrayList<>();
+
 	public LoadMines(Plugin p, JavaPlugin pl){
-		plugin = p;
-		jPlugin = pl;
-		File file = new File(p.getDataFolder(), "mines.txt");
-		BufferedReader in;
-		try {
-			in = new BufferedReader(new FileReader(file));
-			
-			String line;
-			try {
-				while((line = in.readLine())!=null){
-				  mineString.add(line);
-				}
-			} catch (IOException e) {
-				p.getLogger().info("error reading mines file");
-			}
-		} catch (FileNotFoundException e) {
-			p.getLogger().info("mines file not found, creating now");
-			
-			File newFile = new File(p.getDataFolder(), "mines.txt");
-			try {
-				newFile.createNewFile();
-			} catch (IOException e1) {
-				// TODO Auto-generated catch block
-				p.getLogger().info("error creating mines file");
-			}
-		}		
+
+        //temp list to stop repeated re-queering of the database
+        List<MinesTbl> mineTableList = p.getDatabase().find(MinesTbl.class).findList();
+
+        for(MinesTbl mineEnt: mineTableList) {
+            //map list values to variables for use in mine creation
+            String name = mineEnt.getName();
+            String worldName = mineEnt.getWorldName();
+            List<Location> locList = new ArrayList<>();
+                locList.add(mineEnt.getLocOne());
+                locList.add(mineEnt.getLocTwo());
+            Vector entrancePos = mineEnt.getEntrancePos();
+            int density = mineEnt.getDensity();
+            Boolean isGen = mineEnt.getGenerated();
+
+            //attempt to recreate the mine into a temporary mine variable
+            try {
+                Mine tempMine =  new Mine(name, p.getServer().getWorld(worldName), locList, pl, entrancePos, density, isGen);
+                mines.add(tempMine);
+            } catch (MarkerNumberException e) {
+                p.getLogger().info("Error creating Mine, incorrect number of Coords!");
+            }
+        }
+
+        //reset global mines list to loaded mines.
+        Mine.setMines(mines);
 	}
-	
-	public List<Mine> parseMinesStrings() {
-		List<Mine> mines = new ArrayList<>();
-		for(String mine : mineString) {
-			String[] mineParse = mine.split(":");
-			//get world name
-			String world = mineParse[1];
-			
-			//get double list of both locations needed
-			String[] loc1 = mineParse[2].split(",");
-			String[] loc2 = mineParse[3].split(",");
-			
-			//list for storing both locations
-			List<Location> locList= new ArrayList<>();
-			
-			//create first location at given world
-			locList.add(new Location(plugin.getServer().getWorld(world), 
-					Double.valueOf(loc1[0]), 
-					Double.valueOf(loc1[1]), 
-					Double.valueOf(loc1[2])));
-			//create secon location at given world
-			locList.add(new Location(plugin.getServer().getWorld(world), 
-					Double.valueOf(loc2[0]), 
-					Double.valueOf(loc2[1]), 
-					Double.valueOf(loc2[2]))); 
-			
-			String[] vec = mineParse[4].split(",");
-			Vector pos = new Vector(Integer.valueOf(vec[0]), Integer.valueOf(vec[1]), Integer.valueOf(vec[2]));
-			Boolean gened = Boolean.valueOf(mineParse[6]);
-			try {
-				mines.add(new Mine(mineParse[0], plugin.getServer().getWorld(world), locList, jPlugin, pos, Integer.valueOf(mineParse[5]), gened));
-			} catch (NumberFormatException e) {
-				plugin.getLogger().info("GOLDRUSHMC: error loading mine - NumberFormatException");
-			} catch (MarkerNumberException e) {
-				plugin.getLogger().info("GOLDRUSHMC: error loading mine - MarkedNumberException");
-			}
-		}
-		return mines;		
-	}
+
 }
