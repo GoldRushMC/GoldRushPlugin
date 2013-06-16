@@ -26,6 +26,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import javax.persistence.PersistenceException;
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 
 
@@ -42,7 +43,7 @@ public final class Main extends JavaPlugin {
 
     @Override
     public void onEnable() {
-//		setupDB();
+		setupDB();
 
         //Add commands
         getCommand("StationWand").setExecutor(new StationWand(this));
@@ -93,7 +94,7 @@ public final class Main extends JavaPlugin {
 
         //run load task later once world has loaded
         Bukkit.getServer().broadcastMessage("Loading Mines.. Prepare for Lag..");
-        Bukkit.getServer().getScheduler().runTaskLater(this, new LoadMinesObject(this), 100);
+        //Bukkit.getServer().getScheduler().runTaskLater(this, new LoadMinesObject(this), 100);
 
         //Just get a list. this way, every world that is "normal" has the capability of scheduling.
         List<World> worlds = this.getServer().getWorlds();
@@ -107,7 +108,7 @@ public final class Main extends JavaPlugin {
 
         //run load task later once world has loaded
         Bukkit.getServer().broadcastMessage("Loading Mines.. Prepare for Lag..");
-        Bukkit.getServer().getScheduler().runTaskLater(this, new LoadMinesTask(this), 100);
+        //Bukkit.getServer().getScheduler().runTaskLater(this, new LoadMinesTask(this), 100);
 
         getLogger().info(getDescription().getName() + " " + getDescription().getVersion() + " Enabled!");
     }
@@ -126,6 +127,7 @@ public final class Main extends JavaPlugin {
             getDatabase().find(CartListTbl.class).findRowCount();
             getDatabase().find(ItemForeignKeyTbl.class).findRowCount();
             getDatabase().find(ItemTbl.class).findRowCount();
+            getDatabase().find(MinesTbl.class).findRowCount();
         } catch (PersistenceException | NullPointerException e) {
             getLogger().info("Installing database for " + getDescription().getName() + " due to first time use.");
             installDDL();
@@ -159,7 +161,7 @@ public final class Main extends JavaPlugin {
         int count = 0;
         Boolean saved = false;
         while(saved == false) {
-            Bukkit.getScheduler().runTask(this, new SaveMinesObject(this));
+            //Bukkit.getScheduler().runTask(this, new SaveMinesObject(this));
             count++;
             if(count==5) {
                 this.getLogger().info("Could not save mines after 5 retry's! Exiting..");
