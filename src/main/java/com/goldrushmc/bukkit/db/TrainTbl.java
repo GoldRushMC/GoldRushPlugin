@@ -25,7 +25,7 @@ public class TrainTbl {
     @OneToOne
     private TrainStatusTbl status;
     @ManyToOne
-    private TrainStationTbl station;
+    private BlockFinderTbl station;
 
     public int getId() {
         return id;
@@ -67,7 +67,7 @@ public class TrainTbl {
         this.worldName = worldName;
     }
 
-    public TrainStationTbl getStation() {
+    public BlockFinderTbl getStation() {
         return station;
     }
 
@@ -79,7 +79,7 @@ public class TrainTbl {
         this.name = name;
     }
 
-    public void setStation(TrainStationTbl station) {
+    public void setStation(BlockFinderTbl station) {
         this.station = station;
     }
 

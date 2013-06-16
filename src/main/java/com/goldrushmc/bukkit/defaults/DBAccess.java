@@ -79,37 +79,37 @@ public class DBAccess implements DBTrainsAccessible {
     }
 
     @Override
-    public Query<TrainStationLocationTbl> queryTrainStationLocations() {
+    public Query<LocationTbl> queryTrainStationLocations() {
         // TODO Auto-generated method stub
         return null;
     }
 
     @Override
-    public Query<TrainStationTbl> queryTrainStations() {
+    public Query<BlockFinderTbl> queryTrainStations() {
         // TODO Auto-generated method stub
         return null;
     }
 
     @Override
-    public List<TrainStationTbl> getTrainStations() {
+    public List<BlockFinderTbl> getTrainStations() {
         // TODO Auto-generated method stub
         return null;
     }
 
     @Override
-    public List<TrainStationLocationTbl> getTrainStationLocations() {
+    public List<LocationTbl> getTrainStationLocations() {
         // TODO Auto-generated method stub
         return null;
     }
 
     @Override
-    public TrainStationTbl getTrainStation(String stationName) {
+    public BlockFinderTbl getTrainStation(String stationName) {
         // TODO Auto-generated method stub
         return null;
     }
 
     @Override
-    public TrainStationTbl getTrainStation(TrainTbl train) {
+    public BlockFinderTbl getTrainStation(TrainTbl train) {
         // TODO Auto-generated method stub
         return null;
     }

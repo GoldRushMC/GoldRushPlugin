@@ -322,7 +322,7 @@ public class TrainStationTransport extends TrainStation {
         train.setProperties(tp);
 
         this.addTrain(train);
-        if (this.departingTrains.get(0) == null) this.departingTrains.add(train);
+        if (this.departingTrains.isEmpty()) this.departingTrains.add(train);
         this.changeSignLogic(train.getProperties().getTrainName());
         this.updateCartsAvailable(train, EntityType.MINECART_CHEST);
         this.hasStopped.put(train, true);
@@ -356,8 +356,8 @@ public class TrainStationTransport extends TrainStation {
 
     @Override
     public boolean pushQueue() {
+        if(departingTrains.isEmpty()) return false;
         MinecartGroup mg = this.departingTrains.get(0);
-        if (mg == null) return false;
         mg.getProperties().setSpeedLimit(0.4);
         mg.getProperties().setColliding(false);
         for (MinecartMember<?> mm : mg) {
@@ -399,8 +399,7 @@ public class TrainStationTransport extends TrainStation {
 
     @Override
     public boolean hasDepartingTrain() {
-        if (this.departingTrains.get(0) == null) return false;
-        else return true;
+        return departingTrains.isEmpty();
     }
 
     @Override
@@ -438,7 +437,7 @@ public class TrainStationTransport extends TrainStation {
             //The train has hit the stop block, and needs to stop.
             else if (getStopBlocks().contains(to)) {
                 //Check to see if there is already a departing train assigned. If so, we don't need to add it again.
-                if (this.departingTrains.get(0) == null) {
+                if (this.departingTrains.isEmpty()) {
                     //If there is no departing train yet, we need to add this one.
                     TrainFullStopEvent stop = new TrainFullStopEvent(this, event.getGroup());
                     Bukkit.getServer().getPluginManager().callEvent(stop);
@@ -529,28 +528,26 @@ public class TrainStationTransport extends TrainStation {
     @Override
     public boolean findStillTrains() {
         MinecartGroup[] trains = MinecartGroup.getGroups();
-        for (int i = 0; i < trains.length; i++) {
-            if (!trains[i].isMoving()) {
+        for (MinecartGroup train : trains) {
+            if (!train.isMoving()) {
                 //At least the front of the train must be WITHIN the station.
-                for (MinecartMember<?> mm : trains[i]) {
+                for (MinecartMember<?> mm : train) {
 
                     boolean foundTrain = false;
                     if (!(mm instanceof MinecartMemberFurnace)) continue;
 
                     if (this.stopBlocks.contains(mm.getBlock())) {
-                        this.departingTrains.add(trains[i]);
-                        this.hasStopped.put(this.departingTrains.get(0), true);
+                        this.departingTrains.add(train);
+                        this.hasStopped.put(train, true);
                         foundTrain = true;
-                        Bukkit.getLogger().info("Found a still train! Added to departing.");
                         break;
                     } else {
                         for (Block b : this.trainArea) {
                             //If the train is within the station grounds, accept it.
                             if (b.equals(mm.getBlock())) {
-                                this.trains.add(trains[i]);
-                                this.hasStopped.put(trains[i], false);
+                                this.trains.add(train);
+                                this.hasStopped.put(train, false);
                                 foundTrain = true;
-                                Bukkit.getLogger().info("Found a still train! Added to regular list.");
                                 break;
                             }
                         }

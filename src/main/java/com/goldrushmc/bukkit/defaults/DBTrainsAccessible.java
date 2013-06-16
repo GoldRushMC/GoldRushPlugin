@@ -9,9 +9,9 @@ import java.util.List;
 public interface DBTrainsAccessible {
 
 
-    Query<TrainStationLocationTbl> queryTrainStationLocations();
+    Query<LocationTbl> queryTrainStationLocations();
 
-    Query<TrainStationTbl> queryTrainStations();
+    Query<BlockFinderTbl> queryTrainStations();
 
     /**
      * Queries the DB for the TrainScheduleTbl class.
@@ -34,9 +34,9 @@ public interface DBTrainsAccessible {
      */
     Query<TrainStatusTbl> queryStatus();
 
-    List<TrainStationTbl> getTrainStations();
+    List<BlockFinderTbl> getTrainStations();
 
-    List<TrainStationLocationTbl> getTrainStationLocations();
+    List<LocationTbl> getTrainStationLocations();
 
     /**
      * Gets all of the current schedules for all trains.
@@ -59,9 +59,9 @@ public interface DBTrainsAccessible {
      */
     List<TrainStatusTbl> getStatuses();
 
-    TrainStationTbl getTrainStation(String stationName);
+    BlockFinderTbl getTrainStation(String stationName);
 
-    TrainStationTbl getTrainStation(TrainTbl train);
+    BlockFinderTbl getTrainStation(TrainTbl train);
 
     /**
      * Gets the next train schedule for the specified train via {@link TrainTbl} class.
