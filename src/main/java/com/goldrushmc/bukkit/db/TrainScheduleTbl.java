@@ -15,12 +15,12 @@ public class TrainScheduleTbl {
     @NotNull
     private long timeToDepart;
     @ManyToOne
-    TrainStationTbl destination;
+    BlockFinderTbl destination;
     @ManyToOne
-    TrainStationTbl origin;
+    BlockFinderTbl origin;
     @ManyToOne
     @Column(name = "NEXT_STOP")
-    TrainStationTbl station;
+    BlockFinderTbl station;
     @Column(name = "IS_NEXT")
     private boolean isNext;
     @OneToOne
@@ -59,27 +59,27 @@ public class TrainScheduleTbl {
         this.isNext = isNext;
     }
 
-    public TrainStationTbl getStation() {
+    public BlockFinderTbl getStation() {
         return station;
     }
 
-    public void setStation(TrainStationTbl station) {
+    public void setStation(BlockFinderTbl station) {
         this.station = station;
     }
 
-    public TrainStationTbl getDestination() {
+    public BlockFinderTbl getDestination() {
         return destination;
     }
 
-    public void setDestination(TrainStationTbl destination) {
+    public void setDestination(BlockFinderTbl destination) {
         this.destination = destination;
     }
 
-    public TrainStationTbl getOrigin() {
+    public BlockFinderTbl getOrigin() {
         return origin;
     }
 
-    public void setOrigin(TrainStationTbl origin) {
+    public void setOrigin(BlockFinderTbl origin) {
         this.origin = origin;
     }
 }
