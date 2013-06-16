@@ -1,20 +1,16 @@
 package com.goldrushmc.bukkit.db;
 
-import com.avaje.ebean.validation.NotEmpty;
 import com.avaje.ebean.validation.NotNull;
 
 import javax.persistence.*;
 
 @Entity
-@Table(name = "station_location_tbl")
-public class TrainStationLocationTbl {
+@Table(name = "location_tbl")
+public class LocationTbl {
 
     @Id
     @GeneratedValue
     private int id;
-    @Column(name = "CORNER")
-    @NotEmpty
-    private String corner;
     @Column(name = "X")
     @NotNull
     private double x;
@@ -25,7 +21,7 @@ public class TrainStationLocationTbl {
     @NotNull
     private double z;
     @OneToOne
-    private TrainStationTbl station;
+    private BlockFinderTbl object;
 
     public int getId() {
         return id;
@@ -33,14 +29,6 @@ public class TrainStationLocationTbl {
 
     public void setId(int id) {
         this.id = id;
-    }
-
-    public String getCorner() {
-        return corner;
-    }
-
-    public void setCorner(String corner) {
-        this.corner = corner;
     }
 
     public double getX() {
@@ -67,11 +55,11 @@ public class TrainStationLocationTbl {
         this.z = z;
     }
 
-    public TrainStationTbl getStation() {
-        return station;
+    public BlockFinderTbl getStation() {
+        return object;
     }
 
-    public void setStation(TrainStationTbl station) {
-        this.station = station;
+    public void setStation(BlockFinderTbl object) {
+        this.object = object;
     }
 }

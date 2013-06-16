@@ -8,6 +8,9 @@ import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.event.block.BlockDamageEvent;
+import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.world.ChunkUnloadEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -236,4 +239,13 @@ public abstract class BlockFinder extends DefaultListener {
             event.setCancelled(true);
         }
     }
+
+    @EventHandler
+    public abstract void onPlayerDamageAttempt(BlockDamageEvent event);
+
+    @EventHandler
+    public abstract void onPlayerBreakAttempt(BlockBreakEvent event);
+
+    @EventHandler
+    public abstract void onPlayerPlaceAttempt(BlockPlaceEvent event);
 }

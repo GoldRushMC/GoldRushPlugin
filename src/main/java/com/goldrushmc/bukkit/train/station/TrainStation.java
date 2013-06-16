@@ -6,8 +6,8 @@ import com.bergerkiller.bukkit.tc.controller.type.MinecartMemberChest;
 import com.bergerkiller.bukkit.tc.controller.type.MinecartMemberFurnace;
 import com.bergerkiller.bukkit.tc.controller.type.MinecartMemberRideable;
 import com.bergerkiller.bukkit.tc.events.MemberBlockChangeEvent;
-import com.goldrushmc.bukkit.db.TrainStationLocationTbl;
-import com.goldrushmc.bukkit.db.TrainStationTbl;
+import com.goldrushmc.bukkit.db.BlockFinderTbl;
+import com.goldrushmc.bukkit.db.LocationTbl;
 import com.goldrushmc.bukkit.defaults.BlockFinder;
 import com.goldrushmc.bukkit.defaults.DBAccess;
 import com.goldrushmc.bukkit.defaults.DBTrainsAccessible;
@@ -55,7 +55,7 @@ public abstract class TrainStation extends BlockFinder{
     public static DBTrainsAccessible db;
 
     protected String stationName;
-    protected volatile List<MinecartGroup> departingTrains;
+    protected volatile List<MinecartGroup> departingTrains = new ArrayList<>();
     protected volatile Map<MinecartGroup, Boolean> hasStopped = new HashMap<>();
     protected ISignLogic signs;
     protected List<BlockFace> directions;
@@ -74,7 +74,6 @@ public abstract class TrainStation extends BlockFinder{
      *
      * @param plugin
      * @param stationName
-     * @param corners
      * @param world
      * @throws Exception
      */
@@ -104,7 +103,6 @@ public abstract class TrainStation extends BlockFinder{
      *
      * @param plugin
      * @param stationName
-     * @param corners
      * @param world
      * @param stopMat
      * @throws Exception
@@ -206,20 +204,20 @@ public abstract class TrainStation extends BlockFinder{
      * Adds the train station to the database, in case of a server wide crash.
      */
     public void addToDB(List<Location> coords) {
-        TrainStationTbl station = new TrainStationTbl();
-        station.setStationName(stationName);
-        Set<TrainStationLocationTbl> corners = new HashSet<>();
-        List<Location> locs = coords;
+        BlockFinderTbl station = new BlockFinderTbl();
+        station.setObjectName(stationName);
+        station.setObjectType(BlockFinderTbl.ObjectType.STATION);
+        Set<LocationTbl> corners = new HashSet<>();
         for(int i = 0; i < 2; i++) {
-            TrainStationLocationTbl corner = new TrainStationLocationTbl();
+            LocationTbl corner = new LocationTbl();
             corner.setStation(station);
-            corner.setX(locs.get(i).getBlockX());
-            corner.setY(locs.get(i).getBlockY());
-            corner.setZ(locs.get(i).getBlockZ());
+            corner.setX(coords.get(i).getBlockX());
+            corner.setY(coords.get(i).getBlockY());
+            corner.setZ(coords.get(i).getBlockZ());
             corners.add(corner);
         }
         db.getDB().save(corners);
-        station.setCorners(corners);
+        station.setLocations(corners);
         db.getDB().save(station);
     }
 
@@ -649,6 +647,7 @@ public abstract class TrainStation extends BlockFinder{
     @EventHandler
     public abstract void onSignPlacedWithin(BlockPlaceEvent event);
 
+    @Override
     @EventHandler
     public void onPlayerDamageAttempt(BlockDamageEvent event) {
         Player p = event.getPlayer();
@@ -663,6 +662,7 @@ public abstract class TrainStation extends BlockFinder{
         }
     }
 
+    @Override
     @EventHandler
     public void onPlayerBreakAttempt(BlockBreakEvent event) {
         Player p = event.getPlayer();
@@ -677,6 +677,7 @@ public abstract class TrainStation extends BlockFinder{
         }
     }
 
+    @Override
     @EventHandler
     public void onPlayerPlaceAttempt(BlockPlaceEvent event) {
         Player p = event.getPlayer();

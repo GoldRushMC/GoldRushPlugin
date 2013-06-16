@@ -211,7 +211,7 @@ public class PublicTrainStation extends TrainStation {
         train.setProperties(tp);
 
         this.addTrain(train);
-        if (this.departingTrains.get(0) == null) this.departingTrains.add(train);
+        if (this.departingTrains.isEmpty()) this.departingTrains.add(train);
         this.changeSignLogic(train.getProperties().getTrainName());
         this.updateCartsAvailable(train, EntityType.MINECART);
         this.hasStopped.put(train, true);
@@ -221,11 +221,11 @@ public class PublicTrainStation extends TrainStation {
      * Find the stop blocks for a typical transport station.
      * <p/>
      * Assumption:
-     * <li> There are a max of 4 stop blocks, all of which are on the same length of track, all clumped together.
+     * <li> There are a max of 3 stop blocks, all of which are on the same length of track, all clumped together.
      * <li> The blocks will be ordered as such:
      * <ol>
      * <li> 0 : The block which the train shall spawn on (furthest in the train station's designated direction).
-     * <li> 1, 2, 3 : The other blocks which will support the departure function.
+     * <li> 1, 2 : The other blocks which will support the departure function.
      */
     @Override
     public List<Block> findStopBlocks(Material m) {
@@ -245,8 +245,8 @@ public class PublicTrainStation extends TrainStation {
 
     @Override
     public boolean pushQueue() {
+        if(departingTrains.isEmpty()) return false;
         MinecartGroup mg = this.departingTrains.get(0);
-        if (mg == null) return false;
         mg.getProperties().setSpeedLimit(0.6);
         mg.getProperties().setColliding(false);
         for (MinecartMember<?> mm : mg) {
@@ -267,9 +267,9 @@ public class PublicTrainStation extends TrainStation {
     public void createWorkers() {
         for (Chunk c : this.chunks) {
             Entity[] entities = c.getEntities();
-            for (int i = 0; i < entities.length; i++) {
-                if (CitizensAPI.getNPCRegistry().isNPC(entities[i])) {
-                    NPC npc = CitizensAPI.getNPCRegistry().getNPC(entities[i]);
+            for (Entity entity : entities) {
+                if (CitizensAPI.getNPCRegistry().isNPC(entity)) {
+                    NPC npc = CitizensAPI.getNPCRegistry().getNPC(entity);
                     npc.addTrait(CartTradeable.class);
                     this.workers.add(npc);
                 }
@@ -288,8 +288,7 @@ public class PublicTrainStation extends TrainStation {
 
     @Override
     public boolean hasDepartingTrain() {
-        if (this.departingTrains.get(0) == null) return false;
-        else return true;
+        return departingTrains.isEmpty();
     }
 
     @Override
@@ -317,8 +316,8 @@ public class PublicTrainStation extends TrainStation {
         //We don't care about non-furnaces. Furnaces lead the charge!
         if (furnace == null) return;
 
-        if (this.trainArea.contains(to)) {
-            if (!this.trainArea.contains(from)) {
+        if (trainArea.contains(to)) {
+            if (!trainArea.contains(from)) {
                 //Entering station
                 TrainEnterStationEvent enter = new TrainEnterStationEvent(this, event.getGroup());
                 Bukkit.getServer().getPluginManager().callEvent(enter);
@@ -327,7 +326,7 @@ public class PublicTrainStation extends TrainStation {
             //The train has hit the stop block, and needs to stop.
             else if (getStopBlocks().contains(to)) {
                 //Check to see if there is already a departing train assigned. If so, we don't need to add it again.
-                if (this.departingTrains.get(0) == null) {
+                if (departingTrains.isEmpty()) {
                     //If there is no departing train yet, we need to add this one.
                     TrainFullStopEvent stop = new TrainFullStopEvent(this, event.getGroup());
                     Bukkit.getServer().getPluginManager().callEvent(stop);
@@ -335,7 +334,7 @@ public class PublicTrainStation extends TrainStation {
             }
         }
         //Leaving station
-        else if (!this.trainArea.contains(to) && this.trainArea.contains(from)) {
+        else if (!trainArea.contains(to) && trainArea.contains(from)) {
             TrainExitStationEvent exit = new TrainExitStationEvent(this, event.getGroup());
             Bukkit.getServer().getPluginManager().callEvent(exit);
         }
@@ -358,18 +357,16 @@ public class PublicTrainStation extends TrainStation {
 
                 String trainName = "N/A";
                 int cartCount = 0;
-                MinecartGroup train = this.departingTrains.get(0);
-                if (train != null) {
-                    trainName = train.getProperties().getTrainName();
-                    cartCount = train.size() - 1;
+                if(!departingTrains.isEmpty()) {
+                    MinecartGroup train = this.departingTrains.get(0);
+                    if (train != null) {
+                        trainName = train.getProperties().getTrainName();
+                        cartCount = train.size() - 1;
+                    }
                 }
 
                 SignType type = this.getSigns().getSignType(sign);
                 switch (type) {
-                    case ADD_RIDE_CART:
-                    case ADD_STORAGE_CART:
-                    case REMOVE_RIDE_CART:
-                    case REMOVE_STORAGE_CART:
                     case TRAIN_STATION_DEPARTING: {
                         sign.setLine(2, trainName);
                         sign.update();
@@ -451,13 +448,12 @@ public class PublicTrainStation extends TrainStation {
 
     @Override
     public List<MinecartGroup> getDepartingTrains() {
-        // TODO Auto-generated method stub
-        return null;
+        return departingTrains;
     }
 
     @Override
     public void addDepartingTrain(MinecartGroup train) {
-        // TODO Auto-generated method stub
+        departingTrains.add(train);
 
     }
 }
