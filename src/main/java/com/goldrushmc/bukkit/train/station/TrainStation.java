@@ -6,11 +6,9 @@ import com.bergerkiller.bukkit.tc.controller.type.MinecartMemberChest;
 import com.bergerkiller.bukkit.tc.controller.type.MinecartMemberFurnace;
 import com.bergerkiller.bukkit.tc.controller.type.MinecartMemberRideable;
 import com.bergerkiller.bukkit.tc.events.MemberBlockChangeEvent;
-import com.goldrushmc.bukkit.db.BlockFinderTbl;
-import com.goldrushmc.bukkit.db.LocationTbl;
 import com.goldrushmc.bukkit.defaults.BlockFinder;
-import com.goldrushmc.bukkit.defaults.DBAccess;
-import com.goldrushmc.bukkit.defaults.DBTrainsAccessible;
+import com.goldrushmc.bukkit.defaults.DBStationsAccess;
+import com.goldrushmc.bukkit.defaults.IStationAccessible;
 import com.goldrushmc.bukkit.train.event.StationSignEvent;
 import com.goldrushmc.bukkit.train.signs.ISignLogic;
 import com.goldrushmc.bukkit.train.signs.SignLogic;
@@ -36,7 +34,10 @@ import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.world.ChunkUnloadEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * An Abstract Class which sets up the framework for the train subclasses.
@@ -52,7 +53,7 @@ public abstract class TrainStation extends BlockFinder{
     protected static List<TrainStation> trainStations = new ArrayList<>();
 
     public static final Material defaultStop = Material.BEDROCK;
-    public static DBTrainsAccessible db;
+    public static IStationAccessible db;
 
     protected String stationName;
     protected volatile List<MinecartGroup> departingTrains = new ArrayList<>();
@@ -79,7 +80,7 @@ public abstract class TrainStation extends BlockFinder{
      */
     public TrainStation(final JavaPlugin plugin, final String stationName, final List<Location> markers, final World world) throws Exception {
         super(world, markers, plugin);
-        if(db == null) db = new DBAccess(plugin);
+        if(db == null) db = new DBStationsAccess(plugin);
         this.stationName = stationName;
         this.trainArea = generateTrainArea();
         this.trainStationBlocks = this.findNonAirBlocks();
@@ -109,7 +110,7 @@ public abstract class TrainStation extends BlockFinder{
      */
     public TrainStation(final JavaPlugin plugin, final String stationName, final List<Location> markers, final World world, Material stopMat) throws Exception {
         super(world, markers, plugin);
-        if(db == null) db = new DBAccess(plugin);
+        if(db == null) db = new DBStationsAccess(plugin);
         this.stationName = stationName;
         this.trainArea = generateTrainArea();
         this.trainStationBlocks = this.findNonAirBlocks();
@@ -156,6 +157,9 @@ public abstract class TrainStation extends BlockFinder{
         PlayerInteractEvent.getHandlerList().unregister(this);
         BlockPlaceEvent.getHandlerList().unregister(this);
 
+        //Remove from the DB.
+        removeFromDB();
+
         //Remove ALL NPC's in the area.
         for(NPC npc : this.workers) CitizensAPI.getNPCRegistry().deregister(npc);
 
@@ -179,13 +183,6 @@ public abstract class TrainStation extends BlockFinder{
 
         //Remove from the list
         trainStations.remove(this);
-
-        //Try to finalize.
-        try {
-            this.finalize();
-        } catch (Throwable e) {
-            Bukkit.getLogger().info("Something went wrong with the deletion of a Train Station");
-        }
     }
 
 
@@ -203,23 +200,9 @@ public abstract class TrainStation extends BlockFinder{
     /**
      * Adds the train station to the database, in case of a server wide crash.
      */
-    public void addToDB(List<Location> coords) {
-        BlockFinderTbl station = new BlockFinderTbl();
-        station.setObjectName(stationName);
-        station.setObjectType(BlockFinderTbl.ObjectType.STATION);
-        Set<LocationTbl> corners = new HashSet<>();
-        for(int i = 0; i < 2; i++) {
-            LocationTbl corner = new LocationTbl();
-            corner.setStation(station);
-            corner.setX(coords.get(i).getBlockX());
-            corner.setY(coords.get(i).getBlockY());
-            corner.setZ(coords.get(i).getBlockZ());
-            corners.add(corner);
-        }
-        db.getDB().save(corners);
-        station.setLocations(corners);
-        db.getDB().save(station);
-    }
+    public abstract void addToDB(List<Location> coords);
+
+    public abstract void removeFromDB();
 
 
     /**
@@ -568,7 +551,7 @@ public abstract class TrainStation extends BlockFinder{
      *
      * @return
      */
-    public static DBTrainsAccessible getDb() {	return db;}
+    public static IStationAccessible getDb() {	return db;}
 
     public String getStationName() {return stationName;}
 

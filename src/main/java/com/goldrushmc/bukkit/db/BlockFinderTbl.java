@@ -22,7 +22,7 @@ public class BlockFinderTbl {
     @Enumerated(EnumType.STRING)
     private ObjectType objectType;
     @OneToMany(mappedBy = "object")
-    Set<LocationTbl> locations;
+    Set<StationLocationTbl> locations;
 
     public int getId() {
         return id;
@@ -48,19 +48,19 @@ public class BlockFinderTbl {
         this.objectType = objectType;
     }
 
-    public Set<LocationTbl> getLocations() {
+    public Set<StationLocationTbl> getLocations() {
         return locations;
     }
 
-    public void setLocations(Set<LocationTbl> locations) {
+    public void setLocations(Set<StationLocationTbl> locations) {
         this.locations = locations;
     }
 
-    public void addLocation(LocationTbl location) {
+    public void addLocation(StationLocationTbl location) {
         this.locations.add(location);
     }
 
-    public void removeLocation(LocationTbl location) {
+    public void removeLocation(StationLocationTbl location) {
         this.locations.remove(location);
     }
 

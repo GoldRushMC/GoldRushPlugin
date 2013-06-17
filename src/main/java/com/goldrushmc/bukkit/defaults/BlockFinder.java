@@ -14,10 +14,11 @@ import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.world.ChunkUnloadEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-public abstract class BlockFinder extends DefaultListener {
+public abstract class BlockFinder extends DefaultListener implements Serializable{
 
     public final World world;
     public final List<Block> selectedArea;
@@ -61,8 +62,7 @@ public abstract class BlockFinder extends DefaultListener {
 
     protected final boolean isGreaterThan(final int x1, final int x2) {
 
-        if (x1 > x2) return true;
-        else return false;
+        return (x1 > x2);
     }
 
     /**

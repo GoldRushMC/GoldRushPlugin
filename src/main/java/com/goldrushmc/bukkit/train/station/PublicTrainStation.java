@@ -6,6 +6,8 @@ import com.bergerkiller.bukkit.tc.controller.type.MinecartMemberFurnace;
 import com.bergerkiller.bukkit.tc.controller.type.MinecartMemberRideable;
 import com.bergerkiller.bukkit.tc.events.MemberBlockChangeEvent;
 import com.bergerkiller.bukkit.tc.properties.TrainProperties;
+import com.goldrushmc.bukkit.db.StationLocationTbl;
+import com.goldrushmc.bukkit.db.StationTbl;
 import com.goldrushmc.bukkit.train.event.*;
 import com.goldrushmc.bukkit.train.exceptions.StopBlockMismatchException;
 import com.goldrushmc.bukkit.train.signs.SignType;
@@ -27,7 +29,9 @@ import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class PublicTrainStation extends TrainStation {
 
@@ -36,7 +40,7 @@ public class PublicTrainStation extends TrainStation {
     private final List<Block> stopBlocks;
     private Block mainStop;
 
-    public PublicTrainStation(JavaPlugin plugin, String stationName, List<Location> markers, World world, boolean train) throws Exception {
+    public PublicTrainStation(JavaPlugin plugin, String stationName, List<Location> markers, World world, boolean train, boolean toDB) throws Exception {
         super(plugin, stationName, markers, world);
 
         this.stopMat = defaultStop;
@@ -63,6 +67,7 @@ public class PublicTrainStation extends TrainStation {
             }
         }
         add();
+        if(toDB) addToDB(markers);
     }
 
     public PublicTrainStation(JavaPlugin plugin, String stationName, List<Location> markers, World world, Material stopMat, boolean train) throws Exception {
@@ -92,6 +97,37 @@ public class PublicTrainStation extends TrainStation {
             }
         }
         add();
+    }
+
+    /**
+     * Adds the train station to the database, in case of a server wide crash.
+     */
+    public void addToDB(List<Location> coords) {
+        StationTbl station = new StationTbl();
+        station.setName(stationName);
+        Set<StationLocationTbl> corners = new HashSet<>();
+        for(int i = 0; i < 2; i++) {
+            StationLocationTbl corner = new StationLocationTbl();
+            corner.initBlock(coords.get(i).getBlock());
+            corner.setStation(station);
+            corner.setWorld(world.getName());
+            corners.add(corner);
+        }
+        station.setLocations(corners);
+        station.setType(getType());
+        station.setTrainInStation(hasDepartingTrain());
+        db.getDB().save(station);
+        db.getDB().save(corners);
+    }
+
+    public void removeFromDB() {
+        StationTbl station = db.queryTrainStations().where().ieq("name", stationName).findUnique();
+        if(station != null) {
+            for(StationLocationTbl loc : station.getLocations()) {
+                db.getDB().delete(loc);
+            }
+            db.getDB().delete(station);
+        }
     }
 
     @Override
@@ -288,7 +324,7 @@ public class PublicTrainStation extends TrainStation {
 
     @Override
     public boolean hasDepartingTrain() {
-        return departingTrains.isEmpty();
+        return !departingTrains.isEmpty();
     }
 
     @Override

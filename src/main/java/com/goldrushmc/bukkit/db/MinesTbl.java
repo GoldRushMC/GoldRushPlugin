@@ -1,10 +1,10 @@
 package com.goldrushmc.bukkit.db;
 
 import com.avaje.ebean.validation.NotEmpty;
-import org.bukkit.Location;
-import org.bukkit.util.Vector;
+import com.avaje.ebean.validation.NotNull;
 
 import javax.persistence.*;
+import java.util.Set;
 
 /**
  * Created with IntelliJ IDEA.
@@ -23,24 +23,22 @@ public class MinesTbl {
     @Column(name = "MINE_NAME")
     @NotEmpty
     private String name;
-    @Column(name = "WORLD_NAME")
-    @NotEmpty
-    private String worldName;
-    @Column(name = "LOC_ONE")
-    @NotEmpty
-    private String locOne;
-    @Column(name = "LOC_TWO")
-    @NotEmpty
-    private String locTwo;
-    @Column(name = "ENTRANCE_POS")
-    @NotEmpty
-    private String entrancePos;
     @Column(name = "DENSITY")
-    @NotEmpty
-    private Integer density;
+    @NotNull
+    private int density;
     @Column(name = "IS_GEN")
-    @NotEmpty
-    private Boolean generated;
+    @NotNull
+    private boolean generated;
+    @OneToMany(mappedBy = "mine")
+    private Set<MineLocationTbl> locations;
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
 
     public String getName() {
         return name;
@@ -50,51 +48,35 @@ public class MinesTbl {
         this.name = name;
     }
 
-    public String getWorldName() {
-        return worldName;
+    public Set<MineLocationTbl> getLocations() {
+        return locations;
     }
 
-    public void setWorldName(String worldName) {
-        this.worldName = worldName;
+    public void setLocations(Set<MineLocationTbl> locations) {
+        this.locations = locations;
     }
 
-    public String getLocOne() {
-        return locOne;
-    }
-
-    public void setLocOne(Location locOne) {
-        this.locOne = locOne.toString();
-    }
-
-    public String getLocTwo() {
-        return locTwo;
-    }
-
-    public void setLocTwo(Location locTwo) {
-        this.locTwo = locTwo.toString();
-    }
-
-    public String getEntrancePos() {
-        return entrancePos;
-    }
-
-    public void setEntrancePos(Vector entrancePos) {
-        this.entrancePos = entrancePos.toString();
-    }
-
-    public Integer getDensity() {
+    public int getDensity() {
         return density;
     }
 
-    public void setDensity(Integer density) {
+    public void setDensity(int density) {
         this.density = density;
     }
 
-    public Boolean getGenerated() {
+    public boolean isGenerated() {
         return generated;
     }
 
-    public void setGenerated(Boolean generated) {
+    public void setGenerated(boolean generated) {
         this.generated = generated;
+    }
+
+    public void addMineLocation(MineLocationTbl loc) {
+        locations.add(loc);
+    }
+
+    public void removeMineLocation(MineLocationTbl loc) {
+        locations.remove(loc);
     }
 }

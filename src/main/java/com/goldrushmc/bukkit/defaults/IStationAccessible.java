@@ -1,17 +1,16 @@
 package com.goldrushmc.bukkit.defaults;
 
-import com.avaje.ebean.EbeanServer;
 import com.avaje.ebean.Query;
 import com.goldrushmc.bukkit.db.*;
 
 import java.util.List;
 
-public interface DBTrainsAccessible {
+public interface IStationAccessible extends DBAccessible{
 
 
-    Query<LocationTbl> queryTrainStationLocations();
+    Query<StationLocationTbl> queryTrainStationLocations();
 
-    Query<BlockFinderTbl> queryTrainStations();
+    Query<StationTbl> queryTrainStations();
 
     /**
      * Queries the DB for the TrainScheduleTbl class.
@@ -34,9 +33,9 @@ public interface DBTrainsAccessible {
      */
     Query<TrainStatusTbl> queryStatus();
 
-    List<BlockFinderTbl> getTrainStations();
+    List<StationTbl> getTrainStations();
 
-    List<LocationTbl> getTrainStationLocations();
+    List<StationLocationTbl> getTrainStationLocations();
 
     /**
      * Gets all of the current schedules for all trains.
@@ -59,9 +58,9 @@ public interface DBTrainsAccessible {
      */
     List<TrainStatusTbl> getStatuses();
 
-    BlockFinderTbl getTrainStation(String stationName);
+    StationTbl getTrainStation(String stationName);
 
-    BlockFinderTbl getTrainStation(TrainTbl train);
+    StationTbl getTrainStation(TrainTbl train);
 
     /**
      * Gets the next train schedule for the specified train via {@link TrainTbl} class.
@@ -103,10 +102,4 @@ public interface DBTrainsAccessible {
      */
     TrainStatusTbl getTrainStatus(String trainName);
 
-    /**
-     * Gets the Database instance of the plugin.
-     *
-     * @return
-     */
-    EbeanServer getDB();
 }
