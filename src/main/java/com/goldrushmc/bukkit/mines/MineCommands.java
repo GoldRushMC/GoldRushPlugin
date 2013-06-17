@@ -2,7 +2,10 @@ package com.goldrushmc.bukkit.mines;
 
 import com.goldrushmc.bukkit.defaults.CommandDefault;
 import com.goldrushmc.bukkit.train.exceptions.MarkerNumberException;
-import org.bukkit.*;
+import org.bukkit.ChatColor;
+import org.bukkit.Location;
+import org.bukkit.Material;
+import org.bukkit.World;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -80,22 +83,22 @@ public class MineCommands  extends CommandDefault {
 							} catch (MarkerNumberException e) {
 								plugin.getLogger().info("GOLDRUSHMC: MarkerNumberException creating mine");
 							}
-
 							int count = 0;
-							Boolean save = false;
-							while(!save) {
-                                //TODO Bukkit.getServer().getScheduler().runTask(plugin, new SaveMinesObject(plugin));
-								count++;
-								if(count==5) {
-									plugin.getLogger().info("GOLDRUSHMC: Could not save mines after 5 retrys!");
-									save = true;
-								}
-							}
+//							Boolean save = false;
+//							while(!save) {
+//                                Bukkit.getServer().getScheduler().runTask(plugin, new SaveMines(plugin));
+//								count++;
+//								if(count==5) {
+//									plugin.getLogger().info("GOLDRUSHMC: Could not save mines after 5 retrys!");
+//									save = true;
+//								}
+//							}
 						}
 
 						return true;
 					} else if (args[0].equalsIgnoreCase("load")){
                         //TODO Bukkit.getServer().getScheduler().runTaskLater(plugin, new LoadMinesObject(plugin), 10);
+                        LoadMines lm = new LoadMines(plugin);
                         return true;
 					} else if (args[0].equalsIgnoreCase("cancel")){
 						undoMarkers(p.getWorld(), p); //undoes the placement of wool outline

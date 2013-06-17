@@ -1,6 +1,5 @@
 package com.goldrushmc.bukkit.commands;
 
-import com.goldrushmc.bukkit.commands.BuildModeCommand.BuildMode;
 import com.goldrushmc.bukkit.defaults.CommandDefault;
 import com.goldrushmc.bukkit.defaults.GoldRushPerms;
 import org.bukkit.Material;
@@ -23,7 +22,7 @@ public class StationWand extends CommandDefault {
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
 
-        if (isPlayer(sender)) {
+        if (!isPlayer(sender)) {
             sender.sendMessage("You cannot use this command from the console.");
             return true;
         }
@@ -32,11 +31,11 @@ public class StationWand extends CommandDefault {
             return true;
         }
 
-        if (!BuildModeCommand.buildMode.containsKey((Player) sender)) {
-            BuildModeCommand.buildMode.put((Player) sender, BuildMode.STATION);
-            sender.sendMessage("Your build mode has been set to station by default. \n"
-                    + "Do /buildmode [mode] to change it");
-        }
+//        if (!BuildModeCommand.buildMode.containsKey((Player) sender)) {
+//            BuildModeCommand.buildMode.put((Player) sender, BuildMode.STATION);
+//            sender.sendMessage("Your build mode has been set to station by default. \n"
+//                    + "Do /buildmode [mode] to change it");
+//        }
 
         //Get player
         Player p = (Player) sender;

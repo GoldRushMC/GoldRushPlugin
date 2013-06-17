@@ -7,6 +7,8 @@ import com.bergerkiller.bukkit.tc.controller.type.MinecartMemberFurnace;
 import com.bergerkiller.bukkit.tc.controller.type.MinecartMemberRideable;
 import com.bergerkiller.bukkit.tc.events.MemberBlockChangeEvent;
 import com.bergerkiller.bukkit.tc.properties.TrainProperties;
+import com.goldrushmc.bukkit.db.StationLocationTbl;
+import com.goldrushmc.bukkit.db.StationTbl;
 import com.goldrushmc.bukkit.train.event.*;
 import com.goldrushmc.bukkit.train.exceptions.NoExitAssignedException;
 import com.goldrushmc.bukkit.train.exceptions.StopBlockMismatchException;
@@ -28,7 +30,9 @@ import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * This is the station that is meant for TWO rail tracks. One is for public transport, the other is for goods.
@@ -50,7 +54,7 @@ public class HybridTrainStation extends TrainStation {
     private volatile MinecartGroup goodsTrain;
     private final Block exitBlock;
 
-    public HybridTrainStation(JavaPlugin plugin, String stationName, List<Location> markers, World world, boolean train) throws Exception {
+    public HybridTrainStation(JavaPlugin plugin, String stationName, List<Location> markers, World world, boolean train, boolean toDB) throws Exception {
         super(plugin, stationName, markers, world);
 
         this.stopMat = defaultStop;
@@ -105,6 +109,38 @@ public class HybridTrainStation extends TrainStation {
             }
         }
         add();
+        if(toDB) addToDB(markers);
+    }
+
+    /**
+     * Adds the train station to the database, in case of a server wide crash.
+     */
+    public void addToDB(List<Location> coords) {
+        StationTbl station = new StationTbl();
+        station.setName(stationName);
+        Set<StationLocationTbl> corners = new HashSet<>();
+        for(int i = 0; i < 2; i++) {
+            StationLocationTbl corner = new StationLocationTbl();
+            corner.initBlock(coords.get(i).getBlock());
+            corner.setStation(station);
+            corner.setWorld(world.getName());
+            corners.add(corner);
+        }
+        station.setLocations(corners);
+        station.setType(getType());
+        station.setTrainInStation(hasDepartingTrain());
+        db.getDB().save(station);
+        db.getDB().save(corners);
+    }
+
+    public void removeFromDB() {
+        StationTbl station = db.queryTrainStations().where().ieq("name", stationName).findUnique();
+        if(station != null) {
+            for(StationLocationTbl loc : station.getLocations()) {
+                db.getDB().delete(loc);
+            }
+            db.getDB().delete(station);
+        }
     }
 
     /**
@@ -395,7 +431,7 @@ public class HybridTrainStation extends TrainStation {
 
     @Override
     public boolean hasDepartingTrain() {
-        return (this.publicTrain == null && this.goodsTrain == null);
+        return !(this.publicTrain == null && this.goodsTrain == null);
     }
 
     @Override

@@ -2,9 +2,14 @@ package com.goldrushmc.bukkit.main;
 
 import com.goldrushmc.bukkit.bank.InventoryLis;
 import com.goldrushmc.bukkit.commands.*;
-import com.goldrushmc.bukkit.db.*;
+import com.goldrushmc.bukkit.db.MineLocationTbl;
+import com.goldrushmc.bukkit.db.MinesTbl;
+import com.goldrushmc.bukkit.db.StationLocationTbl;
+import com.goldrushmc.bukkit.db.StationTbl;
 import com.goldrushmc.bukkit.guns.GunLis;
-import com.goldrushmc.bukkit.mines.*;
+import com.goldrushmc.bukkit.mines.MineCommands;
+import com.goldrushmc.bukkit.mines.MineLis;
+import com.goldrushmc.bukkit.mines.SaveMines;
 import com.goldrushmc.bukkit.panning.PanningLis;
 import com.goldrushmc.bukkit.panning.PanningTool;
 import com.goldrushmc.bukkit.train.listeners.TrainLis;
@@ -107,50 +112,52 @@ public final class Main extends JavaPlugin {
 
 
         //run load task later once world has loaded
-        Bukkit.getServer().broadcastMessage("Loading Mines.. Prepare for Lag..");
-        //Bukkit.getServer().getScheduler().runTaskLater(this, new LoadMinesTask(this), 100);
+        Bukkit.getScheduler().scheduleSyncDelayedTask(this, new LoaderClass(this), 40);
 
         getLogger().info(getDescription().getName() + " " + getDescription().getVersion() + " Enabled!");
     }
 
     private void setupDB() {
         try {
-            getDatabase().find(TrainTbl.class).findRowCount();
-            getDatabase().find(TrainScheduleTbl.class).findRowCount();
-            getDatabase().find(TrainStatusTbl.class).findRowCount();
-            getDatabase().find(BlockFinderTbl.class).findRowCount();
-            getDatabase().find(LocationTbl.class).findRowCount();
-            getDatabase().find(PlayerTbl.class).findRowCount();
-            getDatabase().find(TownTbl.class).findRowCount();
-            getDatabase().find(BankTbl.class).findRowCount();
-            getDatabase().find(JobTbl.class).findRowCount();
-            getDatabase().find(CartListTbl.class).findRowCount();
-            getDatabase().find(ItemForeignKeyTbl.class).findRowCount();
-            getDatabase().find(ItemTbl.class).findRowCount();
+//            getDatabase().find(TrainTbl.class).findRowCount();
+//            getDatabase().find(TrainScheduleTbl.class).findRowCount();
+//            getDatabase().find(TrainStatusTbl.class).findRowCount();
+            getDatabase().find(StationTbl.class).findRowCount();
+            getDatabase().find(StationLocationTbl.class).findRowCount();
+            getDatabase().find(MineLocationTbl.class).findRowCount();
             getDatabase().find(MinesTbl.class).findRowCount();
+//            getDatabase().find(PlayerTbl.class).findRowCount();
+//            getDatabase().find(TownTbl.class).findRowCount();
+//            getDatabase().find(BankTbl.class).findRowCount();
+//            getDatabase().find(JobTbl.class).findRowCount();
+//            getDatabase().find(CartListTbl.class).findRowCount();
+//            getDatabase().find(ItemForeignKeyTbl.class).findRowCount();
+//            getDatabase().find(ItemTbl.class).findRowCount();
         } catch (PersistenceException | NullPointerException e) {
             getLogger().info("Installing database for " + getDescription().getName() + " due to first time use.");
             installDDL();
         }
     }
 
-//	@Override
-//	public List<Class<?>> getDatabaseClasses() {
-//		List<Class<?>> list = new ArrayList<Class<?>>();
+	@Override
+	public List<Class<?>> getDatabaseClasses() {
+		List<Class<?>> list = new ArrayList<Class<?>>();
 //		list.add(TrainTbl.class);
 //		list.add(TrainScheduleTbl.class);
 //		list.add(TrainStatusTbl.class);
-//		list.add(BlockFinderTbl.class);
-//		list.add(LocationTbl.class);
+		list.add(StationTbl.class);
+		list.add(StationLocationTbl.class);
 //		list.add(PlayerTbl.class);
 //		list.add(TownTbl.class);
 //		list.add(BankTbl.class);
 //		list.add(JobTbl.class);
 //		list.add(CartListTbl.class);
+        list.add(MinesTbl.class);
+        list.add(MineLocationTbl.class);
 //		list.add(ItemForeignKeyTbl.class);
 //		list.add(ItemTbl.class);
-//		return list;
-//	}
+		return list;
+	}
 
     @Override
     public void onDisable() {

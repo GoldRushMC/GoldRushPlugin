@@ -7,6 +7,8 @@ import com.bergerkiller.bukkit.tc.controller.type.MinecartMemberFurnace;
 import com.bergerkiller.bukkit.tc.controller.type.MinecartMemberRideable;
 import com.bergerkiller.bukkit.tc.events.MemberBlockChangeEvent;
 import com.bergerkiller.bukkit.tc.properties.TrainProperties;
+import com.goldrushmc.bukkit.db.StationLocationTbl;
+import com.goldrushmc.bukkit.db.StationTbl;
 import com.goldrushmc.bukkit.train.event.*;
 import com.goldrushmc.bukkit.train.exceptions.StopBlockMismatchException;
 import com.goldrushmc.bukkit.train.signs.SignType;
@@ -29,7 +31,9 @@ import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class TrainStationTransport extends TrainStation {
 
@@ -40,7 +44,7 @@ public class TrainStationTransport extends TrainStation {
     //	private final List<Chest> lockers;
     //	private Map<Player, Chest> lockerPlayerMap = new HashMap<Player, Chest>();
 
-    public TrainStationTransport(JavaPlugin plugin, String stationName, List<Location> markers, World world, boolean train) throws Exception {
+    public TrainStationTransport(JavaPlugin plugin, String stationName, List<Location> markers, World world, boolean train, boolean toDB) throws Exception {
         super(plugin, stationName, markers, world);
         this.stopMat = defaultStop;
         this.stopBlocks = findStopBlocks(this.stopMat);
@@ -68,6 +72,7 @@ public class TrainStationTransport extends TrainStation {
             }
         }
         add();
+        if(toDB) addToDB(markers);
 //		createWorkers();
         //		this.lockers = findLockers();
     }
@@ -105,6 +110,37 @@ public class TrainStationTransport extends TrainStation {
     @Override
     public StationType getType() {
         return StationType.STORAGE_TRANS;
+    }
+
+    /**
+     * Adds the train station to the database, in case of a server wide crash.
+     */
+    public void addToDB(List<Location> coords) {
+        StationTbl station = new StationTbl();
+        station.setName(stationName);
+        Set<StationLocationTbl> corners = new HashSet<>();
+        for(int i = 0; i < 2; i++) {
+            StationLocationTbl corner = new StationLocationTbl();
+            corner.initBlock(coords.get(i).getBlock());
+            corner.setStation(station);
+            corner.setWorld(world.getName());
+            corners.add(corner);
+        }
+        station.setLocations(corners);
+        station.setType(getType());
+        station.setTrainInStation(hasDepartingTrain());
+        db.getDB().save(station);
+        db.getDB().save(corners);
+    }
+
+    public void removeFromDB() {
+        StationTbl station = db.queryTrainStations().where().ieq("name", stationName).findUnique();
+        if(station != null) {
+            for(StationLocationTbl loc : station.getLocations()) {
+                db.getDB().delete(loc);
+            }
+            db.getDB().delete(station);
+        }
     }
 
     /**
@@ -301,15 +337,6 @@ public class TrainStationTransport extends TrainStation {
         carts.add(EntityType.MINECART_FURNACE);
         //Should make the furnace spawn right on top of the stop block.
         MinecartGroup train = MinecartGroup.spawn(this.mainStop, this.directions.get(0).getOppositeFace(), carts); //TODO
-        for (MinecartMember<?> mm : train) {
-            if (mm instanceof MinecartMemberChest) {
-                //				ItemStack coal = new ItemStack(Material.COAL, 64);
-                //				MinecartMemberChest coalChest = (MinecartMemberChest) mm;
-                //			coalChest.getEntity().getInventory().addItem(new ItemStack[]{coal, coal, coal, coal, coal, coal});
-            }
-            if (mm instanceof MinecartMemberFurnace) {
-            }
-        }
 
         TrainProperties tp = train.getProperties();
         tp.setName(stationName + "_" + trainNum);
@@ -399,7 +426,7 @@ public class TrainStationTransport extends TrainStation {
 
     @Override
     public boolean hasDepartingTrain() {
-        return departingTrains.isEmpty();
+        return !departingTrains.isEmpty();
     }
 
     @Override

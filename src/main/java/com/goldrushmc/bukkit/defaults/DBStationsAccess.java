@@ -7,11 +7,11 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.List;
 
-public class DBAccess implements DBTrainsAccessible {
+public class DBStationsAccess implements IStationAccessible {
 
     private final JavaPlugin plugin;
 
-    public DBAccess(JavaPlugin plugin) {
+    public DBStationsAccess(JavaPlugin plugin) {
         this.plugin = plugin;
     }
 
@@ -79,37 +79,34 @@ public class DBAccess implements DBTrainsAccessible {
     }
 
     @Override
-    public Query<LocationTbl> queryTrainStationLocations() {
+    public Query<StationLocationTbl> queryTrainStationLocations() {
         // TODO Auto-generated method stub
         return null;
     }
 
     @Override
-    public Query<BlockFinderTbl> queryTrainStations() {
+    public Query<StationTbl> queryTrainStations() {
+        return getDB().find(StationTbl.class);
+    }
+
+    @Override
+    public List<StationTbl> getTrainStations() {
+        return queryTrainStations().findList();
+    }
+
+    @Override
+    public List<StationLocationTbl> getTrainStationLocations() {
         // TODO Auto-generated method stub
         return null;
     }
 
     @Override
-    public List<BlockFinderTbl> getTrainStations() {
-        // TODO Auto-generated method stub
-        return null;
+    public StationTbl getTrainStation(String stationName) {
+        return queryTrainStations().where().ieq("name", stationName).findUnique();
     }
 
     @Override
-    public List<LocationTbl> getTrainStationLocations() {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
-    public BlockFinderTbl getTrainStation(String stationName) {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
-    public BlockFinderTbl getTrainStation(TrainTbl train) {
+    public StationTbl getTrainStation(TrainTbl train) {
         // TODO Auto-generated method stub
         return null;
     }
