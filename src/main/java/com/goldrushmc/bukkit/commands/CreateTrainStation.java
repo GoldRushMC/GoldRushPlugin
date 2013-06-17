@@ -67,16 +67,17 @@ public class CreateTrainStation extends CommandDefault {
         try {
             switch (type) {
                 case DEFAULT:
-                    new TrainStationTransport(plugin, args[1], locs, p.getWorld(), trainSpawn);
+                    new TrainStationTransport(plugin, args[1], locs, p.getWorld(), trainSpawn, true);
                     break;
                 case PASSENGER_TRANS:
-                    new PublicTrainStation(plugin, args[1], locs, p.getWorld(), trainSpawn);
+                    new PublicTrainStation(plugin, args[1], locs, p.getWorld(), trainSpawn, true);
                     break;
                 case STORAGE_TRANS:
-                    new TrainStationTransport(plugin, args[1], locs, p.getWorld(), trainSpawn);
+                    new TrainStationTransport(plugin, args[1], locs, p.getWorld(), trainSpawn, true);
                     break;
                 case HYBRID_TRANS:
-                    new HybridTrainStation(plugin, args[1], locs, p.getWorld(), trainSpawn);
+                    new HybridTrainStation(plugin, args[1], locs, p.getWorld(), trainSpawn, true);
+                    break;
             }
         } catch (Exception e) {
             Bukkit.getLogger().warning(e.getMessage());

@@ -7,11 +7,11 @@ import java.util.List;
 
 public class Departure implements Runnable {
 
-    //	private final DBTrainsAccessible db;
+    //	private final IStationAccessible db;
     private static int taskID = -1;
 
     public Departure(final JavaPlugin plugin) {
-//		this.db = new DBAccess(plugin);
+//		this.db = new DBStationsAccess(plugin);
     }
 
     @Override
