@@ -1,11 +1,11 @@
 package com.goldrushmc.bukkit.mines;
 
-import com.goldrushmc.bukkit.db.MineLocationTbl;
-import com.goldrushmc.bukkit.db.MinesTbl;
+import com.goldrushmc.bukkit.db.access.DBMinesAccessible;
+import com.goldrushmc.bukkit.db.access.DBMinesAcess;
+import com.goldrushmc.bukkit.db.tables.MineLocationTbl;
+import com.goldrushmc.bukkit.db.tables.MinesTbl;
 import com.goldrushmc.bukkit.defaults.BlockFinder;
-import com.goldrushmc.bukkit.defaults.DBMinesAccessible;
-import com.goldrushmc.bukkit.defaults.DBMinesAcess;
-import com.goldrushmc.bukkit.train.exceptions.MarkerNumberException;
+import com.goldrushmc.bukkit.trainstation.exceptions.MarkerNumberException;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;

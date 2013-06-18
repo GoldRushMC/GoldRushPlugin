@@ -1,7 +1,7 @@
 package com.goldrushmc.bukkit.bank;
 
 import com.goldrushmc.bukkit.defaults.BlockFinder;
-import com.goldrushmc.bukkit.train.exceptions.MarkerNumberException;
+import com.goldrushmc.bukkit.trainstation.exceptions.MarkerNumberException;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
