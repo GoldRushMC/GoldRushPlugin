@@ -2,8 +2,12 @@ package com.goldrushmc.bukkit.commands;
 
 import com.goldrushmc.bukkit.defaults.CommandDefault;
 import com.goldrushmc.bukkit.defaults.GoldRushPerms;
-import com.goldrushmc.bukkit.train.listeners.WandLis;
-import com.goldrushmc.bukkit.train.station.*;
+import com.goldrushmc.bukkit.trainstation.StationType;
+import com.goldrushmc.bukkit.trainstation.TrainStation;
+import com.goldrushmc.bukkit.trainstation.listeners.WandLis;
+import com.goldrushmc.bukkit.trainstation.types.HybridTrainStation;
+import com.goldrushmc.bukkit.trainstation.types.PublicTrainStation;
+import com.goldrushmc.bukkit.trainstation.types.TrainStationTransport;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.command.Command;
@@ -26,7 +30,7 @@ public class CreateTrainStation extends CommandDefault {
     }
 
     /**
-     * Needs the type of station followed by the name of the station
+     * Needs the type of types followed by the name of the types
      */
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
@@ -39,28 +43,28 @@ public class CreateTrainStation extends CommandDefault {
 
         Player p = (Player) sender;
 
-        if (!WandLis.wandLoc.containsKey(p)) {
+        if (!WandLis.stationLoc.containsKey(p)) {
             sender.sendMessage("Create some markers first!");
             return true;
         }
 
-        int size = WandLis.wandLoc.get(p).size();
+        int size = WandLis.stationLoc.get(p).size();
 
         if (!(size == 2)) {
             sender.sendMessage("You need " + (2 - size) + " more markers");
             return true;
         }
 
-        List<Location> locs = WandLis.wandLoc.get(p);
+        List<Location> locs = WandLis.stationLoc.get(p);
 
         StationType type = StationType.findType(args[0]);
         if (type == null) {
-            p.sendMessage("Please use a legitimate station type");
+            p.sendMessage("Please use a legitimate types type");
             return true;
         }
 
         boolean trainSpawn = false;
-        if (args.length == 3 && args[2].equals("train")) trainSpawn = true;
+        if (args.length == 3 && args[2].equals("trainstation")) trainSpawn = true;
 
         int initial = TrainStation.getTrainStations().size();
 
@@ -88,7 +92,7 @@ public class CreateTrainStation extends CommandDefault {
             return false;
         }
 
-        WandLis.wandLoc.remove(p);
+        WandLis.stationLoc.remove(p);
         p.sendMessage("Markers reset!");
 
         return true;

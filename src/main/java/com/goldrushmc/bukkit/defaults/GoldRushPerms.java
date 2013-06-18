@@ -4,16 +4,17 @@ import org.bukkit.permissions.Permission;
 import org.bukkit.permissions.PermissionDefault;
 
 public class GoldRushPerms {
-    public static final Permission DEFAULT = new Permission("goldrushmc.station", "The player can use any of the train station commands.", PermissionDefault.OP),
-            LIST = new Permission("goldrushmc.station.list", "", PermissionDefault.TRUE),
-            ADD_CART = new Permission("goldrushmc.station.addcart", "The player can buy carts", PermissionDefault.TRUE),
-            REMOVE_CART = new Permission("goldrushmc.station.removecart", "The player can sell carts", PermissionDefault.TRUE),
-            ADD_SIGN = new Permission("goldrushmc.station.addsign", "The player can add signs to stations", PermissionDefault.OP),
-            REMOVE_SIGN = new Permission("goldrushmc.station.removesign", "The player can remove signs from stations", PermissionDefault.OP),
-            CHANGE_BLOCK = new Permission("goldrushmc.station.changeblock", "The player can edit blocks within train stations", PermissionDefault.OP),
-            REMOVE = new Permission("goldrushmc.station.destroy", "The player can delete train stations", PermissionDefault.OP),
-            ADD = new Permission("goldrushmc.station.create", "The player can create train stations", PermissionDefault.OP),
-            SCHEDULE = new Permission("goldrushmc.station.schedule", "The player can schedule train cycles", PermissionDefault.OP);
+    public static final Permission DEFAULT = new Permission("goldrushmc.types", "The player can use any of the trainstation types commands.", PermissionDefault.OP),
+            LIST = new Permission("goldrushmc.types.list", "", PermissionDefault.TRUE),
+            CREATE = new Permission("goldrushmc.types.create", "The player can create things", PermissionDefault.OP),
+            ADD_CART = new Permission("goldrushmc.types.addcart", "The player can buy carts", PermissionDefault.TRUE),
+            REMOVE_CART = new Permission("goldrushmc.types.removecart", "The player can sell carts", PermissionDefault.TRUE),
+            ADD_SIGN = new Permission("goldrushmc.types.addsign", "The player can add signs to stations", PermissionDefault.OP),
+            REMOVE_SIGN = new Permission("goldrushmc.types.removesign", "The player can remove signs from stations", PermissionDefault.OP),
+            CHANGE_BLOCK = new Permission("goldrushmc.types.changeblock", "The player can edit blocks within trainstation stations", PermissionDefault.OP),
+            REMOVE = new Permission("goldrushmc.types.destroy", "The player can delete trainstation stations", PermissionDefault.OP),
+            ADD = new Permission("goldrushmc.types.create", "The player can create trainstation stations", PermissionDefault.OP),
+            SCHEDULE = new Permission("goldrushmc.types.schedule", "The player can schedule trainstation cycles", PermissionDefault.OP);
 
 
     final Permission perm;

@@ -2,7 +2,7 @@ package com.goldrushmc.bukkit.commands;
 
 import com.goldrushmc.bukkit.defaults.CommandDefault;
 import com.goldrushmc.bukkit.defaults.GoldRushPerms;
-import com.goldrushmc.bukkit.train.station.TrainStation;
+import com.goldrushmc.bukkit.trainstation.TrainStation;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -23,7 +23,7 @@ public class TrainStationListCommand extends CommandDefault {
         }
 
         if (TrainStation.getTrainStations().isEmpty()) {
-            sender.sendMessage("There are no train stations currently in existence.");
+            sender.sendMessage("There are no trainstation stations currently in existence.");
             return true;
         }
 

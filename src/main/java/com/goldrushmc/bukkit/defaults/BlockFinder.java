@@ -1,8 +1,8 @@
 package com.goldrushmc.bukkit.defaults;
 
-import com.goldrushmc.bukkit.train.exceptions.MarkerNumberException;
-import com.goldrushmc.bukkit.train.exceptions.TooLowException;
-import com.goldrushmc.bukkit.train.station.TrainStation;
+import com.goldrushmc.bukkit.trainstation.TrainStation;
+import com.goldrushmc.bukkit.trainstation.exceptions.MarkerNumberException;
+import com.goldrushmc.bukkit.trainstation.exceptions.TooLowException;
 import org.bukkit.Chunk;
 import org.bukkit.Location;
 import org.bukkit.World;
