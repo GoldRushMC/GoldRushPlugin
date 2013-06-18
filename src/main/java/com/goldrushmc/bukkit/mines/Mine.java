@@ -1,7 +1,12 @@
 package com.goldrushmc.bukkit.mines;
 
+import com.goldrushmc.bukkit.db.access.DBMinesAccessible;
+import com.goldrushmc.bukkit.db.access.DBMinesAcess;
+import com.goldrushmc.bukkit.db.tables.MineLocationTbl;
+import com.goldrushmc.bukkit.db.tables.MinesTbl;
 import com.goldrushmc.bukkit.defaults.BlockFinder;
-import com.goldrushmc.bukkit.train.exceptions.MarkerNumberException;
+import com.goldrushmc.bukkit.trainstation.exceptions.MarkerNumberException;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
@@ -12,9 +17,10 @@ import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.util.Vector;
 
-import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class Mine extends BlockFinder{
 	
@@ -22,6 +28,7 @@ public class Mine extends BlockFinder{
 	 *The mine class itself can facilitate this.
 	 */
 	private static List<Mine> mines = new ArrayList<>();
+    public static DBMinesAccessible db;
 	
 	public Vector mineMin, mineMax, mineEntrance;
 	Location recCoordOne, recCoordTwo;
@@ -35,13 +42,17 @@ public class Mine extends BlockFinder{
 			Vector entrance, Integer dense, Boolean isGen)
 			throws MarkerNumberException {
 		super(world, coords, plugin);
-		
+
+        if(db == null) db = new DBMinesAcess(plugin);
+
+        if(coords.size() < 2) throw new MarkerNumberException();
+
 		this.name = name;
 		mineEntrance = entrance;
 		recCoordOne = coords.get(0);
-		plugin.getServer().broadcastMessage(recCoordOne.toVector().toString());
+//		plugin.getServer().broadcastMessage(recCoordOne.toVector().toString());
 		recCoordTwo = coords.get(1);
-		plugin.getServer().broadcastMessage(recCoordTwo.toVector().toString());
+//		plugin.getServer().broadcastMessage(recCoordTwo.toVector().toString());
 		
 		mineMax = findMaxBlock();
 		mineMin = findMinBlock();
@@ -54,7 +65,51 @@ public class Mine extends BlockFinder{
 		isGenerated = isGen;
 		add(); //Call the add method, which will add the mine to the list.
 	}
-	
+
+    private void saveToDB() {
+        //Instantiate necessary objects for saving
+        MinesTbl mineEnt = new MinesTbl();
+        MineLocationTbl tbl1 = new MineLocationTbl(),
+                tbl2 = new MineLocationTbl(),
+                tbl3 = new MineLocationTbl();
+
+        //Initiate the objects with the proper location/vector data (replaces constructor)
+        tbl1.initLocation(recCoordOne);
+        tbl2.initLocation(recCoordTwo);
+        //Mark the entrance as such.
+        tbl3.initVector(mineEntrance);
+        tbl3.setEntrance(true);
+
+        //Mine Data
+        mineEnt.setName(name);
+        mineEnt.setDensity(density);
+        mineEnt.setGenerated(isGenerated);
+        Set<MineLocationTbl> locs = new HashSet<>();
+        locs.add(tbl1);
+        locs.add(tbl2);
+        locs.add(tbl3);
+        mineEnt.setLocations(locs);
+
+        //Location - Mine References
+        tbl1.setMine(mineEnt);
+        tbl2.setMine(mineEnt);
+        tbl3.setMine(mineEnt);
+
+        Bukkit.getLogger().info("Saving the mine and locations!!");
+        db.getDB().save(mineEnt);
+        db.getDB().save(locs);
+    }
+
+    public void removeFromDB() {
+        MinesTbl mine = db.queryMines().where().ieq("name", name).findUnique();
+        if(mine != null) {
+            for(MineLocationTbl loc : mine.getLocations()) {
+                db.getDB().delete(loc);
+            }
+            db.getDB().delete(mine);
+        }
+    }
+
 	private Vector findMaxBlock() {
 		//get first max - first block in the array
 		Vector max = this.selectedArea.get(0).getLocation().toVector();
@@ -85,8 +140,10 @@ public class Mine extends BlockFinder{
 
 	@Override
 	public void remove() {
+        removeFromDB(); //Remove from DB.
 		// TODO remove RefreshEvent
 		mines.remove(this); //TODO Need to remove ALL variable memory references first. This is the first step.
+
 		
 	}
 
@@ -97,6 +154,7 @@ public class Mine extends BlockFinder{
 			isGenerated = true;
 		}
 		mines.add(this); //Add the mine to the list.
+        if(db.getMine(name) == null) saveToDB(); //Save to the DB.
 	}
 	
 	/**
@@ -134,6 +192,17 @@ public class Mine extends BlockFinder{
         return null;
     }
 
+    public static DBMinesAccessible getDB() {
+        return db;
+    }
+	
+	public String getName() { return name; }
+
+    @Override
+    public void onPlayerPlaceAttempt(BlockPlaceEvent event) {
+        //To change body of implemented methods use File | Settings | File Templates.
+    }
+
     @Override
     public void onPlayerDamageAttempt(BlockDamageEvent event) {
         //To change body of implemented methods use File | Settings | File Templates.
@@ -143,12 +212,4 @@ public class Mine extends BlockFinder{
     public void onPlayerBreakAttempt(BlockBreakEvent event) {
         //To change body of implemented methods use File | Settings | File Templates.
     }
-
-    @Override
-    public void onPlayerPlaceAttempt(BlockPlaceEvent event) {
-        //To change body of implemented methods use File | Settings | File Templates.
-    }
-
-    public String getName() { return name; }
-
 }

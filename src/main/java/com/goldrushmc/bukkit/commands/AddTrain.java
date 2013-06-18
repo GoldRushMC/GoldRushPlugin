@@ -1,13 +1,14 @@
 package com.goldrushmc.bukkit.commands;
 
 import com.goldrushmc.bukkit.defaults.CommandDefault;
-import com.goldrushmc.bukkit.train.TrainFactory;
+import com.goldrushmc.bukkit.trainstation.TrainFactory;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 
+@Deprecated
 public class AddTrain extends CommandDefault {
 
     public AddTrain(JavaPlugin plugin) {
@@ -17,7 +18,7 @@ public class AddTrain extends CommandDefault {
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
 
-        if (!sender.hasPermission("goldrushmc.train.add")) {
+        if (!sender.hasPermission("goldrushmc.trainstation.add")) {
             sender.sendMessage("You don't have permission to add trains!");
             return true;
         }

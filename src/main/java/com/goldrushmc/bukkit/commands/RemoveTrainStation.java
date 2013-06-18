@@ -2,7 +2,7 @@ package com.goldrushmc.bukkit.commands;
 
 import com.goldrushmc.bukkit.defaults.CommandDefault;
 import com.goldrushmc.bukkit.defaults.GoldRushPerms;
-import com.goldrushmc.bukkit.train.station.TrainStation;
+import com.goldrushmc.bukkit.trainstation.TrainStation;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -25,9 +25,9 @@ public class RemoveTrainStation extends CommandDefault {
 
         for (TrainStation station : TrainStation.getTrainStations()) {
             if (station.getStationName().equalsIgnoreCase(args[0])) {
-//				TrainStationLis.removeStation(station);
-//				ChunkLoaderLis.removeStation(station);
-//				TrainStation.getTrainStations().remove(station);
+//				TrainStationLis.removeStation(types);
+//				ChunkLoaderLis.removeStation(types);
+//				TrainStation.getTrainStations().remove(types);
 //				break;
                 station.remove();
                 break;
@@ -35,7 +35,7 @@ public class RemoveTrainStation extends CommandDefault {
         }
 
         if (TrainStation.getTrainStations().size() < starting) {
-            sender.sendMessage("Train station removed successfully!");
+            sender.sendMessage("Train types removed successfully!");
             return true;
         }
 

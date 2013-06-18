@@ -1,8 +1,8 @@
 package com.goldrushmc.bukkit.defaults;
 
-import com.goldrushmc.bukkit.train.exceptions.MarkerNumberException;
-import com.goldrushmc.bukkit.train.exceptions.TooLowException;
-import com.goldrushmc.bukkit.train.station.TrainStation;
+import com.goldrushmc.bukkit.trainstation.TrainStation;
+import com.goldrushmc.bukkit.trainstation.exceptions.MarkerNumberException;
+import com.goldrushmc.bukkit.trainstation.exceptions.TooLowException;
 import org.bukkit.Chunk;
 import org.bukkit.Location;
 import org.bukkit.World;
@@ -14,10 +14,11 @@ import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.world.ChunkUnloadEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-public abstract class BlockFinder extends DefaultListener {
+public abstract class BlockFinder extends DefaultListener implements Serializable{
 
     public final World world;
     public final List<Block> selectedArea;
@@ -61,8 +62,7 @@ public abstract class BlockFinder extends DefaultListener {
 
     protected final boolean isGreaterThan(final int x1, final int x2) {
 
-        if (x1 > x2) return true;
-        else return false;
+        return (x1 > x2);
     }
 
     /**

@@ -1,13 +1,13 @@
 package com.goldrushmc.bukkit.main;
 
-import java.io.File;
-import java.io.IOException;
-
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.Plugin;
+
+import java.io.File;
+import java.io.IOException;
 
 public class SettingsManager {
 
@@ -53,7 +53,7 @@ public class SettingsManager {
 			//Configure default world
 			config.addDefault("world", "world");
 			
-			//Configure default train station schedule times
+			//Configure default trainstation types schedule times
 			config.addDefault("station.times.public", 2);
 			config.addDefault("station.times.transport", 5);
 			config.addDefault("station.times.hub", 8);

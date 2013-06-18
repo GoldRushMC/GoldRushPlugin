@@ -1,38 +1,56 @@
 package com.goldrushmc.bukkit.mines;
 
-import com.goldrushmc.bukkit.db.MinesTbl;
+import com.goldrushmc.bukkit.db.tables.MineLocationTbl;
+import com.goldrushmc.bukkit.db.tables.MinesTbl;
 import org.bukkit.plugin.Plugin;
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
-public class SaveMines {
+@Deprecated
+public class SaveMines{
 
-	List<Mine> mineList;
 	Plugin p;
 	
 	public SaveMines(Plugin p) {
-		this.mineList = Mine.getMines();
 		this.p = p;
 	}
 	
-	public Boolean save() {
+	public void save() {
 
-        for(Mine mine : mineList) {
+        for(Mine mine : Mine.getMines()) {
+            //Instantiate necessary objects for saving
             MinesTbl mineEnt = new MinesTbl();
+            MineLocationTbl tbl1 = new MineLocationTbl(),
+                            tbl2 = new MineLocationTbl(),
+                            tbl3 = new MineLocationTbl();
+
+            //Initiate the objects with the proper location/vector data (replaces constructor)
+            tbl1.initLocation(mine.recCoordOne);
+            tbl2.initLocation(mine.recCoordTwo);
+            //Mark the entrance as such.
+            tbl3.initVector(mine.mineEntrance);
+            tbl3.setEntrance(true);
+
+            //Mine Data
             mineEnt.setName(mine.getName());
-            mineEnt.setWorldName(mine.getWorld().getName());
-            mineEnt.setLocOne(mine.recCoordOne);
-            mineEnt.setLocTwo(mine.recCoordTwo);
-            mineEnt.setEntrancePos(mine.mineEntrance);
             mineEnt.setDensity(mine.density);
             mineEnt.setGenerated(mine.isGenerated);
+            Set<MineLocationTbl> locs = new HashSet<>();
+            locs.add(tbl1);
+            locs.add(tbl2);
+            locs.add(tbl3);
+            mineEnt.setLocations(locs);
 
-            p.getDatabase().save(mineEnt);
+            //Location - Mine References
+            tbl1.setMine(mineEnt);
+            tbl2.setMine(mineEnt);
+            tbl3.setMine(mineEnt);
+
+            //Save ALL Stuff to the DB.
+            Mine.getDB().getDB().save(mineEnt);
+            Mine.getDB().getDB().save(locs);
+
         }
-        return true;
 	}
 }

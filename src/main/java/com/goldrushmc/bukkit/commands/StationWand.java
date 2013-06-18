@@ -1,6 +1,5 @@
 package com.goldrushmc.bukkit.commands;
 
-import com.goldrushmc.bukkit.commands.BuildModeCommand.BuildMode;
 import com.goldrushmc.bukkit.defaults.CommandDefault;
 import com.goldrushmc.bukkit.defaults.GoldRushPerms;
 import org.bukkit.Material;
@@ -23,33 +22,46 @@ public class StationWand extends CommandDefault {
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
 
-        if (isPlayer(sender)) {
+        if (!isPlayer(sender)) {
             sender.sendMessage("You cannot use this command from the console.");
             return true;
         }
-        if (!sender.hasPermission(GoldRushPerms.ADD)) {
-            deny(sender);
-            return true;
-        }
+        if (!sender.hasPermission(GoldRushPerms.ADD)) { deny(sender); return true; }
 
         if (!BuildModeCommand.buildMode.containsKey((Player) sender)) {
-            BuildModeCommand.buildMode.put((Player) sender, BuildMode.STATION);
-            sender.sendMessage("Your build mode has been set to station by default. \n"
+            BuildModeCommand.buildMode.put((Player) sender, BuildModeCommand.BuildMode.STATION);
+            sender.sendMessage("Your build mode has been set to STATION by default. \n"
                     + "Do /buildmode [mode] to change it");
         }
 
         //Get player
         Player p = (Player) sender;
 
+        //Get the associated lore with regards to the build mode
+        List<String> lore = new ArrayList<>();
+        switch (BuildModeCommand.buildMode.get(p)) {
+            case TOWN:
+                lore.add("Town Mode");
+                break;
+            case BANK:
+                lore.add("Bank Mode");
+                break;
+            case STATION:
+                lore.add("Station Mode");
+                break;
+            case OFF:
+                lore.add("Disabled");
+                break;
+        }
+
         //Create the tool
         ItemStack blazeRod = new ItemStack(Material.BLAZE_ROD);
-        List<String> lore = new ArrayList<>();
-        lore.add("Creatable");
         ItemMeta meta = blazeRod.getItemMeta();
         meta.setLore(lore);
         meta.setDisplayName("Building Tool");
         blazeRod.setItemMeta(meta);
         p.setItemInHand(blazeRod);
+
         return true;
     }
 }
