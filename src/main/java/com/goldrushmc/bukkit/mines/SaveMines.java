@@ -1,12 +1,13 @@
 package com.goldrushmc.bukkit.mines;
 
-import com.goldrushmc.bukkit.db.MineLocationTbl;
-import com.goldrushmc.bukkit.db.MinesTbl;
+import com.goldrushmc.bukkit.db.tables.MineLocationTbl;
+import com.goldrushmc.bukkit.db.tables.MinesTbl;
 import org.bukkit.plugin.Plugin;
 
 import java.util.HashSet;
 import java.util.Set;
 
+@Deprecated
 public class SaveMines{
 
 	Plugin p;

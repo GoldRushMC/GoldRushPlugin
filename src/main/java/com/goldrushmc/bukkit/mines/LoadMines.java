@@ -1,11 +1,12 @@
 package com.goldrushmc.bukkit.mines;
 
-import com.goldrushmc.bukkit.db.MinesTbl;
+import com.goldrushmc.bukkit.db.tables.MinesTbl;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.ArrayList;
 import java.util.List;
 
+@Deprecated
 public class LoadMines {
 
 	List<Mine> mines = new ArrayList<>();

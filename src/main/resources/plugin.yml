@@ -1,12 +1,13 @@
 name: GoldRushMC
-version: 1.5
+version: 1.55
 description: The plugin created to facilitate the Gold Rush Server Features
 author: Diremonsoon, lexwebb, 1SmallVille1
 database: true
 #Make sure you have a database ready!!! otherwise errors will fly!
-#website: http://forums.bukkit.org/threads/ GET NEW WEBSITE ADDRESS AND APPEND
+website: https://github.com/GoldRushMC/GoldRushPlugin
 
 main: com.goldrushmc.bukkit.main.Main
+#Dependencies for the GoldRush Plugin. These will load first.
 depend:
  - Citizens
  - Train Carts
@@ -20,6 +21,14 @@ commands:
    permission: goldrushmc.collapsetest
    usage: /<command>
 
+  buildmode:
+   description: The type of building you want to parttake in
+   aliases: [buildmode, bm]
+   permission: goldrushmc.types.create
+   usage: |
+           /<command> [mode]
+           MODES: Station, Bank, Town, Off
+ 
   stationwand:
    description: Wand which is used for marking the train stations
    aliases: [stationtool, tool]
@@ -41,7 +50,7 @@ commands:
   mine:
    description: Mine creator
    aliases: [mine]
-   #permission: golrushmc.mines
+   permission: golrushmc.mines
    usage: /<command>
    
   panningtool:

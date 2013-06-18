@@ -2,7 +2,7 @@ package com.goldrushmc.bukkit.commands;
 
 import com.goldrushmc.bukkit.defaults.CommandDefault;
 import com.goldrushmc.bukkit.defaults.GoldRushPerms;
-import com.goldrushmc.bukkit.train.scheduling.Departure;
+import com.goldrushmc.bukkit.trainstation.scheduling.Departure;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -12,7 +12,7 @@ import org.bukkit.scheduler.BukkitScheduler;
 /**
  * This command will probably not exist in the future.
  * <p/>
- * Sets the schedule for train stations, as a generic schedule. Need to add in stuff to facilitate specific train station scheduling.
+ * Sets the schedule for trainstation stations, as a generic schedule. Need to add in stuff to facilitate specific trainstation types scheduling.
  *
  * @author Lucas
  */

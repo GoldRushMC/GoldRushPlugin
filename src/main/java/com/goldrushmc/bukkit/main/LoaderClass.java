@@ -1,18 +1,18 @@
 package com.goldrushmc.bukkit.main;
 
-import com.goldrushmc.bukkit.db.MineLocationTbl;
-import com.goldrushmc.bukkit.db.MinesTbl;
-import com.goldrushmc.bukkit.db.StationLocationTbl;
-import com.goldrushmc.bukkit.db.StationTbl;
-import com.goldrushmc.bukkit.defaults.DBMinesAccessible;
-import com.goldrushmc.bukkit.defaults.DBMinesAcess;
-import com.goldrushmc.bukkit.defaults.DBStationsAccess;
-import com.goldrushmc.bukkit.defaults.IStationAccessible;
+import com.goldrushmc.bukkit.db.access.DBMinesAccessible;
+import com.goldrushmc.bukkit.db.access.DBMinesAcess;
+import com.goldrushmc.bukkit.db.access.DBStationsAccess;
+import com.goldrushmc.bukkit.db.access.IStationAccessible;
+import com.goldrushmc.bukkit.db.tables.MineLocationTbl;
+import com.goldrushmc.bukkit.db.tables.MinesTbl;
+import com.goldrushmc.bukkit.db.tables.StationLocationTbl;
+import com.goldrushmc.bukkit.db.tables.StationTbl;
 import com.goldrushmc.bukkit.mines.Mine;
-import com.goldrushmc.bukkit.train.exceptions.MarkerNumberException;
-import com.goldrushmc.bukkit.train.station.PublicTrainStation;
-import com.goldrushmc.bukkit.train.station.TrainStation;
-import com.goldrushmc.bukkit.train.station.TrainStationTransport;
+import com.goldrushmc.bukkit.trainstation.TrainStation;
+import com.goldrushmc.bukkit.trainstation.exceptions.MarkerNumberException;
+import com.goldrushmc.bukkit.trainstation.types.PublicTrainStation;
+import com.goldrushmc.bukkit.trainstation.types.TrainStationTransport;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -67,7 +67,7 @@ public class LoaderClass implements Runnable {
                 //Measure how many stations we loaded.
                 int loadedBack = 0;
 
-                //Attempt to create the train stations.
+                //Attempt to create the trainstation stations.
                 try{
                     switch(s.getType()) {
                         case PASSENGER_TRANS:
@@ -83,7 +83,7 @@ public class LoaderClass implements Runnable {
                     if(s.getName() != null) {
                         Bukkit.getLogger().warning("Could not load Station " + s.getName() + " due to problems in the DB!");
                     } else {
-                        Bukkit.getLogger().warning("Could not load the train station... Name was missing, as well as other things from the DB.");
+                        Bukkit.getLogger().warning("Could not load the trainstation types... Name was missing, as well as other things from the DB.");
                     }
                     //Signify an error.
                     loadedBack = -1;
