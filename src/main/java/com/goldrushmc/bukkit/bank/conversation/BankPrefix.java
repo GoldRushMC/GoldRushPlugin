@@ -1,4 +1,4 @@
-package com.goldrushmc.bukkit.bank.conversation.prompts;
+package com.goldrushmc.bukkit.bank.conversation;
 
 import org.bukkit.conversations.ConversationContext;
 import org.bukkit.conversations.ConversationPrefix;

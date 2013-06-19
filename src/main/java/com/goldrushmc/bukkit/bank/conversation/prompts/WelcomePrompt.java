@@ -1,5 +1,6 @@
 package com.goldrushmc.bukkit.bank.conversation.prompts;
 
+import org.bukkit.ChatColor;
 import org.bukkit.conversations.ConversationContext;
 import org.bukkit.conversations.Prompt;
 
@@ -22,15 +23,19 @@ public class WelcomePrompt extends DefaultPrompt {
 
             dialog += "Welcome back " + customer.getName() + " to bank " + bank.getName() + "\n" +
                     "Would you like to: \n" +
-                    "1: Check Balance \n" +
-                    "2: Withdraw \n" +
-                    "3: Deposit \n" +
-                    "4: Transfer \n" +
-                    "5: End Conversation";
+                    "*: Check Balance \n" +
+                    "*: Withdraw \n" +
+                    "*: Deposit \n" +
+                    "*: Transfer \n" +
+                    "*: Transfer Account To New Bank (type 'transfer account')\n" +
+                    "*: Close Account \n" +
+                    "*: End Conversation \n" +
+                    ChatColor.AQUA + "TO CANCEL THE CONVERSATION AT ANY TIME, TYPE //, END OR STOP. \n" +
+                    ChatColor.RESET + "Please choose an option. To pick one, merely type in the option as it is spelt, unless specified otherwise.";
 
         } else {
-            dialog += "1: Open an Account \n" +
-                    "2: End Conversation";
+            dialog += "*: Open an Account \n" +
+                      "*: End Conversation (type end or stop)";
         }
 
         return dialog;
