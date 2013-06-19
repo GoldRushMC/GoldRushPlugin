@@ -1,5 +1,8 @@
-package com.goldrushmc.bukkit.bank;
+package com.goldrushmc.bukkit.bank.accounts;
 
+
+import com.goldrushmc.bukkit.bank.Bank;
+import org.bukkit.entity.HumanEntity;
 
 public interface Account {
 
@@ -35,7 +38,7 @@ public interface Account {
      *
      * @return true if yes, false if no.
      */
-    public boolean hasEnoughGold();
+    public boolean hasEnoughGold(int cost);
 
     /**
      * The account type of the account.
@@ -59,12 +62,47 @@ public interface Account {
     public int getInterest();
 
     /**
+     * Gets the holder of the account.
+     * @return
+     */
+    public HumanEntity getAccountHolder();
+
+    /**
+     * Sets the account holder
+     *
+     * @param person the new account holder.
+     */
+    public void setAccountHolder(HumanEntity person);
+
+    /**
+     * Moves ALL existing funds into the holder's pockets, if possible.
+     * In the event this is not possible, It will deposit the funds onto the ground within the bank.
+     * TODO The holder can then gather it up at their leisure, because it should be owner-protected gold.
+     */
+    public void deleteAccount();
+
+    /**
+     * Gets the bank associated with this account.
+     *
+     * @return The bank in question.
+     */
+    public Bank getBank();
+
+    /**
+     * Sets the bank to be associated with this account.
+     *
+     * @param bank The bank to be set.
+     */
+    public void setBank(Bank bank);
+
+    /**
      * The different types of accounts
      *
      * @author Diremonsoon
      */
     public enum AccountType {
-        REGULAR,
-        LOAN;
+        CHECKING,
+        LOAN,
+        CREDIT
     }
 }
