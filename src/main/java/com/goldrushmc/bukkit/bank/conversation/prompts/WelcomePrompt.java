@@ -14,7 +14,12 @@ public class WelcomePrompt extends DefaultPrompt {
     @Override
     public String getPromptText(ConversationContext context) {
 
-        String dialog = "Welcome to bank " + bank.getName() + ". How may I assist you? \n";
+        String dialog = "";
+
+        //If this prompt is called because of a continue prompt, we want to not say this again.
+        if(context.getSessionData(CONTINUE) == null) {
+            dialog = "Welcome to bank " + bank.getName() + ". How may I assist you? \n";
+        }
 
         //Are they a customer at the bank? If so, say this, and add the session data.
         if(bank.hasAccount(customer)) {
@@ -55,12 +60,23 @@ public class WelcomePrompt extends DefaultPrompt {
                 break;
             case "withdraw":
                 context.setSessionData("SELECTION", "withdraw");
+                context.setSessionData("NEXT_PROMPT", new WithdrawPrompt());
                 break;
             case "deposit":
                 context.setSessionData("SELECTION", "deposit");
+                context.setSessionData("NEXT_PROMPT", new DepositPrompt());
                 break;
             case "transfer":
                 context.setSessionData("SELECTION", "transfer");
+                break;
+            case "close account":
+                context.setSessionData("SELECTION", "close");
+                break;
+            case "transfer account":
+                context.setSessionData("SELECTION", "transfer account");
+                break;
+            case "open account":
+                context.setSessionData("SELECTION", "open account");
                 break;
             case "end":
             case "stop":
@@ -72,4 +88,8 @@ public class WelcomePrompt extends DefaultPrompt {
         return new AccountTypeSelectorPrompt();
     }
 
+    @Override
+    public String errorPrompt() {
+        return "That is not a valid option. Please try again.";
+    }
 }

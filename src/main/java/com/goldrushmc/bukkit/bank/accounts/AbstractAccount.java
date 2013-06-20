@@ -17,6 +17,7 @@ public abstract class AbstractAccount implements Account {
     protected AccountType type;
     protected Bank bank;
     protected int interest;
+    protected String name;
 
     /**
      * The standard constructor for any account type.
@@ -113,5 +114,15 @@ public abstract class AbstractAccount implements Account {
     @Override
     public void setBank(Bank bank) {
         this.bank = bank;
+    }
+
+    @Override
+    public void setAccountName(String name) {
+        this.name = name;
+    }
+
+    @Override
+    public String accountName() {
+        return name;
     }
 }

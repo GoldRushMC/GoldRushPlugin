@@ -4,6 +4,7 @@ import com.goldrushmc.bukkit.bank.accounts.Account;
 import com.goldrushmc.bukkit.bank.conversation.BankPrefix;
 import com.goldrushmc.bukkit.bank.conversation.prompts.WelcomePrompt;
 import com.goldrushmc.bukkit.defaults.BlockFinder;
+import com.goldrushmc.bukkit.defaults.NotInTownException;
 import com.goldrushmc.bukkit.town.Town;
 import com.goldrushmc.bukkit.trainstation.exceptions.MarkerNumberException;
 import net.citizensnpcs.api.CitizensAPI;
@@ -48,15 +49,31 @@ public class Bank extends BlockFinder {
     private Map<NPC, List<Block>> tellerAreas = new HashMap<>();
     private String name;
     private Town town;
-    private final List<Block> bankArea;
+    private List<Block> bankArea;
     private int tellerDiameter;
+    private int checkingInterest, loanInterest, creditInterest;
 
-    public Bank(World world, List<Location> coords, JavaPlugin plugin) throws MarkerNumberException {
+    public Bank(World world, List<Location> coords, JavaPlugin plugin) throws MarkerNumberException, NotInTownException {
         super(world, coords, plugin);
+
         Location loc1 = coords.get(0), loc2 = coords.get(1);
+
 
         if(loc1.getBlockY() > loc2.getBlockY()) bankArea = getSelectiveArea(loc1, loc2, (loc2.getBlockY() - 10), (loc2.getBlockY() + 50));
         else bankArea = getSelectiveArea(loc1, loc2, (loc1.getBlockY() - 10), (loc1.getBlockY() + 50));
+
+        Town town = null;
+        for(Block b : bankArea) {
+            if(Town.getTownAtBlock(b) != null) {
+                town = Town.getTownAtBlock(b);
+                break;
+            }
+        }
+        //You can only make a Bank if it is COMPLETELY within a town.
+        if(town == null) throw new NotInTownException("bank");
+        else if(!town.getTownArea().containsAll(bankArea)) throw new NotInTownException("bank");
+        else this.town = town;
+
 
         teller = new ConversationFactory(plugin);
 
@@ -86,6 +103,18 @@ public class Bank extends BlockFinder {
         talk.begin();
 
 
+    }
+
+    public int getCheckingInterest() {
+        return checkingInterest;
+    }
+
+    public int getLoanInterest() {
+        return loanInterest;
+    }
+
+    public int getCreditInterest() {
+        return creditInterest;
     }
 
     public Map<HumanEntity, List<Account>> getAccountHolders() {
@@ -125,10 +154,17 @@ public class Bank extends BlockFinder {
     public void openAccount(HumanEntity customer, Account account) {
         accountHolders.put(customer, new ArrayList<Account>());
         accountHolders.get(customer).add(account);
+        if(masterList.containsKey(customer))  masterList.get(customer).add(account);
+        else {
+            List<Account> add = new ArrayList<>();
+            add.add(account);
+            masterList.put(customer, add);
+        }
     }
 
     public void closeAccount(HumanEntity customer, Account account) {
         accountHolders.get(customer).remove(account);
+        masterList.get(customer).remove(account);
         account.deleteAccount();
     }
 
@@ -189,6 +225,32 @@ public class Bank extends BlockFinder {
 
     @Override
     public void remove() {
+
+        //Abandon all conversations, and nullify map.
+        for(Conversation c : conversations.values()) {
+            c.abandon();
+        }
+        conversations = null;
+
+        //Clear all employees, and nullify list.
+        for(NPC e : employees) {
+            e.destroy();
+        }
+        employees = null;
+
+        //Nullify the bank area. This may not matter.
+        bankArea = null;
+
+
+
+        //Unregister all related events to this.
+        PlayerMoveEvent.getHandlerList().unregister(this);
+        //BlockFinder Class stuff.
+        BlockBreakEvent.getHandlerList().unregister(this);
+        BlockDamageEvent.getHandlerList().unregister(this);
+        BlockPlaceEvent.getHandlerList().unregister(this);
+
+        //Remove bank from the master list of banks.
         banks.remove(this);
     }
 

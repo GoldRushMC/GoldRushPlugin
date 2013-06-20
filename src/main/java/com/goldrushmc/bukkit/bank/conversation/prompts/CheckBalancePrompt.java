@@ -30,4 +30,9 @@ public class CheckBalancePrompt extends AccountPrompt {
         //Ask if the user wishes to continue.
         return new ContinuePrompt();
     }
+
+    @Override
+    public String errorPrompt() {
+        return "Some error has occurred. This is awkward...";
+    }
 }

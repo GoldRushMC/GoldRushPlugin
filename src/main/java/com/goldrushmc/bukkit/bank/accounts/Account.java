@@ -7,6 +7,20 @@ import org.bukkit.entity.HumanEntity;
 public interface Account {
 
     /**
+     * Gets the name of the account
+     *
+     * @return The name of the account
+     */
+    public String accountName();
+
+    /**
+     * Sets the name of the account.
+     *
+     * @param name Name to be set.
+     */
+    public void setAccountName(String name);
+
+    /**
      * Withdraws a specified amount of gold nuggets, if the amount exists.
      * <p/>
      * If the amount does not exist, do not draw any funds out. Instead, display the current balance.

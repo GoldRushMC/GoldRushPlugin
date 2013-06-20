@@ -18,7 +18,7 @@ public class TryAgainPrompt implements Prompt {
 
     @Override
     public String getPromptText(ConversationContext context) {
-        return ChatColor.RED + "That is not a valid input. please try again.";
+        return ChatColor.RED + "" + context.getSessionData("ERROR");
     }
 
     @Override

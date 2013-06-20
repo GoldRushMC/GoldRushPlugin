@@ -53,7 +53,7 @@ public final class Main extends JavaPlugin {
          */
 
         //Add commands
-        getCommand("StationWand").setExecutor(new StationWand(this));
+        getCommand("BuildWand").setExecutor(new BuildWand(this));
         getCommand("BuildMode").setExecutor(new BuildModeCommand(this));
         getCommand("Station").setExecutor(new CreateTrainStation(this));
         getCommand("Fall").setExecutor(new TunnelCollapseCommand(this));

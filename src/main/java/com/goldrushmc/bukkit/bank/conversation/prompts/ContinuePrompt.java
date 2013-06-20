@@ -4,16 +4,14 @@ import org.bukkit.conversations.ConversationContext;
 import org.bukkit.conversations.Prompt;
 
 /**
- * Created with IntelliJ IDEA.
- * User: Lucas
+ * User: Diremonsoon
  * Date: 6/18/13
  * Time: 2:07 PM
- * To change this template use File | Settings | File Templates.
  */
 public class ContinuePrompt extends DefaultPrompt {
     @Override
     public String getPromptText(ConversationContext context) {
-        return "Would you like to do something else?";
+        return "Would you like to do something else today?";
     }
 
     @Override
@@ -24,6 +22,15 @@ public class ContinuePrompt extends DefaultPrompt {
     @Override
     public Prompt acceptInput(ConversationContext context, String input) {
         if(input.equalsIgnoreCase("Yes")) return new WelcomePrompt();
-        else return Prompt.END_OF_CONVERSATION;
+        else if(input.equalsIgnoreCase("No")) return Prompt.END_OF_CONVERSATION;
+        else {
+            context.setSessionData("ERROR", errorPrompt());
+            return new TryAgainPrompt(this);
+        }
+    }
+
+    @Override
+    public String errorPrompt() {
+        return "That is not an option. Please try entering 'Yes' or 'No'.";
     }
 }

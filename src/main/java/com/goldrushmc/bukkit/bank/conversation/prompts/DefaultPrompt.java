@@ -6,11 +6,9 @@ import org.bukkit.conversations.Prompt;
 import org.bukkit.entity.Player;
 
 /**
- * Created with IntelliJ IDEA.
- * User: Lucas
+ * User: Diremonsoon
  * Date: 6/17/13
  * Time: 11:03 PM
- * To change this template use File | Settings | File Templates.
  */
 public abstract class DefaultPrompt implements Prompt {
 
@@ -44,4 +42,6 @@ public abstract class DefaultPrompt implements Prompt {
     public void setCustomer(Player customer) {
         this.customer = customer;
     }
+
+    public abstract String errorPrompt();
 }

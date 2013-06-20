@@ -13,9 +13,9 @@ import org.bukkit.plugin.java.JavaPlugin;
 import java.util.ArrayList;
 import java.util.List;
 
-public class StationWand extends CommandDefault {
+public class BuildWand extends CommandDefault {
 
-    public StationWand(JavaPlugin plugin) {
+    public BuildWand(JavaPlugin plugin) {
         super(plugin);
     }
 

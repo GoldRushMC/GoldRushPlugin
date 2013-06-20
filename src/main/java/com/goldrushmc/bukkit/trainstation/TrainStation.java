@@ -9,6 +9,7 @@ import com.bergerkiller.bukkit.tc.events.MemberBlockChangeEvent;
 import com.goldrushmc.bukkit.db.access.DBStationsAccess;
 import com.goldrushmc.bukkit.db.access.IStationAccessible;
 import com.goldrushmc.bukkit.defaults.BlockFinder;
+import com.goldrushmc.bukkit.town.Town;
 import com.goldrushmc.bukkit.trainstation.event.StationSignEvent;
 import com.goldrushmc.bukkit.trainstation.signs.ISignLogic;
 import com.goldrushmc.bukkit.trainstation.signs.SignLogic;
@@ -66,6 +67,7 @@ public abstract class TrainStation extends BlockFinder{
     protected final List<Block> trainStationBlocks;
     protected volatile List<MinecartGroup> trains = new ArrayList<>();
     protected final List<Block> rails;
+    protected Town town;
 
     /**
      * We require the JavaPlugin because this class must be able to access the database.
@@ -155,7 +157,10 @@ public abstract class TrainStation extends BlockFinder{
         PlayerMoveEvent.getHandlerList().unregister(this);
         MemberBlockChangeEvent.getHandlerList().unregister(this);
         PlayerInteractEvent.getHandlerList().unregister(this);
+        //BlockFinder Class stuff.
         BlockPlaceEvent.getHandlerList().unregister(this);
+        BlockBreakEvent.getHandlerList().unregister(this);
+        BlockDamageEvent.getHandlerList().unregister(this);
 
         //Remove from the DB.
         removeFromDB();
@@ -568,6 +573,10 @@ public abstract class TrainStation extends BlockFinder{
     public List<MinecartGroup> getTrains() {return trains;}
 
     public List<Block> getRails() {return rails;}
+
+    public Town getTown() { return town; }
+
+    public void setTown(Town town) { this.town = town; }
 
     /**
      * @return the chunks
