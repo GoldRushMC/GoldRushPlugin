@@ -1,6 +1,7 @@
 package com.goldrushmc.bukkit.bank;
 
 import com.goldrushmc.bukkit.defaults.DefaultListener;
+import com.goldrushmc.bukkit.main.Main;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Material;
@@ -11,6 +12,7 @@ import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.event.player.PlayerLoginEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -61,6 +63,16 @@ public class InventoryLis extends DefaultListener {
         //Schedule run to fill player's inventory in 30 ticks
         if (e.getPlayer().getGameMode().equals(GameMode.ADVENTURE))
             Bukkit.getScheduler().runTaskLater(plugin, new FillInv(e.getPlayer()), 30);
+    }
+
+    @EventHandler
+    public void onPlayerLoginAdd(PlayerLoginEvent e){
+        Main.playerList.add(e.getPlayer());
+    }
+
+    @EventHandler
+    public void onPlayerLoginOut(PlayerQuitEvent e){
+        Main.playerList.remove(e.getPlayer());
     }
 
     //Create class which will fill the inventory.

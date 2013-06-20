@@ -25,6 +25,7 @@ import net.citizensnpcs.api.trait.TraitInfo;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.entity.Player;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -46,6 +47,8 @@ public final class Main extends JavaPlugin {
     public final MineLis ml = new MineLis(this);
     public final ChatLis cl = new ChatLis(this);
 
+    public static List<Player> playerList = new ArrayList<>();
+
     @Override
     public void onEnable() {
 		setupDB();
@@ -66,6 +69,8 @@ public final class Main extends JavaPlugin {
 //        getCommand("TrainCycle").setExecutor(new TrainCycleCommand(this));
         getCommand("RemoveStation").setExecutor(new RemoveTrainStation(this));
         getCommand("ListStations").setExecutor(new TrainStationListCommand(this));
+
+
 
 
         //Register listeners
