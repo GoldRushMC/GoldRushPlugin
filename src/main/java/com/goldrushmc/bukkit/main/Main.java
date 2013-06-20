@@ -1,6 +1,7 @@
 package com.goldrushmc.bukkit.main;
 
 import com.goldrushmc.bukkit.bank.InventoryLis;
+import com.goldrushmc.bukkit.chat.ChatLis;
 import com.goldrushmc.bukkit.commands.*;
 import com.goldrushmc.bukkit.db.tables.MineLocationTbl;
 import com.goldrushmc.bukkit.db.tables.MinesTbl;
@@ -43,6 +44,7 @@ public final class Main extends JavaPlugin {
     public final PanningLis pl = new PanningLis(this);
     public final InventoryLis il = new InventoryLis(this);
     public final MineLis ml = new MineLis(this);
+    public final ChatLis cl = new ChatLis(this);
 
     @Override
     public void onEnable() {
@@ -75,6 +77,7 @@ public final class Main extends JavaPlugin {
         pm.registerEvents(pl, this);
         pm.registerEvents(il, this);
         pm.registerEvents(ml, this);
+        pm.registerEvents(cl, this);
 
 
         //Add settings for Tunnel Collapse
