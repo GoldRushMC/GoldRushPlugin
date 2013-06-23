@@ -121,6 +121,7 @@ public final class Main extends JavaPlugin {
         getLogger().info(getDescription().getName() + " " + getDescription().getVersion() + " Enabled!");
     }
 
+    ///*
     private void setupDB() {
         try {
             getDatabase().find(StationTbl.class).findRowCount();
@@ -138,6 +139,7 @@ public final class Main extends JavaPlugin {
             installDDL();
         }
     }
+    //*/
 
 	@Override
 	public List<Class<?>> getDatabaseClasses() {

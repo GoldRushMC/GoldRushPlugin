@@ -5,6 +5,8 @@ import com.goldrushmc.bukkit.db.access.DBMinesAcess;
 import com.goldrushmc.bukkit.db.tables.MineLocationTbl;
 import com.goldrushmc.bukkit.db.tables.MinesTbl;
 import com.goldrushmc.bukkit.defaults.BlockFinder;
+import com.goldrushmc.bukkit.trainstation.event.EnterTrainStationEvent;
+import com.goldrushmc.bukkit.trainstation.event.ExitTrainStationEvent;
 import com.goldrushmc.bukkit.trainstation.exceptions.MarkerNumberException;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -12,9 +14,12 @@ import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockDamageEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
+import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.util.Vector;
 
@@ -29,6 +34,7 @@ public class Mine extends BlockFinder{
 	 *The mine class itself can facilitate this.
 	 */
 	private static List<Mine> mines = new ArrayList<>();
+    public volatile List<Player> players = new ArrayList<>();
     public static DBMinesAccessible db;
 	
 	public Vector mineMin, mineMax, mineEntrance;
@@ -140,13 +146,41 @@ public class Mine extends BlockFinder{
 		return min;
 	}
 
+    @EventHandler(priority = EventPriority.MONITOR)
+    public void onPlayerMove(PlayerMoveEvent event) {
+        //We look for the blocks to and from
+        Block from = event.getFrom().getBlock(), to = event.getTo().getBlock();
+
+        //Has left the types!
+        if (this.getSelectedArea().contains(from) && !this.getSelectedArea().contains(to)) {
+            ExitMineEvent exit = new ExitMineEvent(this, event.getPlayer());
+            Bukkit.getServer().getPluginManager().callEvent(exit);
+        }
+
+        //Has entered the types!
+        else if (this.getSelectedArea().contains(to) && !this.getSelectedArea().contains(from)) {
+            EnterMineEvent enter = new EnterMineEvent(this, event.getPlayer());
+            Bukkit.getServer().getPluginManager().callEvent(enter);
+        }
+
+    }
+
+    @EventHandler
+    public void onMineEnter(EnterMineEvent e){
+        players.add(e.getPlayer());
+        e.getPlayer().sendMessage("You have just entered " + this.name + ".");
+    }
+
+    @EventHandler
+    public void onMineExit(ExitMineEvent e){
+        players.remove(e.getPlayer());
+        e.getPlayer().sendMessage("You have just left " + this.name + ".");
+    }
 	@Override
 	public void remove() {
         removeFromDB(); //Remove from DB.
 		// TODO remove RefreshEvent
 		mines.remove(this); //TODO Need to remove ALL variable memory references first. This is the first step.
-
-		
 	}
 
 	@Override
@@ -157,6 +191,7 @@ public class Mine extends BlockFinder{
 		}
 		mines.add(this); //Add the mine to the list.
         if(db.getMine(name) == null) saveToDB(); //Save to the DB.
+        Bukkit.getPluginManager().registerEvents(this, plugin);
 	}
 	
 	/**
@@ -186,7 +221,11 @@ public class Mine extends BlockFinder{
     }
 
     public void closeForGenerate() {
-
+        for(Player player : players){
+            player.sendMessage("Mine closed for re-generation!");
+            player.teleport(this.mineEntrance.toLocation(this.world));
+        }
+        reGenerate();
     }
 
     @Override
@@ -214,9 +253,9 @@ public class Mine extends BlockFinder{
     @Override
     public void onPlayerBreakAttempt(BlockBreakEvent event) {
         if(event.getBlock().getType() == Material.GOLD_ORE){
-            goldLeft--;
+            getGoldLeft();
         }
-        if(goldLeft < 5){
+        if(goldLeft <= 5){
             closeForGenerate();
         }
     }
