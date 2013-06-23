@@ -11,6 +11,7 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
+import org.bukkit.entity.Player;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockDamageEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
@@ -33,8 +34,9 @@ public class Mine extends BlockFinder{
 	public Vector mineMin, mineMax, mineEntrance;
 	Location recCoordOne, recCoordTwo;
 	public int length, width, height;
-	int goldLeft, genedGold, density;
+	int goldLeft, density;
 	Boolean isGenerated = false;
+    Boolean closed = false;
 	String name;
 	World w;
 	
@@ -171,7 +173,6 @@ public class Mine extends BlockFinder{
     }
 
     public void getGoldLeft() {
-        goldLeft = 0;
         for (Block b : this.selectedArea) {
             if (b.getType() == Material.GOLD_ORE) {
                 goldLeft++;
@@ -180,10 +181,12 @@ public class Mine extends BlockFinder{
     }
 
     public void reGenerate() {
-        plugin.getServer().broadcastMessage(mineMin.toString());
-        plugin.getServer().broadcastMessage(mineMax.toString());
         MineGenerator mineGen = new MineGenerator(w, mineMin, mineMax, mineEntrance);
         mineGen.generate(density);
+    }
+
+    public void closeForGenerate() {
+
     }
 
     @Override
@@ -210,6 +213,11 @@ public class Mine extends BlockFinder{
 
     @Override
     public void onPlayerBreakAttempt(BlockBreakEvent event) {
-        //To change body of implemented methods use File | Settings | File Templates.
+        if(event.getBlock().getType() == Material.GOLD_ORE){
+            goldLeft--;
+        }
+        if(goldLeft < 5){
+            closeForGenerate();
+        }
     }
 }
