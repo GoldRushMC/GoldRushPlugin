@@ -18,6 +18,7 @@ import org.bukkit.util.Vector;
 
 import java.util.*;
 
+@Deprecated
 public class MineTool  extends CommandDefault {
 	
 	public static Map<Player, List<Integer>> mineSize = new HashMap<>();

@@ -179,8 +179,11 @@ public class Mine extends BlockFinder{
 	@Override
 	public void remove() {
         removeFromDB(); //Remove from DB.
-		// TODO remove RefreshEvent
-		mines.remove(this); //TODO Need to remove ALL variable memory references first. This is the first step.
+        PlayerMoveEvent.getHandlerList().unregister(this);
+        BlockBreakEvent.getHandlerList().unregister(this);
+        BlockDamageEvent.getHandlerList().unregister(this);
+        BlockPlaceEvent.getHandlerList().unregister(this);
+        mines.remove(this);
 	}
 
 	@Override
@@ -207,12 +210,14 @@ public class Mine extends BlockFinder{
         mines = mineList;
     }
 
-    public void getGoldLeft() {
+    public int getGoldLeft() {
+        int gold = 0;
         for (Block b : this.selectedArea) {
             if (b.getType() == Material.GOLD_ORE) {
-                goldLeft++;
+                gold++;
             }
         }
+        return gold;
     }
 
     public void reGenerate() {
@@ -241,19 +246,23 @@ public class Mine extends BlockFinder{
 	public String getName() { return name; }
 
     @Override
+    @EventHandler
     public void onPlayerPlaceAttempt(BlockPlaceEvent event) {
         //To change body of implemented methods use File | Settings | File Templates.
     }
 
     @Override
+    @EventHandler
     public void onPlayerDamageAttempt(BlockDamageEvent event) {
         //To change body of implemented methods use File | Settings | File Templates.
     }
 
     @Override
+    @EventHandler
     public void onPlayerBreakAttempt(BlockBreakEvent event) {
         if(event.getBlock().getType() == Material.GOLD_ORE){
-            getGoldLeft();
+            goldLeft = getGoldLeft();
+            event.getPlayer().sendMessage(String.valueOf(goldLeft));
         }
         if(goldLeft <= 5){
             closeForGenerate();
