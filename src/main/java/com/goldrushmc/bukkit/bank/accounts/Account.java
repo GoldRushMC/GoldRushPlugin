@@ -109,14 +109,5 @@ public interface Account {
      */
     public void setBank(Bank bank);
 
-    /**
-     * The different types of accounts
-     *
-     * @author Diremonsoon
-     */
-    public enum AccountType {
-        CHECKING,
-        LOAN,
-        CREDIT
-    }
+
 }

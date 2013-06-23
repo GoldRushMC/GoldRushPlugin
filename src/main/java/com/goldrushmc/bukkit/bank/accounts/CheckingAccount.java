@@ -16,13 +16,10 @@ import org.bukkit.inventory.ItemStack;
  */
 public class CheckingAccount extends AbstractAccount {
 
-    public CheckingAccount(int startingBalance, HumanEntity owner, Bank bank, int interest) {
+    public CheckingAccount(String name ,int startingBalance, HumanEntity owner, Bank bank, int interest) {
         super(startingBalance, owner, bank, interest);
         this.type = AccountType.CHECKING;
-    }
-
-    @Override
-    public void setAccountName(String name) {
+        this.name = name;
     }
 
     @Override

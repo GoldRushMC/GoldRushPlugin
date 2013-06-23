@@ -1,15 +1,22 @@
 package com.goldrushmc.bukkit.bank.conversation.prompts;
 
+import com.goldrushmc.bukkit.bank.Bank;
 import com.goldrushmc.bukkit.bank.accounts.Account;
+import net.citizensnpcs.api.npc.NPC;
 import org.bukkit.ChatColor;
 import org.bukkit.conversations.ConversationContext;
 import org.bukkit.conversations.Prompt;
+import org.bukkit.entity.Player;
 
 /**
  * User: Diremonsoon
  * Date: 6/20/13
  */
 public class DepositPrompt extends AccountPrompt {
+
+    public DepositPrompt(Bank bank, NPC teller, Player customer) {
+        super(bank, teller, customer);
+    }
 
     @Override
     public String getPromptText(ConversationContext context) {
@@ -47,7 +54,7 @@ public class DepositPrompt extends AccountPrompt {
             customer.sendMessage("You are not able to deposit funds.");
         }
 
-        return new ContinuePrompt();
+        return new ContinuePrompt(bank, customer, teller);
     }
 
     @Override

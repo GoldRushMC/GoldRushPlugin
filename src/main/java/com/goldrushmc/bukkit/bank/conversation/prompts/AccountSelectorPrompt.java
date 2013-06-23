@@ -1,8 +1,11 @@
 package com.goldrushmc.bukkit.bank.conversation.prompts;
 
+import com.goldrushmc.bukkit.bank.Bank;
 import com.goldrushmc.bukkit.bank.accounts.Account;
+import net.citizensnpcs.api.npc.NPC;
 import org.bukkit.conversations.ConversationContext;
 import org.bukkit.conversations.Prompt;
+import org.bukkit.entity.Player;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -14,6 +17,10 @@ import java.util.List;
 public class AccountSelectorPrompt extends AccountPrompt{
 
     List<Account> sameTypes = new ArrayList<>();
+
+    public AccountSelectorPrompt(Bank bank, NPC teller, Player customer) {
+        super(bank, teller, customer);
+    }
 
     @Override
     public String getPromptText(ConversationContext context) {

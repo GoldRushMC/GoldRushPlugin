@@ -64,6 +64,7 @@ public final class Main extends JavaPlugin {
 //        getCommand("TrainCycle").setExecutor(new TrainCycleCommand(this));
         getCommand("RemoveStation").setExecutor(new RemoveTrainStation(this));
         getCommand("ListStations").setExecutor(new TrainStationListCommand(this));
+        getCommand("Bank").setExecutor(new CreateBankCommand(this));
 
 
         //Register listeners

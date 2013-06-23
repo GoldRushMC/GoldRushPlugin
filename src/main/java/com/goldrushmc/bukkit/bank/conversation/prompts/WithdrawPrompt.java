@@ -1,9 +1,12 @@
 package com.goldrushmc.bukkit.bank.conversation.prompts;
 
+import com.goldrushmc.bukkit.bank.Bank;
 import com.goldrushmc.bukkit.bank.accounts.Account;
+import net.citizensnpcs.api.npc.NPC;
 import org.bukkit.ChatColor;
 import org.bukkit.conversations.ConversationContext;
 import org.bukkit.conversations.Prompt;
+import org.bukkit.entity.Player;
 
 /**
  * User: Diremonsoon
@@ -11,7 +14,9 @@ import org.bukkit.conversations.Prompt;
  */
 public class WithdrawPrompt extends AccountPrompt{
 
-
+    public WithdrawPrompt(Bank bank, NPC teller, Player customer) {
+        super(bank, teller, customer);
+    }
 
     @Override
     public String getPromptText(ConversationContext context) {
@@ -49,7 +54,7 @@ public class WithdrawPrompt extends AccountPrompt{
             customer.sendMessage("You are not able to withdraw funds.");
         }
 
-        return new ContinuePrompt();
+        return new ContinuePrompt(bank, customer, teller);
     }
 
     @Override

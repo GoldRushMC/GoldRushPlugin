@@ -1,6 +1,7 @@
 package com.goldrushmc.bukkit.bank;
 
 import com.goldrushmc.bukkit.bank.accounts.Account;
+import com.goldrushmc.bukkit.bank.accounts.AccountType;
 import com.goldrushmc.bukkit.bank.conversation.BankPrefix;
 import com.goldrushmc.bukkit.bank.conversation.prompts.WelcomePrompt;
 import com.goldrushmc.bukkit.defaults.BlockFinder;
@@ -9,14 +10,9 @@ import com.goldrushmc.bukkit.town.Town;
 import com.goldrushmc.bukkit.trainstation.exceptions.MarkerNumberException;
 import net.citizensnpcs.api.CitizensAPI;
 import net.citizensnpcs.api.npc.NPC;
-import org.bukkit.Chunk;
-import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.World;
+import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.conversations.Conversation;
-import org.bukkit.conversations.ConversationAbandonedEvent;
-import org.bukkit.conversations.ConversationAbandonedListener;
 import org.bukkit.conversations.ConversationFactory;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.HumanEntity;
@@ -28,7 +24,10 @@ import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Will be used to facilitate an economy.
@@ -42,67 +41,73 @@ public class Bank extends BlockFinder {
     private static List<Bank> banks = new ArrayList<>();
 
     private Map<HumanEntity, List<Account>> accountHolders = new HashMap<>();
-    private Map<Player, Conversation> conversations = new HashMap<>();
+    private volatile Map<Player, Conversation> conversations = new HashMap<>();
     private ConversationFactory teller;
     private List<NPC> employees = new ArrayList<>();
     private volatile Map<Player, NPC> helpedBy = new HashMap<>();
-    private Map<NPC, List<Block>> tellerAreas = new HashMap<>();
+    private Map<Block, NPC> tellerAreas = new HashMap<>();
     private String name;
     private Town town;
     private List<Block> bankArea;
     private int tellerDiameter;
     private int checkingInterest, loanInterest, creditInterest;
 
-    public Bank(World world, List<Location> coords, JavaPlugin plugin) throws MarkerNumberException, NotInTownException {
+    public Bank(World world, List<Location> coords, JavaPlugin plugin, String name) throws MarkerNumberException, NotInTownException {
         super(world, coords, plugin);
-
+        this.name = name;
         Location loc1 = coords.get(0), loc2 = coords.get(1);
 
-
+        Bukkit.getLogger().info("Getting Bank Area...");
         if(loc1.getBlockY() > loc2.getBlockY()) bankArea = getSelectiveArea(loc1, loc2, (loc2.getBlockY() - 10), (loc2.getBlockY() + 50));
         else bankArea = getSelectiveArea(loc1, loc2, (loc1.getBlockY() - 10), (loc1.getBlockY() + 50));
 
-        Town town = null;
-        for(Block b : bankArea) {
-            if(Town.getTownAtBlock(b) != null) {
-                town = Town.getTownAtBlock(b);
-                break;
-            }
-        }
-        //You can only make a Bank if it is COMPLETELY within a town.
-        if(town == null) throw new NotInTownException("bank");
-        else if(!town.getTownArea().containsAll(bankArea)) throw new NotInTownException("bank");
-        else this.town = town;
+//        Town town = null;
+//        for(Block b : bankArea) {
+//            if(Town.getTownAtBlock(b) != null) {
+//                town = Town.getTownAtBlock(b);
+//                break;
+//            }
+//        }
+//        //You can only make a Bank if it is COMPLETELY within a town.
+//        if(town == null) throw new NotInTownException("bank");
+//        else if(!town.getTownArea().containsAll(bankArea)) throw new NotInTownException("bank");
+//        else this.town = town;
 
+        //Find the tellers and initialize the conversation factory.
+        Bukkit.getLogger().info("Finding Tellers...");
+        employees = findTellers();
+
+        Bukkit.getLogger().info("Tellers Counted: " + employees.size());
 
         teller = new ConversationFactory(plugin);
 
+        Bukkit.getLogger().info("Getting Config Parameters...");
         //This has the potential to be 0, in which case, the default is 3 blocks.
         tellerDiameter = plugin.getConfig().getInt("bank.teller.diameter");
         if(tellerDiameter == 0) tellerDiameter = 3;
+
+        Bukkit.getLogger().info("Creating Conversation Areas...");
+        //Create the areas where conversations can take place.
+        initializeTellers();
+
+        checkingInterest = 3;
+        loanInterest = 3;
+        creditInterest = 3;
+
+        //Register Events and add to Static Master-List Map
+        add();
     }
 
-    public void startTransaction(Player p, NPC n) {
+    public Conversation startTransaction(Player p, NPC n) {
         //Set parameters of the conversation and begin it.
-        teller.withFirstPrompt(new WelcomePrompt());
+        teller.withFirstPrompt(new WelcomePrompt(this, n, p));
         teller.withEscapeSequence("//");
-        teller.withLocalEcho(false);
+        teller.withLocalEcho(true);
         teller.withPrefix(new BankPrefix(name));
         Conversation talk = teller.buildConversation(p);
 
-        teller.addConversationAbandonedListener(new ConversationAbandonedListener() {
-            @Override
-            public void conversationAbandoned(ConversationAbandonedEvent e) {
-                //Sends the player a message wishing them well (hopefully this works...)
-                e.getContext().getForWhom().sendRawMessage("Have a nice day!");
-            }
-        });
-
-        conversations.put(p, talk);
-        helpedBy.put(p, n);
         talk.begin();
-
-
+        return talk;
     }
 
     public int getCheckingInterest() {
@@ -137,7 +142,7 @@ public class Bank extends BlockFinder {
     }
 
     //TODO This is the method for opening accounts.
-    public void openAccount(HumanEntity customer, Account.AccountType type) {
+    public void openAccount(HumanEntity customer, AccountType type) {
         boolean newAccount = false;
         if(accountHolders.containsKey(customer)) newAccount = true;
 
@@ -152,7 +157,9 @@ public class Bank extends BlockFinder {
     }
 
     public void openAccount(HumanEntity customer, Account account) {
-        accountHolders.put(customer, new ArrayList<Account>());
+        if(!accountHolders.containsKey(customer)) {
+            accountHolders.put(customer, new ArrayList<Account>());
+        }
         accountHolders.get(customer).add(account);
         if(masterList.containsKey(customer))  masterList.get(customer).add(account);
         else {
@@ -199,7 +206,7 @@ public class Bank extends BlockFinder {
         this.town = town;
     }
 
-    public Account getAccount(HumanEntity p, Account.AccountType type) {
+    public Account getAccount(HumanEntity p, AccountType type) {
         if(accountHolders.containsKey(p)) {
             for(Account a : accountHolders.get(p)) {
                 if(a.getAccountType().equals(type)) {
@@ -256,6 +263,7 @@ public class Bank extends BlockFinder {
 
     @Override
     public void add() {
+        Bukkit.getPluginManager().registerEvents(this, plugin);
         banks.add(this);
     }
 
@@ -282,13 +290,14 @@ public class Bank extends BlockFinder {
                 }
             }
         }
-
         return tellers;
     }
 
     public void initializeTellers() {
         for(NPC n : employees) {
-            tellerAreas.put(n, generateTellerBlocks(n));
+            for(Block b : generateTellerBlocks(n)) {
+                tellerAreas.put(b, n);
+            }
         }
     }
 
@@ -300,28 +309,31 @@ public class Bank extends BlockFinder {
      */
     public List<Block> generateTellerBlocks(NPC teller) {
         //This location is the CENTER of the teller blocks. we expand outwards the specified amount (set in config.yml)
-        Location telLoc = teller.getStoredLocation();
+        Location telLoc = teller.getBukkitEntity().getLocation();
         List<Block> tellerBlocks = new ArrayList<>();
 
-        //Move in a forward direction.
-        for(int x = telLoc.getBlockX(); x < telLoc.getBlockX() + tellerDiameter; x++) {
-            for(int y = telLoc.getBlockY(); x < telLoc.getBlockY() + tellerDiameter; y++) {
-                for(int z = telLoc.getBlockZ(); z < telLoc.getBlockZ() + tellerDiameter; z++) {
+        //Move in a backwards direction.
+        for(int x = telLoc.getBlockX(); x > telLoc.getBlockX() - tellerDiameter; x--) {
+            for(int y = telLoc.getBlockY(); y < telLoc.getBlockY() + tellerDiameter; y++) {
+                for(int z = telLoc.getBlockZ(); z > telLoc.getBlockZ() - tellerDiameter; z--) {
                     tellerBlocks.add(world.getBlockAt(x, y, z));
                 }
             }
         }
 
-        //Move in a backwards direction.
-        for(int x = telLoc.getBlockX(); x < telLoc.getBlockX() - tellerDiameter; x--) {
-            for(int y = telLoc.getBlockY(); x < telLoc.getBlockY() - tellerDiameter; y--) {
-                for(int z = telLoc.getBlockZ(); z < telLoc.getBlockZ() - tellerDiameter; z--) {
+        //Move in a forward direction.
+        for(int x = telLoc.getBlockX(); x < telLoc.getBlockX() + tellerDiameter; x++) {
+            for(int y = telLoc.getBlockY(); y < telLoc.getBlockY() + tellerDiameter; y++) {
+                for(int z = telLoc.getBlockZ(); z < telLoc.getBlockZ() + tellerDiameter; z++) {
                     //Check to make sure the block doesn't already exist, because it is possible for overlap to occur.
                     Block b = world.getBlockAt(x, y, z);
                     if(!tellerBlocks.contains(b)) tellerBlocks.add(b);
-
                 }
             }
+        }
+        //TODO Testing mapping of convos.
+        for(Block b : tellerBlocks) {
+            b.setType(Material.GOLD_BLOCK);
         }
         return tellerBlocks;
     }
@@ -335,34 +347,26 @@ public class Bank extends BlockFinder {
      */
     @EventHandler
     public void dialogMonitor(PlayerMoveEvent pme) {
-        Location from = pme.getFrom(), to = pme.getTo();
+        Block from = pme.getFrom().getBlock(), to = pme.getTo().getBlock();
         Player p = pme.getPlayer();
 
-        //This should only be true if the conversation is already initiated.
         if(helpedBy.containsKey(p)) {
-            List<Block> telBlocks = tellerAreas.get(helpedBy.get(p));
-            if(!telBlocks.contains(to) && telBlocks.contains(from)) {
-                Conversation c = conversations.get(p);
-                c.abandon();
-                conversations.remove(p);
-                helpedBy.remove(p);
-            }
-        } else {
-            /* Logic for finding the teller, based on the lists.
-               It is a backwards way of finding the NPC,
-               but it is only for starting new conversations, not monitoring them.
-             */
-            Collection<List<Block>> telBlocks  = tellerAreas.values();
-            for(List<Block> list : telBlocks) {
-                if(list.contains(to)) {
-                    for(NPC n : tellerAreas.keySet()) {
-                        if(tellerAreas.get(n).equals(list)) {
-                            startTransaction(p, n);
-                            break;
-                        }
-                    }
-                    break;
+            //Leaving Conversation
+            if(!tellerAreas.containsKey(to) && tellerAreas.containsKey(from)) {
+                if(tellerAreas.get(from).equals(helpedBy.get(p))) {
+                    Conversation c = conversations.get(p);
+                    if(c.getState().equals(Conversation.ConversationState.STARTED)) c.abandon();
+                    conversations.remove(p);
+                    helpedBy.remove(p);
                 }
+            }
+        }
+        //Entering Conversation
+        if(tellerAreas.containsKey(to) && !tellerAreas.containsKey(from)) {
+            if(helpedBy.get(p) == null) {
+                NPC employee = tellerAreas.get(to);
+                helpedBy.put(p, employee);
+                conversations.put(p, startTransaction(p, employee));
             }
         }
     }

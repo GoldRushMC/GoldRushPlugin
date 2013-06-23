@@ -32,6 +32,9 @@ public class WandLis extends DefaultListener {
     @EventHandler
     public void onWandUse(PlayerInteractEvent event) {
 
+        //If the item is just a hand, we don't care.
+        if(event.getItem() == null) return;
+
         //If the event is the wrong one, go no further.
         if (event.getAction().equals(Action.RIGHT_CLICK_BLOCK)) {
 
@@ -125,7 +128,7 @@ public class WandLis extends DefaultListener {
                         List<Location> locs = stationLoc.get(p);
                         if (locs.contains(check)) {
                             locs.remove(check);
-                            p.sendMessage(ChatColor.YELLOW + "You have removed one of your markers!");
+                            p.sendMessage(ChatColor.YELLOW + "You have removed one of your markers for STATIONS!");
                         } else {
                             for(List<Location> lists : stationLoc.values()) {
                                 if(lists.contains(check)) {
@@ -133,12 +136,27 @@ public class WandLis extends DefaultListener {
                                     event.setCancelled(true);
                                     break;
                                 }
-                                break;
                             }
                         }
                     }
                     break;
                 case BANK:
+                    if (bankLoc.containsKey(p)) {
+                        List<Location> locs = bankLoc.get(p);
+                        if (locs.contains(check)) {
+                            locs.remove(check);
+                            p.sendMessage(ChatColor.YELLOW + "You have removed one of your markers for BANKS!");
+                        } else {
+                            for(List<Location> lists : bankLoc.values()) {
+                                if(lists.contains(check)) {
+                                    p.sendMessage(ChatColor.RED + "You cannot destroy someone elses markers!");
+                                    event.setCancelled(true);
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                    break;
             }
 
 

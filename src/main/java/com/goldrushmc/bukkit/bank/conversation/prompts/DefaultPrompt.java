@@ -19,6 +19,14 @@ public abstract class DefaultPrompt implements Prompt {
     protected static final String CONTINUE = "CONTINUE";
     protected static final String DO_ANOTHER = "CARRY_ON";
 
+    public DefaultPrompt(Bank bank, NPC teller, Player customer) {
+        this.bank = bank;
+        this.teller = teller;
+        this.customer = customer;
+    }
+
+    public DefaultPrompt() {}
+
     public Bank getBank() {
         return bank;
     }

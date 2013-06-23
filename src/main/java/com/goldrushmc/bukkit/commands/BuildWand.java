@@ -58,7 +58,7 @@ public class BuildWand extends CommandDefault {
         ItemStack blazeRod = new ItemStack(Material.BLAZE_ROD);
         ItemMeta meta = blazeRod.getItemMeta();
         meta.setLore(lore);
-        meta.setDisplayName("Building Tool");
+        meta.setDisplayName("GR Build Tool");
         blazeRod.setItemMeta(meta);
         p.setItemInHand(blazeRod);
 

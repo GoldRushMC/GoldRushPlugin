@@ -1,8 +1,11 @@
 package com.goldrushmc.bukkit.bank.conversation.prompts;
 
+import com.goldrushmc.bukkit.bank.Bank;
+import net.citizensnpcs.api.npc.NPC;
 import org.bukkit.ChatColor;
 import org.bukkit.conversations.ConversationContext;
 import org.bukkit.conversations.Prompt;
+import org.bukkit.entity.Player;
 
 /**
  * User: Diremonsoon
@@ -10,6 +13,10 @@ import org.bukkit.conversations.Prompt;
  * Time: 11:13 PM
  */
 public class WelcomePrompt extends DefaultPrompt {
+
+    public WelcomePrompt(Bank bank, NPC teller, Player customer) {
+        super(bank, teller, customer);
+    }
 
     @Override
     public String getPromptText(ConversationContext context) {
@@ -34,6 +41,7 @@ public class WelcomePrompt extends DefaultPrompt {
                     "*: Transfer \n" +
                     "*: Transfer Account To New Bank (type 'transfer account')\n" +
                     "*: Close Account \n" +
+                    "*: Open Account \n" +
                     "*: End Conversation \n" +
                     ChatColor.AQUA + "TO CANCEL THE CONVERSATION AT ANY TIME, TYPE //, END OR STOP. \n" +
                     ChatColor.RESET + "Please choose an option. To pick one, merely type in the option as it is spelt, unless specified otherwise.";
@@ -48,7 +56,7 @@ public class WelcomePrompt extends DefaultPrompt {
 
     @Override
     public boolean blocksForInput(ConversationContext context) {
-        return context.getSessionData(WAIT).equals(true);
+        return context.getSessionData(WAIT) == null || context.getSessionData(WAIT).equals(true);
     }
 
     @Override
@@ -56,15 +64,15 @@ public class WelcomePrompt extends DefaultPrompt {
         switch (input) {
             case "check balance":
                 context.setSessionData("SELECTION", "check balance");
-                context.setSessionData("NEXT_PROMPT", new CheckBalancePrompt());
+                context.setSessionData("NEXT_PROMPT", new CheckBalancePrompt(bank, teller, customer));
                 break;
             case "withdraw":
                 context.setSessionData("SELECTION", "withdraw");
-                context.setSessionData("NEXT_PROMPT", new WithdrawPrompt());
+                context.setSessionData("NEXT_PROMPT", new WithdrawPrompt(bank, teller, customer));
                 break;
             case "deposit":
                 context.setSessionData("SELECTION", "deposit");
-                context.setSessionData("NEXT_PROMPT", new DepositPrompt());
+                context.setSessionData("NEXT_PROMPT", new DepositPrompt(bank, teller, customer));
                 break;
             case "transfer":
                 context.setSessionData("SELECTION", "transfer");
@@ -77,6 +85,7 @@ public class WelcomePrompt extends DefaultPrompt {
                 break;
             case "open account":
                 context.setSessionData("SELECTION", "open account");
+                context.setSessionData("NEXT_PROMPT", new OpenAccountPrompt(bank, teller, customer));
                 break;
             case "end":
             case "stop":
@@ -85,7 +94,7 @@ public class WelcomePrompt extends DefaultPrompt {
                 return Prompt.END_OF_CONVERSATION;
         }
 
-        return new AccountTypeSelectorPrompt();
+        return new AccountTypeSelectorPrompt(bank, teller, customer);
     }
 
     @Override
