@@ -15,9 +15,8 @@ public abstract class DefaultPrompt implements Prompt {
     protected Bank bank;
     protected NPC teller;
     protected Player customer;
-    protected static final String WAIT = "WAIT";
-    protected static final String CONTINUE = "CONTINUE";
-    protected static final String DO_ANOTHER = "CARRY_ON";
+
+
 
     public DefaultPrompt(Bank bank, NPC teller, Player customer) {
         this.bank = bank;

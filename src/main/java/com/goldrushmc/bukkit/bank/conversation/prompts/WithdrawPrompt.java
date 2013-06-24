@@ -3,6 +3,7 @@ package com.goldrushmc.bukkit.bank.conversation.prompts;
 import com.goldrushmc.bukkit.bank.Bank;
 import com.goldrushmc.bukkit.bank.accounts.Account;
 import net.citizensnpcs.api.npc.NPC;
+import org.apache.commons.lang.math.NumberUtils;
 import org.bukkit.ChatColor;
 import org.bukkit.conversations.ConversationContext;
 import org.bukkit.conversations.Prompt;
@@ -25,7 +26,7 @@ public class WithdrawPrompt extends AccountPrompt{
 
     @Override
     public boolean blocksForInput(ConversationContext context) {
-        return context.getSessionData("AMOUNT") == null;
+        return true;
     }
 
     @Override
@@ -35,26 +36,26 @@ public class WithdrawPrompt extends AccountPrompt{
 
         if(input.equalsIgnoreCase("cancel")) return Prompt.END_OF_CONVERSATION;
 
-        try {
+        if(NumberUtils.isNumber(input)) {
             amount = Integer.valueOf(input);
-
-            //You can't "add" using the withdrawl function!
-            if(amount <= 0) throw new NumberFormatException();
-
-        } catch (NumberFormatException e) {
-            context.setSessionData("ERROR", errorPrompt());
+            if(amount <= 0) {
+                context.setSessionData(SessionConstants.ERROR, errorPrompt());
+                return new TryAgainPrompt(this);
+            }
+        } else {
+            context.setSessionData(SessionConstants.ERROR, errorPrompt());
             return new TryAgainPrompt(this);
         }
 
-        Account a = (Account) context.getSessionData("ACCOUNT");
+        Account a = (Account) context.getSessionData(SessionConstants.ACCOUNT);
         if(a.withdraw(amount)) {
-            customer.sendMessage(ChatColor.GREEN + "You have withdrawn " + "( " + amount + " )" +
-                                 ChatColor.GOLD + " Gold Nugget(s)" + ChatColor.RESET + "from your account.");
+            context.setSessionData(SessionConstants.OUTCOME, ChatColor.GREEN + "You have withdrawn " + "( " + amount + " )" +
+                    ChatColor.GOLD + " Gold Nugget(s)" + ChatColor.RESET + "from your account.");
+            return new OutcomePrompt(bank, teller, customer);
         } else {
-            customer.sendMessage("You are not able to withdraw funds.");
+           context.setSessionData(SessionConstants.ERROR, "You do not have sufficient funds to complete this transaction.");
+            return new TryAgainPrompt(this);
         }
-
-        return new ContinuePrompt(bank, customer, teller);
     }
 
     @Override

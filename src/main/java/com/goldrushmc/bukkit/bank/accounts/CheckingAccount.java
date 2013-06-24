@@ -16,7 +16,7 @@ import org.bukkit.inventory.ItemStack;
  */
 public class CheckingAccount extends AbstractAccount {
 
-    public CheckingAccount(String name ,int startingBalance, HumanEntity owner, Bank bank, int interest) {
+    public CheckingAccount(String name, int startingBalance, HumanEntity owner, Bank bank, int interest) {
         super(startingBalance, owner, bank, interest);
         this.type = AccountType.CHECKING;
         this.name = name;
@@ -34,8 +34,14 @@ public class CheckingAccount extends AbstractAccount {
             //Else, we just do the stack amount divided by 64.
         else golds = new ItemStack[amount / 64];
 
+        int empty = 0;
+
         //Get the slots available within the inventory
-        int available = inv.getSize() - inv.getContents().length;
+        for(ItemStack item : inv.getContents()) {
+            if(item == null) empty++;
+        }
+
+        int available = inv.getSize() - empty;
 
         //If there is enough room, add the gold to the account.
         if(golds.length <= available) inv.addItem(golds);
@@ -54,8 +60,9 @@ public class CheckingAccount extends AbstractAccount {
 
         int countOfGold = 0;
 
-        for(ItemStack item : items) {
-            if(item.getType().equals(Material.GOLD_NUGGET)) {
+        for (ItemStack item : items) {
+            if(item == null) continue;
+            if (item.getType().equals(Material.GOLD_NUGGET)) {
                 countOfGold += item.getAmount();
             }
         }
@@ -68,6 +75,7 @@ public class CheckingAccount extends AbstractAccount {
             //Subtract the necessary amount of gold nuggets from the holder's inventory.
             int toRemove = amount;
             for(ItemStack item : items) {
+                if(item == null) continue;
                 if(toRemove == 0) break;
                 if(item.getType().equals(Material.GOLD_NUGGET)) {
                     if(item.getAmount() > toRemove) {

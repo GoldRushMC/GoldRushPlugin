@@ -20,7 +20,7 @@ public class AccountTypeSelectorPrompt extends AccountPrompt {
 
     @Override
     public String getPromptText(ConversationContext context) {
-        return "Which account type would you like to " + " [ "+ context.getSessionData("SELECTION") + " ] " + "? \n" +
+        return "Which account type would you like to " + " [ "+ ((String) context.getSessionData(SessionConstants.SELECTION)).toUpperCase() + " ] " + "? \n" +
                 "[1] checking \n" +
                 "[2] credit \n" +
                 "[3] loan";
@@ -28,7 +28,7 @@ public class AccountTypeSelectorPrompt extends AccountPrompt {
 
     @Override
     public boolean blocksForInput(ConversationContext context) {
-        return context.getSessionData("ACCOUNT_TYPE") == null;
+        return context.getSessionData(SessionConstants.ACCOUNT_TYPE) == null;
     }
 
     @Override
@@ -48,27 +48,27 @@ public class AccountTypeSelectorPrompt extends AccountPrompt {
         }
 
         if(type == null) {
-            context.setSessionData("ERROR", errorPrompt());
+            context.setSessionData(SessionConstants.ERROR, errorPrompt());
             return new TryAgainPrompt(this);
         }
 
-        if(context.getSessionData("SELECTION").equals("open account")) {
-            context.setSessionData("ACCOUNT_TYPE", type);
+        if(context.getSessionData(SessionConstants.SELECTION).equals("open account")) {
+            context.setSessionData(SessionConstants.ACCOUNT_TYPE, type);
             return new OpenAccountPrompt(bank, teller, customer);
         }
 
         for(Account a : accounts) {
             if(a.getAccountType().equals(type)) {
-                context.setSessionData("ACCOUNT_TYPE", type);
+                context.setSessionData(SessionConstants.ACCOUNT_TYPE, type);
                 break;
             }
         }
 
-        if(context.getSessionData("ACCOUNT_TYPE") != null) {
+        if(context.getSessionData(SessionConstants.ACCOUNT_TYPE) != null) {
             return new AccountSelectorPrompt(bank, teller, customer);
         }
         else  {
-            context.setSessionData("ERROR", "You do not have an account of this type.");
+            context.setSessionData(SessionConstants.ERROR, "You do not have an account of this type.");
             return new TryAgainPrompt(this);
         }
     }

@@ -18,7 +18,7 @@ public class TryAgainPrompt implements Prompt {
 
     @Override
     public String getPromptText(ConversationContext context) {
-        return ChatColor.RED + "" + context.getSessionData("ERROR");
+        return ChatColor.RED + "" + context.getSessionData(SessionConstants.ERROR);
     }
 
     @Override

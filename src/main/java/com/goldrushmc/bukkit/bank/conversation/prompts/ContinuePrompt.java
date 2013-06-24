@@ -32,13 +32,13 @@ public class ContinuePrompt extends DefaultPrompt {
     @Override
     public Prompt acceptInput(ConversationContext context, String input) {
         if(input.equalsIgnoreCase("Yes")) {
-            context.setSessionData(CONTINUE, true);
-            context.setSessionData(WAIT, true);
+            context.setSessionData(SessionConstants.CONTINUE, true);
+            context.setSessionData(SessionConstants.WAIT, true);
             return new WelcomePrompt(bank, teller, customer);
         }
         else if(input.equalsIgnoreCase("No")) return Prompt.END_OF_CONVERSATION;
         else {
-            context.setSessionData("ERROR", errorPrompt());
+            context.setSessionData(SessionConstants.ERROR, errorPrompt());
             return new TryAgainPrompt(this);
         }
     }

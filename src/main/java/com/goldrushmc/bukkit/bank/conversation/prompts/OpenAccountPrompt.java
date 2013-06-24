@@ -5,7 +5,6 @@ import com.goldrushmc.bukkit.bank.accounts.Account;
 import com.goldrushmc.bukkit.bank.accounts.AccountType;
 import com.goldrushmc.bukkit.bank.accounts.CheckingAccount;
 import net.citizensnpcs.api.npc.NPC;
-import org.bukkit.Bukkit;
 import org.bukkit.conversations.ConversationContext;
 import org.bukkit.conversations.Prompt;
 import org.bukkit.entity.Player;
@@ -22,29 +21,34 @@ public class OpenAccountPrompt extends DefaultPrompt{
 
     @Override
     public String getPromptText(ConversationContext context) {
-        Bukkit.getLogger().info("The Account Type is :" + context.getSessionData("ACCOUNT_TYPE"));
-        if(context.getSessionData("ACCOUNT_TYPE").equals(AccountType.CHECKING)) {
-            context.setSessionData("AUTO_NAME", false);
+        if(context.getSessionData(SessionConstants.ACCOUNT_TYPE).equals(AccountType.CHECKING)) {
+            context.setSessionData(SessionConstants.AUTO_NAME, false);
             return "What would you like to name your account?";
         } else {
-            context.setSessionData("AUTO_NAME", true);
+            context.setSessionData(SessionConstants.AUTO_NAME, true);
             return "Creating your account...";
         }
     }
 
     @Override
     public boolean blocksForInput(ConversationContext context) {
-        return context.getSessionData("AUTO_NAME").equals(false);
+        return context.getSessionData(SessionConstants.AUTO_NAME).equals(false);
     }
 
     @Override
     public Prompt acceptInput(ConversationContext context, String input) {
-        if(context.getSessionData("AUTO_NAME").equals(false)) {
+
+        if(input.equals("")) {
+            context.setSessionData(SessionConstants.ERROR, errorPrompt());
+            return new TryAgainPrompt(this);
+        }
+
+        if(context.getSessionData(SessionConstants.AUTO_NAME).equals(false)) {
             Account newAccount = new CheckingAccount(input, 0, customer, bank, bank.getCheckingInterest());
             bank.openAccount(customer, newAccount);
-            customer.sendMessage("Congratulations! You opened a checking account called: " + newAccount.accountName() + "\n" + "With bank: " + bank.getName());
+            context.setSessionData(SessionConstants.OUTCOME, "Created account " + newAccount.accountName() + " with bank " + bank.getName());
         }
-        return new ContinuePrompt(bank, customer, teller);
+        return new OutcomePrompt(bank, teller, customer);
     }
 
     @Override

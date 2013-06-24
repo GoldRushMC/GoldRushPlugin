@@ -22,7 +22,7 @@ public class CheckBalancePrompt extends AccountPrompt {
     @Override
     public String getPromptText(ConversationContext context) {
 
-        Account account = (Account) context.getSessionData("ACCOUNT");
+        Account account = (Account) context.getSessionData(SessionConstants.ACCOUNT);
 
         return ChatColor.GREEN + "Your balance is: " + ChatColor.AQUA + "( " + account.checkBalance() + " )" + ChatColor.GOLD + " Gold Nugget(s)";
     }

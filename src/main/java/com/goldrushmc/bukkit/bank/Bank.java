@@ -4,6 +4,10 @@ import com.goldrushmc.bukkit.bank.accounts.Account;
 import com.goldrushmc.bukkit.bank.accounts.AccountType;
 import com.goldrushmc.bukkit.bank.conversation.BankPrefix;
 import com.goldrushmc.bukkit.bank.conversation.prompts.WelcomePrompt;
+import com.goldrushmc.bukkit.db.access.DBBanksAccess;
+import com.goldrushmc.bukkit.db.access.DBBanksAccessible;
+import com.goldrushmc.bukkit.db.tables.BankLocationTbl;
+import com.goldrushmc.bukkit.db.tables.BankTbl;
 import com.goldrushmc.bukkit.defaults.BlockFinder;
 import com.goldrushmc.bukkit.defaults.NotInTownException;
 import com.goldrushmc.bukkit.town.Town;
@@ -24,10 +28,7 @@ import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Will be used to facilitate an economy.
@@ -37,14 +38,16 @@ import java.util.Map;
 public class Bank extends BlockFinder {
 
     //This is to be used CROSS-BANK to ensure that people can have many accounts with many banks.
-    private static Map<HumanEntity, List<Account>> masterList = new HashMap<>();
+    private static Map<String, List<Account>> masterList = new HashMap<>();
+    private static Map<String, Player> linkToPlayerInstance = new HashMap<>();
     private static List<Bank> banks = new ArrayList<>();
+    private static DBBanksAccessible db;
 
-    private Map<HumanEntity, List<Account>> accountHolders = new HashMap<>();
-    private volatile Map<Player, Conversation> conversations = new HashMap<>();
+    private Map<String, List<Account>> accountHolders = new HashMap<>();
+    private volatile Map<String, Conversation> conversations = new HashMap<>();
     private ConversationFactory teller;
     private List<NPC> employees = new ArrayList<>();
-    private volatile Map<Player, NPC> helpedBy = new HashMap<>();
+    private volatile Map<String, NPC> helpedBy = new HashMap<>();
     private Map<Block, NPC> tellerAreas = new HashMap<>();
     private String name;
     private Town town;
@@ -52,12 +55,14 @@ public class Bank extends BlockFinder {
     private int tellerDiameter;
     private int checkingInterest, loanInterest, creditInterest;
 
-    public Bank(World world, List<Location> coords, JavaPlugin plugin, String name) throws MarkerNumberException, NotInTownException {
+    public Bank(World world, List<Location> coords, JavaPlugin plugin, String name, boolean toDB) throws MarkerNumberException, NotInTownException {
         super(world, coords, plugin);
+
+        if(db == null) db = new DBBanksAccess(plugin);
+
         this.name = name;
         Location loc1 = coords.get(0), loc2 = coords.get(1);
 
-        Bukkit.getLogger().info("Getting Bank Area...");
         if(loc1.getBlockY() > loc2.getBlockY()) bankArea = getSelectiveArea(loc1, loc2, (loc2.getBlockY() - 10), (loc2.getBlockY() + 50));
         else bankArea = getSelectiveArea(loc1, loc2, (loc1.getBlockY() - 10), (loc1.getBlockY() + 50));
 
@@ -74,19 +79,11 @@ public class Bank extends BlockFinder {
 //        else this.town = town;
 
         //Find the tellers and initialize the conversation factory.
-        Bukkit.getLogger().info("Finding Tellers...");
         employees = findTellers();
-
-        Bukkit.getLogger().info("Tellers Counted: " + employees.size());
-
         teller = new ConversationFactory(plugin);
-
-        Bukkit.getLogger().info("Getting Config Parameters...");
         //This has the potential to be 0, in which case, the default is 3 blocks.
         tellerDiameter = plugin.getConfig().getInt("bank.teller.diameter");
-        if(tellerDiameter == 0) tellerDiameter = 3;
-
-        Bukkit.getLogger().info("Creating Conversation Areas...");
+        if(tellerDiameter == 0) tellerDiameter = 2;
         //Create the areas where conversations can take place.
         initializeTellers();
 
@@ -96,6 +93,8 @@ public class Bank extends BlockFinder {
 
         //Register Events and add to Static Master-List Map
         add();
+
+        if(toDB) addToDB(coords);
     }
 
     public Conversation startTransaction(Player p, NPC n) {
@@ -122,7 +121,7 @@ public class Bank extends BlockFinder {
         return creditInterest;
     }
 
-    public Map<HumanEntity, List<Account>> getAccountHolders() {
+    public Map<String, List<Account>> getAccountHolders() {
         return accountHolders;
 
     }
@@ -134,17 +133,17 @@ public class Bank extends BlockFinder {
      * @return {@code true} if they have at least one account.
      */
     public boolean hasAccount(HumanEntity p) {
-        return accountHolders.containsKey(p);
+        return accountHolders.containsKey(p.getName());
     }
 
-    public void setAccountHolders(Map<HumanEntity, List<Account>> accountHolders) {
+    public void setAccountHolders(Map<String, List<Account>> accountHolders) {
         this.accountHolders = accountHolders;
     }
 
     //TODO This is the method for opening accounts.
     public void openAccount(HumanEntity customer, AccountType type) {
         boolean newAccount = false;
-        if(accountHolders.containsKey(customer)) newAccount = true;
+        if(accountHolders.containsKey(customer.getName())) newAccount = true;
 
         switch (type) {
             case CHECKING:
@@ -157,26 +156,26 @@ public class Bank extends BlockFinder {
     }
 
     public void openAccount(HumanEntity customer, Account account) {
-        if(!accountHolders.containsKey(customer)) {
-            accountHolders.put(customer, new ArrayList<Account>());
+        if(!accountHolders.containsKey(customer.getName())) {
+            accountHolders.put(customer.getName(), new ArrayList<Account>());
         }
-        accountHolders.get(customer).add(account);
-        if(masterList.containsKey(customer))  masterList.get(customer).add(account);
+        accountHolders.get(customer.getName()).add(account);
+        if(masterList.containsKey(customer.getName()))  masterList.get(customer.getName()).add(account);
         else {
             List<Account> add = new ArrayList<>();
             add.add(account);
-            masterList.put(customer, add);
+            masterList.put(customer.getName(), add);
         }
     }
 
     public void closeAccount(HumanEntity customer, Account account) {
-        accountHolders.get(customer).remove(account);
-        masterList.get(customer).remove(account);
+        accountHolders.get(customer.getName()).remove(account);
+        masterList.get(customer.getName()).remove(account);
         account.deleteAccount();
     }
 
     public void transferAccount(HumanEntity customer, Account account, Bank newBank) {
-        accountHolders.get(customer).remove(account);
+        accountHolders.get(customer.getName()).remove(account);
         newBank.openAccount(customer, account);
     }
 
@@ -207,8 +206,8 @@ public class Bank extends BlockFinder {
     }
 
     public Account getAccount(HumanEntity p, AccountType type) {
-        if(accountHolders.containsKey(p)) {
-            for(Account a : accountHolders.get(p)) {
+        if(accountHolders.containsKey(p.getName())) {
+            for(Account a : accountHolders.get(p.getName())) {
                 if(a.getAccountType().equals(type)) {
                     return a;
                 }
@@ -218,10 +217,10 @@ public class Bank extends BlockFinder {
     }
 
     public List<Account> getAccounts(HumanEntity p) {
-        return accountHolders.get(p);
+        return accountHolders.get(p.getName());
     }
 
-    public static Map<HumanEntity, List<Account>> getMasterList() {
+    public static Map<String, List<Account>> getMasterList() {
         return masterList;
     }
 
@@ -267,6 +266,29 @@ public class Bank extends BlockFinder {
         banks.add(this);
     }
 
+    public void addToDB(List<Location> markers) {
+
+        BankTbl bank = new BankTbl();
+        bank.setCheckingInterest(checkingInterest);
+        bank.setCreditInterest(creditInterest);
+        bank.setLoanInterest(loanInterest);
+        bank.setName(name);
+
+        Set<BankLocationTbl> locations = new HashSet<>();
+        BankLocationTbl loc1 = new BankLocationTbl(), loc2 = new BankLocationTbl();
+        loc1.setBank(bank);
+        loc2.setBank(bank);
+        loc1.initBlock(markers.get(0).getBlock());
+        loc2.initBlock(markers.get(1).getBlock());
+
+        bank.setLocations(locations);
+
+        db.getDB().save(bank);
+        db.getDB().save(locations);
+
+
+    }
+
     @Override
     public List<Block> findNonAirBlocks() {
         List<Block> blocks = new ArrayList<>();
@@ -301,6 +323,14 @@ public class Bank extends BlockFinder {
         }
     }
 
+    public static void addPlayerInstance(Player p) {
+        linkToPlayerInstance.put(p.getName(), p);
+    }
+
+    public static void removePlayerInstance(Player p) {
+        linkToPlayerInstance.remove(p.getName());
+    }
+
     /**
      * Gets a perimeter around the NPC teller which will be used to figure transaction interactions.
      *
@@ -312,29 +342,18 @@ public class Bank extends BlockFinder {
         Location telLoc = teller.getBukkitEntity().getLocation();
         List<Block> tellerBlocks = new ArrayList<>();
 
-        //Move in a backwards direction.
-        for(int x = telLoc.getBlockX(); x > telLoc.getBlockX() - tellerDiameter; x--) {
-            for(int y = telLoc.getBlockY(); y < telLoc.getBlockY() + tellerDiameter; y++) {
-                for(int z = telLoc.getBlockZ(); z > telLoc.getBlockZ() - tellerDiameter; z--) {
+        for(int x = telLoc.getBlockX() - tellerDiameter; x <= telLoc.getBlockX() + tellerDiameter; x++) {
+            for(int y = telLoc.getBlockY(); y <= telLoc.getBlockY() + tellerDiameter; y++) {
+                for(int z = telLoc.getBlockZ() + tellerDiameter; z >= telLoc.getBlockZ() - tellerDiameter; z--) {
                     tellerBlocks.add(world.getBlockAt(x, y, z));
                 }
             }
         }
 
-        //Move in a forward direction.
-        for(int x = telLoc.getBlockX(); x < telLoc.getBlockX() + tellerDiameter; x++) {
-            for(int y = telLoc.getBlockY(); y < telLoc.getBlockY() + tellerDiameter; y++) {
-                for(int z = telLoc.getBlockZ(); z < telLoc.getBlockZ() + tellerDiameter; z++) {
-                    //Check to make sure the block doesn't already exist, because it is possible for overlap to occur.
-                    Block b = world.getBlockAt(x, y, z);
-                    if(!tellerBlocks.contains(b)) tellerBlocks.add(b);
-                }
-            }
-        }
-        //TODO Testing mapping of convos.
-        for(Block b : tellerBlocks) {
-            b.setType(Material.GOLD_BLOCK);
-        }
+//        //TODO Testing mapping of convos.
+//        for(Block b : tellerBlocks) {
+//            b.setType(Material.GOLD_BLOCK);
+//        }
         return tellerBlocks;
     }
 
@@ -350,23 +369,23 @@ public class Bank extends BlockFinder {
         Block from = pme.getFrom().getBlock(), to = pme.getTo().getBlock();
         Player p = pme.getPlayer();
 
-        if(helpedBy.containsKey(p)) {
+        if(helpedBy.containsKey(p.getName())) {
             //Leaving Conversation
             if(!tellerAreas.containsKey(to) && tellerAreas.containsKey(from)) {
-                if(tellerAreas.get(from).equals(helpedBy.get(p))) {
-                    Conversation c = conversations.get(p);
+                if(tellerAreas.get(from).equals(helpedBy.get(p.getName()))) {
+                    Conversation c = conversations.get(p.getName());
                     if(c.getState().equals(Conversation.ConversationState.STARTED)) c.abandon();
-                    conversations.remove(p);
-                    helpedBy.remove(p);
+                    conversations.remove(p.getName());
+                    helpedBy.remove(p.getName());
                 }
             }
         }
         //Entering Conversation
         if(tellerAreas.containsKey(to) && !tellerAreas.containsKey(from)) {
-            if(helpedBy.get(p) == null) {
+            if(helpedBy.get(p.getName()) == null) {
                 NPC employee = tellerAreas.get(to);
-                helpedBy.put(p, employee);
-                conversations.put(p, startTransaction(p, employee));
+                helpedBy.put(p.getName(), employee);
+                conversations.put(p.getName(), startTransaction(p, employee));
             }
         }
     }
