@@ -1,7 +1,8 @@
 package com.goldrushmc.bukkit.chat.conversation.prompts;
 
-import com.goldrushmc.bukkit.bank.conversation.prompts.SessionConstants;
-import com.goldrushmc.bukkit.bank.conversation.prompts.TryAgainPrompt;
+import com.goldrushmc.bukkit.defaults.conversation.SessionConstants;
+import com.goldrushmc.bukkit.defaults.conversation.TryAgainPrompt;
+
 import org.bukkit.ChatColor;
 import org.bukkit.conversations.ConversationContext;
 import org.bukkit.conversations.Prompt;

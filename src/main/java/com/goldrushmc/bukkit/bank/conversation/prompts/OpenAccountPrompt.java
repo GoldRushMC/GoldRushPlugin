@@ -4,6 +4,10 @@ import com.goldrushmc.bukkit.bank.Bank;
 import com.goldrushmc.bukkit.bank.accounts.Account;
 import com.goldrushmc.bukkit.bank.accounts.AccountType;
 import com.goldrushmc.bukkit.bank.accounts.CheckingAccount;
+import com.goldrushmc.bukkit.defaults.conversation.OutcomePrompt;
+import com.goldrushmc.bukkit.defaults.conversation.SessionConstants;
+import com.goldrushmc.bukkit.defaults.conversation.TryAgainPrompt;
+
 import net.citizensnpcs.api.npc.NPC;
 import org.bukkit.conversations.ConversationContext;
 import org.bukkit.conversations.Prompt;
