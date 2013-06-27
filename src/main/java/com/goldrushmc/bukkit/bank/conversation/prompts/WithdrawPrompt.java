@@ -2,6 +2,10 @@ package com.goldrushmc.bukkit.bank.conversation.prompts;
 
 import com.goldrushmc.bukkit.bank.Bank;
 import com.goldrushmc.bukkit.bank.accounts.Account;
+import com.goldrushmc.bukkit.defaults.conversation.OutcomePrompt;
+import com.goldrushmc.bukkit.defaults.conversation.SessionConstants;
+import com.goldrushmc.bukkit.defaults.conversation.TryAgainPrompt;
+
 import net.citizensnpcs.api.npc.NPC;
 import org.apache.commons.lang.math.NumberUtils;
 import org.bukkit.ChatColor;

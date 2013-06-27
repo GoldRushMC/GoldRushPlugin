@@ -1,6 +1,7 @@
-package com.goldrushmc.bukkit.bank.conversation.prompts;
+package com.goldrushmc.bukkit.defaults.conversation;
 
 import com.goldrushmc.bukkit.chat.conversation.TSession;
+
 import org.bukkit.ChatColor;
 import org.bukkit.conversations.ConversationContext;
 import org.bukkit.conversations.Prompt;

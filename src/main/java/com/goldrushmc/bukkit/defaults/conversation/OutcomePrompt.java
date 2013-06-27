@@ -1,6 +1,8 @@
-package com.goldrushmc.bukkit.bank.conversation.prompts;
+package com.goldrushmc.bukkit.defaults.conversation;
 
 import com.goldrushmc.bukkit.bank.Bank;
+import com.goldrushmc.bukkit.bank.conversation.prompts.DefaultPrompt;
+
 import net.citizensnpcs.api.npc.NPC;
 import org.bukkit.conversations.ConversationContext;
 import org.bukkit.conversations.Prompt;
