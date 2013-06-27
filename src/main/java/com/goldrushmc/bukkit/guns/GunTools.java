@@ -1,5 +1,6 @@
 package com.goldrushmc.bukkit.guns;
 
+import com.goldrushmc.bukkit.main.Main;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
@@ -70,7 +71,7 @@ public class GunTools {
     public List<Player> getPlayersWithin(Player player, int distance) {
         List<Player> res = new ArrayList<>();
         int d2 = distance * distance;
-        for (Player p : Bukkit.getServer().getOnlinePlayers()) {
+        for (Player p : Main.playerList) {
             if (p.getWorld() == player.getWorld() && p.getLocation().distanceSquared(player.getLocation()) <= d2) {
                 res.add(p);
             }

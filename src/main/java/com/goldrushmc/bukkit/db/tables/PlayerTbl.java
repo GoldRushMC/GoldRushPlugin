@@ -3,9 +3,10 @@ package com.goldrushmc.bukkit.db.tables;
 import com.avaje.ebean.validation.NotEmpty;
 
 import javax.persistence.*;
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
-@Table(name = "player_tbl")
 public class PlayerTbl {
 
     @Id
@@ -14,14 +15,12 @@ public class PlayerTbl {
     @Column(name = "NAME")
     @NotEmpty
     private String name;
-    @Column(name = "POCKET_GOLD")
-    private float pocketGold;
-    @Column(name = "BANK_GOLD")
-    private float bankGold;
-    @ManyToOne
-    private BankTbl bank;
+    @Column(name = "ONLINE")
+    private boolean online;
     @ManyToOne
     private TownTbl town;
+    @OneToMany(mappedBy = "holder")
+    private Set<AccountTbl> accounts;
 
 
     public int getId() {
@@ -40,33 +39,12 @@ public class PlayerTbl {
         this.name = name;
     }
 
-    public float getPocketGold() {
-        return pocketGold;
+    public boolean isOnline() {
+        return online;
     }
 
-    public void setPocketGold(float pocketGold) {
-        this.pocketGold = pocketGold;
-    }
-
-    public float getBankGold() {
-        return bankGold;
-    }
-
-    public void setBankGold(float bankGold) {
-        this.bankGold = bankGold;
-    }
-
-    @Transient
-    public float getTotalWealth() {
-        return pocketGold + bankGold;
-    }
-
-    public BankTbl getBank() {
-        return bank;
-    }
-
-    public void setBank(BankTbl bank) {
-        this.bank = bank;
+    public void setOnline(boolean online) {
+        this.online = online;
     }
 
     public TownTbl getTown() {
@@ -77,4 +55,31 @@ public class PlayerTbl {
         this.town = town;
     }
 
+    public Set<AccountTbl> getAccounts() {
+        return accounts;
+    }
+
+    public void setAccounts(Set<AccountTbl> accounts) {
+        this.accounts = accounts;
+    }
+
+    public void addAccount(AccountTbl account) {
+        if(this.accounts == null) this.accounts = new HashSet<>();
+        this.accounts.add(account);
+    }
+
+    public void removeAccount(AccountTbl account) {
+        if(this.accounts == null) return;
+        this.accounts.remove(account);
+    }
+
+    public int getTotalWorth() {
+        int worth = 0;
+        if(accounts != null) {
+            for(AccountTbl a : accounts) {
+                worth += a.getBalance();
+            }
+        }
+        return worth;
+    }
 }

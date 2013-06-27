@@ -13,9 +13,9 @@ import org.bukkit.plugin.java.JavaPlugin;
 import java.util.ArrayList;
 import java.util.List;
 
-public class StationWand extends CommandDefault {
+public class BuildWand extends CommandDefault {
 
-    public StationWand(JavaPlugin plugin) {
+    public BuildWand(JavaPlugin plugin) {
         super(plugin);
     }
 
@@ -58,7 +58,7 @@ public class StationWand extends CommandDefault {
         ItemStack blazeRod = new ItemStack(Material.BLAZE_ROD);
         ItemMeta meta = blazeRod.getItemMeta();
         meta.setLore(lore);
-        meta.setDisplayName("Building Tool");
+        meta.setDisplayName("GR Build Tool");
         blazeRod.setItemMeta(meta);
         p.setItemInHand(blazeRod);
 

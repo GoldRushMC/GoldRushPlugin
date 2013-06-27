@@ -29,17 +29,23 @@ commands:
            /<command> [mode]
            MODES: Station, Bank, Town, Off
  
-  stationwand:
-   description: Wand which is used for marking the train stations
+  buildwand:
+   description: Wand which is used for creating markers for types of stuff.
    aliases: [stationtool, tool]
-   permission: goldrushmc.station.create
+   permission: goldrushmc.types.create
    usage: /<command>
  
   station:
    description: Tree for station creation.
    aliases: [station, st]
-   permission: goldrushmc.station.create
+   permission: goldrushmc.types.create
    usage: /<command> [stationType, stationName]
+
+  bank:
+   description: Tree for bank creation/removal.
+   aliases: [bank, bk]
+   permission: goldrushmc.types.create
+   usage: /<command> [bankName]
    
   gun:
    description: Get your gun
@@ -87,19 +93,19 @@ permissions:
   goldrushmc.*:
     description: Gives access to all commands to Gold Rush.
     children:
-     goldrushmc.station.create: true
+     goldrushmc.types.create: true
+     goldrushmc.types.destroy: true
      goldrushmc.guns: true
      goldrushmc.collapsetest: true
      golrushmc.goldpan: true
      goldrushmc.station.info: true
      goldrushmc.station.schedule: true
-     goldrushmc.station.destroy: true
      goldrushmc.station.list: true
-  goldrushmc.station.create:
-    description: Allows you to spawn the station wand and make stations.
+  goldrushmc.types.create:
+    description: Allows you to spawn things.
     default: true
-  goldrushmc.station.destroy:
-    description: Allows you to delete stations from the station list.
+  goldrushmc.types.destroy:
+    description: Allows you to delete things.
     default: true
   goldrushmc.guns:
    description: Allows access to guns

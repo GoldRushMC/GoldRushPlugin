@@ -11,6 +11,8 @@ import com.goldrushmc.bukkit.db.tables.StationTbl;
 import com.goldrushmc.bukkit.trainstation.StationType;
 import com.goldrushmc.bukkit.trainstation.TrainStation;
 import com.goldrushmc.bukkit.trainstation.event.*;
+import com.goldrushmc.bukkit.trainstation.exceptions.MarkerNumberException;
+import com.goldrushmc.bukkit.trainstation.exceptions.MissingSignException;
 import com.goldrushmc.bukkit.trainstation.exceptions.StopBlockMismatchException;
 import com.goldrushmc.bukkit.trainstation.npc.CartTradeable;
 import com.goldrushmc.bukkit.trainstation.signs.SignType;
@@ -42,7 +44,7 @@ public class PublicTrainStation extends TrainStation {
     private final List<Block> stopBlocks;
     private Block mainStop;
 
-    public PublicTrainStation(JavaPlugin plugin, String stationName, List<Location> markers, World world, boolean train, boolean toDB) throws Exception {
+    public PublicTrainStation(JavaPlugin plugin, String stationName, List<Location> markers, World world, boolean train, boolean toDB) throws MissingSignException, MarkerNumberException, StopBlockMismatchException {
         super(plugin, stationName, markers, world);
 
         this.stopMat = defaultStop;
@@ -72,7 +74,7 @@ public class PublicTrainStation extends TrainStation {
         if(toDB) addToDB(markers);
     }
 
-    public PublicTrainStation(JavaPlugin plugin, String stationName, List<Location> markers, World world, Material stopMat, boolean train) throws Exception {
+    public PublicTrainStation(JavaPlugin plugin, String stationName, List<Location> markers, World world, Material stopMat, boolean train) throws MissingSignException, MarkerNumberException, StopBlockMismatchException {
         super(plugin, stationName, markers, world, stopMat);
 
         this.stopMat = stopMat;

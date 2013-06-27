@@ -4,6 +4,7 @@ import com.goldrushmc.bukkit.defaults.CommandDefault;
 import com.goldrushmc.bukkit.mines.LoadMines;
 import com.goldrushmc.bukkit.mines.Mine;
 import com.goldrushmc.bukkit.mines.MineLis;
+import com.goldrushmc.bukkit.trainstation.TrainStation;
 import com.goldrushmc.bukkit.trainstation.exceptions.MarkerNumberException;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
@@ -99,6 +100,28 @@ public class MineCommands  extends CommandDefault {
 						}
 
 						return true;
+                    } else if (args[0].equalsIgnoreCase("remove")){
+                        if(args.length == 2){
+                           // try{
+                                int starting = Mine.getMines().size();
+                                for(Mine mine : Mine.getMines()){
+                                    if(args[1].equalsIgnoreCase(mine.getName())) {
+                                       mine.remove();
+                                    }
+                                }
+                                if (Mine.getMines().size() < starting) {
+                                    sender.sendMessage("Mine removed successfully!");
+                                    return true;
+                                }
+                                return true;
+                            //} catch(Exception ex) {
+                            //    p.sendMessage(ChatColor.RED + "Invalid Paramters!");
+                            //    return false;
+                            //}
+                        } else {
+                            p.sendMessage(ChatColor.RED + "Missing mine name!");
+                            return false;
+                        }
 					} else if (args[0].equalsIgnoreCase("load")){
                         //TODO Bukkit.getServer().getScheduler().runTaskLater(plugin, new LoadMinesObject(plugin), 10);
                         LoadMines lm = new LoadMines(plugin);

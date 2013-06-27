@@ -12,6 +12,8 @@ import com.goldrushmc.bukkit.db.tables.StationTbl;
 import com.goldrushmc.bukkit.trainstation.StationType;
 import com.goldrushmc.bukkit.trainstation.TrainStation;
 import com.goldrushmc.bukkit.trainstation.event.*;
+import com.goldrushmc.bukkit.trainstation.exceptions.MarkerNumberException;
+import com.goldrushmc.bukkit.trainstation.exceptions.MissingSignException;
 import com.goldrushmc.bukkit.trainstation.exceptions.StopBlockMismatchException;
 import com.goldrushmc.bukkit.trainstation.npc.CartTradeable;
 import com.goldrushmc.bukkit.trainstation.signs.SignType;
@@ -46,7 +48,7 @@ public class TrainStationTransport extends TrainStation {
     //	private final List<Chest> lockers;
     //	private Map<Player, Chest> lockerPlayerMap = new HashMap<Player, Chest>();
 
-    public TrainStationTransport(JavaPlugin plugin, String stationName, List<Location> markers, World world, boolean train, boolean toDB) throws Exception {
+    public TrainStationTransport(JavaPlugin plugin, String stationName, List<Location> markers, World world, boolean train, boolean toDB) throws MissingSignException, MarkerNumberException, StopBlockMismatchException {
         super(plugin, stationName, markers, world);
         this.stopMat = defaultStop;
         this.stopBlocks = findStopBlocks(this.stopMat);
@@ -79,7 +81,7 @@ public class TrainStationTransport extends TrainStation {
         //		this.lockers = findLockers();
     }
 
-    public TrainStationTransport(JavaPlugin plugin, String stationName, List<Location> markers, World world, Material stopMat, boolean train) throws Exception {
+    public TrainStationTransport(JavaPlugin plugin, String stationName, List<Location> markers, World world, Material stopMat, boolean train) throws MissingSignException, MarkerNumberException, StopBlockMismatchException {
         super(plugin, stationName, markers, world, stopMat);
         this.stopMat = stopMat;
         this.stopBlocks = findStopBlocks(stopMat);
@@ -327,7 +329,7 @@ public class TrainStationTransport extends TrainStation {
 
         List<EntityType> carts = new ArrayList<>();
         SmallBlockMap sbm = new SmallBlockMap(this.mainStop);
-        BlockFace dir = this.directions.get(0).getOppositeFace(); //TODO
+        BlockFace dir = this.directions.get(1); //TODO
         //Iterate to get the max size of minecarts, or just short of it if the rails end.
         for (int i = 0; i < 14; i++) {
             sbm = new SmallBlockMap(sbm.getBlockAt(dir));
@@ -338,7 +340,7 @@ public class TrainStationTransport extends TrainStation {
         }
         carts.add(EntityType.MINECART_FURNACE);
         //Should make the furnace spawn right on top of the stop block.
-        MinecartGroup train = MinecartGroup.spawn(this.mainStop, this.directions.get(0).getOppositeFace(), carts); //TODO
+        MinecartGroup train = MinecartGroup.spawn(this.mainStop, this.directions.get(1), carts); //TODO
 
         TrainProperties tp = train.getProperties();
         tp.setName(stationName + "_" + trainNum);
