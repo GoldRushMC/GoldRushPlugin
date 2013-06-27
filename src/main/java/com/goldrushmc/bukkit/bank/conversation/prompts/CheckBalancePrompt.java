@@ -2,6 +2,9 @@ package com.goldrushmc.bukkit.bank.conversation.prompts;
 
 import com.goldrushmc.bukkit.bank.Bank;
 import com.goldrushmc.bukkit.bank.accounts.Account;
+import com.goldrushmc.bukkit.defaults.conversation.ContinuePrompt;
+import com.goldrushmc.bukkit.defaults.conversation.SessionConstants;
+
 import net.citizensnpcs.api.npc.NPC;
 import org.bukkit.ChatColor;
 import org.bukkit.conversations.ConversationContext;

@@ -8,7 +8,7 @@ import org.bukkit.entity.Player;
 import java.util.List;
 
 /**
- * User: Lucas
+ * User: Diremonsoon
  * Date: 6/18/13
  * Time: 2:03 PM
  */

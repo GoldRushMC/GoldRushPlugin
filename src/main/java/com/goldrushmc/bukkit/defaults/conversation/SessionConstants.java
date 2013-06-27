@@ -1,4 +1,4 @@
-package com.goldrushmc.bukkit.bank.conversation.prompts;
+package com.goldrushmc.bukkit.defaults.conversation;
 
 /**
  * User: Diremonsoon
@@ -6,6 +6,10 @@ package com.goldrushmc.bukkit.bank.conversation.prompts;
  */
 public enum SessionConstants {
 
+	/**
+	 * The prompt that initiates the conversation. This is a class instance.
+	 */
+	WELCOME,	
     /**
      * For determining if the conversation should continue. boolean in nature.
      */

@@ -37,8 +37,7 @@ import java.util.*;
 public class Bank extends BlockFinder {
 
     //This is to be used CROSS-BANK to ensure that people can have many accounts with many banks.
-    private static Map<String, List<Account>> masterList = new HashMap<>();
-    private static Map<String, Player> linkToPlayerInstance = new HashMap<>();
+    private static Map<String, List<Account>> masterList = new HashMap<>();    
     private static List<Bank> banks = new ArrayList<>();
     private static DBBanksAccess db;
 
@@ -334,14 +333,6 @@ public class Bank extends BlockFinder {
                 tellerAreas.put(b, n);
             }
         }
-    }
-
-    public static void addPlayerInstance(Player p) {
-        linkToPlayerInstance.put(p.getName(), p);
-    }
-
-    public static void removePlayerInstance(Player p) {
-        linkToPlayerInstance.remove(p.getName());
     }
 
     /**
