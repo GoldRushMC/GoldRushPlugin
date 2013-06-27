@@ -9,10 +9,13 @@ import com.bergerkiller.bukkit.tc.events.MemberBlockChangeEvent;
 import com.goldrushmc.bukkit.db.access.DBStationsAccess;
 import com.goldrushmc.bukkit.db.access.IStationAccessible;
 import com.goldrushmc.bukkit.defaults.BlockFinder;
+import com.goldrushmc.bukkit.town.Town;
 import com.goldrushmc.bukkit.trainstation.event.StationSignEvent;
+import com.goldrushmc.bukkit.trainstation.exceptions.MarkerNumberException;
+import com.goldrushmc.bukkit.trainstation.exceptions.MissingSignException;
 import com.goldrushmc.bukkit.trainstation.signs.ISignLogic;
-import com.goldrushmc.bukkit.trainstation.signs.SignLogic;
 import com.goldrushmc.bukkit.trainstation.signs.SignType;
+import com.goldrushmc.bukkit.trainstation.signs.StationSignLogic;
 import com.goldrushmc.bukkit.trainstation.util.TrainTools;
 import net.citizensnpcs.api.CitizensAPI;
 import net.citizensnpcs.api.npc.NPC;
@@ -66,6 +69,7 @@ public abstract class TrainStation extends BlockFinder{
     protected final List<Block> trainStationBlocks;
     protected volatile List<MinecartGroup> trains = new ArrayList<>();
     protected final List<Block> rails;
+    protected Town town;
 
     /**
      * We require the JavaPlugin because this class must be able to access the database.
@@ -78,7 +82,7 @@ public abstract class TrainStation extends BlockFinder{
      * @param world
      * @throws Exception
      */
-    public TrainStation(final JavaPlugin plugin, final String stationName, final List<Location> markers, final World world) throws Exception {
+    public TrainStation(final JavaPlugin plugin, final String stationName, final List<Location> markers, final World world) throws MissingSignException, MarkerNumberException {
         super(world, markers, plugin);
         if(db == null) db = new DBStationsAccess(plugin);
         this.stationName = stationName;
@@ -108,7 +112,7 @@ public abstract class TrainStation extends BlockFinder{
      * @param stopMat
      * @throws Exception
      */
-    public TrainStation(final JavaPlugin plugin, final String stationName, final List<Location> markers, final World world, Material stopMat) throws Exception {
+    public TrainStation(final JavaPlugin plugin, final String stationName, final List<Location> markers, final World world, Material stopMat) throws MissingSignException, MarkerNumberException {
         super(world, markers, plugin);
         if(db == null) db = new DBStationsAccess(plugin);
         this.stationName = stationName;
@@ -155,7 +159,10 @@ public abstract class TrainStation extends BlockFinder{
         PlayerMoveEvent.getHandlerList().unregister(this);
         MemberBlockChangeEvent.getHandlerList().unregister(this);
         PlayerInteractEvent.getHandlerList().unregister(this);
+        //BlockFinder Class stuff.
         BlockPlaceEvent.getHandlerList().unregister(this);
+        BlockBreakEvent.getHandlerList().unregister(this);
+        BlockDamageEvent.getHandlerList().unregister(this);
 
         //Remove from the DB.
         removeFromDB();
@@ -349,8 +356,8 @@ public abstract class TrainStation extends BlockFinder{
         this.visitors.remove(visitor);
     }
 
-    protected ISignLogic generateSignLogic() {
-        return new SignLogic(this.trainArea);
+    protected ISignLogic generateSignLogic() throws MissingSignException{
+        return new StationSignLogic(this.trainArea);
     }
 
     /**
@@ -568,6 +575,10 @@ public abstract class TrainStation extends BlockFinder{
     public List<MinecartGroup> getTrains() {return trains;}
 
     public List<Block> getRails() {return rails;}
+
+    public Town getTown() { return town; }
+
+    public void setTown(Town town) { this.town = town; }
 
     /**
      * @return the chunks

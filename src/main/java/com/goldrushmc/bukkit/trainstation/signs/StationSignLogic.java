@@ -1,5 +1,6 @@
 package com.goldrushmc.bukkit.trainstation.signs;
 
+import com.goldrushmc.bukkit.trainstation.exceptions.MissingSignException;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.Sign;
@@ -9,13 +10,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class SignLogic implements ISignLogic {
+public class StationSignLogic implements ISignLogic{
 
     private Map<String, Sign> signs = new HashMap<>();
     private Map<Sign, SignType> signTypes = new HashMap<>();
     private List<Sign> signList = new ArrayList<>();
 
-    public SignLogic(List<Block> blocks) {
+    public StationSignLogic(List<Block> blocks) throws MissingSignException{
         findRelevantSigns(blocks);
     }
 
@@ -53,9 +54,7 @@ public class SignLogic implements ISignLogic {
             default:
                 break;
         }
-
         return false;
-
     }
 
     @Override
@@ -67,7 +66,7 @@ public class SignLogic implements ISignLogic {
     }
 
     @Override
-    public void findRelevantSigns(List<Block> blocks) {
+    public void findRelevantSigns(List<Block> blocks) throws MissingSignException{
         for (Block b : blocks) {
             if (b.getType().equals(Material.SIGN) || b.getType().equals(Material.WALL_SIGN) || b.getType().equals(Material.SIGN_POST)) {
                 Sign s = (Sign) b.getState();
@@ -98,15 +97,13 @@ public class SignLogic implements ISignLogic {
                         //Update the sign so that the {trains} gets removed.
                         s.update();
                     }
-//                    //TODO Could be used for house signs.
-//                 else if(lines[0].equals("{houses}")) {
-//
-//                    }
-//                    //TODO Could be used for bank signs.
-//                 else if(lines[0].equals("{banks}")) {
-//
-//                    }
                 }
+            }
+        }
+        SignType[] types = {SignType.TRAIN_STATION_TIME, SignType.TRAIN_STATION_DEPARTING, SignType.TRAIN_STATION_CART_COUNT, SignType.TRAIN_STATION_PASSENGER_EXIT};
+        for(SignType type : types) {
+            if(!signTypes.values().contains(type)) {
+                throw new MissingSignException(this);
             }
         }
     }
@@ -142,7 +139,6 @@ public class SignLogic implements ISignLogic {
 
     @Override
     public void updateTrain(String trainName) {
-        List<Sign> signsToChange = new ArrayList<>();
         //Get the signs to change.
         for (Sign sign : signTypes.keySet()) {
             SignType s = signTypes.get(sign);
@@ -159,6 +155,7 @@ public class SignLogic implements ISignLogic {
                 default:
                     break;
             }
+            sign.update();
         }
     }
 }

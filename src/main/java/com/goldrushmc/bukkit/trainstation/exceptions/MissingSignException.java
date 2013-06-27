@@ -21,16 +21,16 @@ public class MissingSignException extends Exception {
 
     public MissingSignException(ISignLogic logic) {
         missing = new ArrayList<>();
-        if (logic.getSigns(SignType.TRAIN_STATION_CART_COUNT).isEmpty()) {
+        if (logic.getSigns(SignType.TRAIN_STATION_CART_COUNT) == null) {
             missing.add(SignType.TRAIN_STATION_CART_COUNT);
         }
-        if (logic.getSigns(SignType.TRAIN_STATION_DIRECTION).isEmpty()) {
+        if (logic.getSigns(SignType.TRAIN_STATION_DIRECTION) == null) {
             missing.add(SignType.TRAIN_STATION_DIRECTION);
         }
-        if (logic.getSigns(SignType.TRAIN_STATION_TIME).isEmpty()) {
+        if (logic.getSigns(SignType.TRAIN_STATION_TIME) == null) {
             missing.add(SignType.TRAIN_STATION_TIME);
         }
-        if (logic.getSigns(SignType.TRAIN_STATION_DEPARTING).isEmpty()) {
+        if (logic.getSigns(SignType.TRAIN_STATION_DEPARTING) == null) {
             missing.add(SignType.TRAIN_STATION_DEPARTING);
         }
     }

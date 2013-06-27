@@ -48,4 +48,14 @@ public class DBStationsAccess implements IStationAccessible {
         return queryTrainStations().where().ieq("name", stationName).findUnique();
     }
 
+    @Override
+    public void save(Object o) {
+        getDB().save(o);
+    }
+
+    @Override
+    public void delete(Object o) {
+        getDB().delete(o);
+    }
+
 }

@@ -1,7 +1,7 @@
 package com.goldrushmc.bukkit.main;
 
+import com.goldrushmc.bukkit.db.access.DBMinesAccess;
 import com.goldrushmc.bukkit.db.access.DBMinesAccessible;
-import com.goldrushmc.bukkit.db.access.DBMinesAcess;
 import com.goldrushmc.bukkit.db.access.DBStationsAccess;
 import com.goldrushmc.bukkit.db.access.IStationAccessible;
 import com.goldrushmc.bukkit.db.tables.MineLocationTbl;
@@ -40,7 +40,7 @@ public class LoaderClass implements Runnable {
         //Make sure the DB accessors are instantiated
         //If they are not, instantiate them.
         if(TrainStation.getDb() == null) TrainStation.db = new DBStationsAccess(p);
-        if(Mine.getDB() == null) Mine.db = new DBMinesAcess(p);
+        if(Mine.getDB() == null) Mine.db = new DBMinesAccess(p);
 
         //Map the references for easier access.
         dbStation = TrainStation.getDb();

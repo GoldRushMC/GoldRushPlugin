@@ -3,6 +3,7 @@ package com.goldrushmc.bukkit.commands;
 import com.goldrushmc.bukkit.defaults.CommandDefault;
 import com.goldrushmc.bukkit.defaults.GoldRushPerms;
 import org.bukkit.ChatColor;
+import org.bukkit.Material;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -31,8 +32,8 @@ public class BuildModeCommand extends CommandDefault {
         if(!p.hasPermission(GoldRushPerms.CREATE)) { deny(sender); return true;}
 
         //If the player doesn't have a rod, we don't want to go further!
-        ItemStack rod = getRod(p);
-        if(rod == null) { sender.sendMessage(ChatColor.YELLOW + "You need a GR Build Tool to use this command."); return true; }
+        ItemStack rod;
+        if((rod = getRod(p)) == null) { sender.sendMessage(ChatColor.YELLOW + "You need a GR Build Tool to use this command."); return true; }
 
         if(args[0].equalsIgnoreCase("Town")) {
             buildMode.put(p, BuildMode.TOWN);
@@ -55,6 +56,9 @@ public class BuildModeCommand extends CommandDefault {
 
     private ItemStack getRod(Player p) {
         for(ItemStack is : p.getInventory()) {
+            if(is == null) continue;
+            if(!is.getType().equals(Material.BLAZE_ROD) || !is.getItemMeta().hasDisplayName()) continue;
+            p.sendMessage("The tool name is: " + is.getItemMeta().getDisplayName());
             if(is.getItemMeta().getDisplayName().equals("GR Build Tool")) {
                 return is;
             }

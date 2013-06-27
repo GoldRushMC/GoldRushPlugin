@@ -18,6 +18,7 @@ import org.bukkit.util.Vector;
 
 import java.util.*;
 
+@Deprecated
 public class MineTool  extends CommandDefault {
 	
 	public static Map<Player, List<Integer>> mineSize = new HashMap<>();
@@ -39,7 +40,7 @@ public class MineTool  extends CommandDefault {
 					if (args[0].equalsIgnoreCase("create")){ 
 							try{
 								p.sendMessage("Created mine outline");
-								p.sendMessage("Type " + ChatColor.GREEN + "/mine confirm " + 
+								p.sendMessage("Type " + ChatColor.GREEN + "/mine confirm " +
 										ChatColor.WHITE + "to create the mine, " +
 										ChatColor.RED + "/mine cancel " + ChatColor.WHITE + "to start again.");
 								makeMarkers(p.getWorld(), p, Material.WOOL); //makes a wool outline of the area selected

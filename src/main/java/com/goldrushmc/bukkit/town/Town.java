@@ -35,4 +35,11 @@ public abstract class Town extends BlockFinder{
     public List<Block> getTownArea() {
         return null;
     }
+
+    public static Town getTownAtBlock(Block block) {
+        for(Town t : towns) {
+            if(t.getTownArea().contains(block)) return t;
+        }
+        return null;
+    }
 }

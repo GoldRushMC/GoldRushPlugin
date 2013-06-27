@@ -1,13 +1,14 @@
 package com.goldrushmc.bukkit.main;
 
+import com.goldrushmc.bukkit.bank.Bank;
 import com.goldrushmc.bukkit.bank.InventoryLis;
 import com.goldrushmc.bukkit.commands.*;
-import com.goldrushmc.bukkit.db.tables.MineLocationTbl;
-import com.goldrushmc.bukkit.db.tables.MinesTbl;
-import com.goldrushmc.bukkit.db.tables.StationLocationTbl;
-import com.goldrushmc.bukkit.db.tables.StationTbl;
+import com.goldrushmc.bukkit.db.access.DBBanksAccess;
+import com.goldrushmc.bukkit.db.access.IAccountAccessible;
+import com.goldrushmc.bukkit.db.tables.*;
 import com.goldrushmc.bukkit.guns.GunTool;
 import com.goldrushmc.bukkit.guns.weapons.GunLis;
+import com.goldrushmc.bukkit.mines.Mine;
 import com.goldrushmc.bukkit.mines.MineLis;
 import com.goldrushmc.bukkit.panning.PanningLis;
 import com.goldrushmc.bukkit.panning.PanningTool;
@@ -24,6 +25,7 @@ import net.citizensnpcs.api.trait.TraitInfo;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.entity.Player;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -35,6 +37,9 @@ import java.util.List;
 
 public final class Main extends JavaPlugin {
 
+    //So the class may reference itself for the DB access requirement.
+    public static Main instance;
+
     public final TrainLis tl = new TrainLis(this);
     public final WandLis wl = new WandLis(this);
     public final TrainStationLis tsl = new TrainStationLis(this);
@@ -44,16 +49,24 @@ public final class Main extends JavaPlugin {
     public final InventoryLis il = new InventoryLis(this);
     public final MineLis ml = new MineLis(this);
 
+    public static IAccountAccessible db;
+
+    public static List<Player> playerList = new ArrayList<>();
+
+
     @Override
     public void onEnable() {
+
 		setupDB();
+
+        db = new DBBanksAccess(this);
 
         /* TODO Centralize ALL commands into a general function. We need to make all commands begin with something,
          * TODO as to differentiate our commands from other plugins, which could potentially have the same command names.
          */
 
         //Add commands
-        getCommand("StationWand").setExecutor(new StationWand(this));
+        getCommand("BuildWand").setExecutor(new BuildWand(this));
         getCommand("BuildMode").setExecutor(new BuildModeCommand(this));
         getCommand("Station").setExecutor(new CreateTrainStation(this));
         getCommand("Fall").setExecutor(new TunnelCollapseCommand(this));
@@ -64,6 +77,7 @@ public final class Main extends JavaPlugin {
 //        getCommand("TrainCycle").setExecutor(new TrainCycleCommand(this));
         getCommand("RemoveStation").setExecutor(new RemoveTrainStation(this));
         getCommand("ListStations").setExecutor(new TrainStationListCommand(this));
+        getCommand("Bank").setExecutor(new CreateBankCommand(this));
 
 
         //Register listeners
@@ -109,6 +123,10 @@ public final class Main extends JavaPlugin {
         //run load task later once world has loaded
         Bukkit.getScheduler().scheduleSyncDelayedTask(this, new LoaderClass(this), 40);
 
+        instance = this;
+
+        initializePlayerTbl();
+
         getLogger().info(getDescription().getName() + " " + getDescription().getVersion() + " Enabled!");
     }
 
@@ -118,9 +136,11 @@ public final class Main extends JavaPlugin {
             getDatabase().find(StationLocationTbl.class).findRowCount();
             getDatabase().find(MineLocationTbl.class).findRowCount();
             getDatabase().find(MinesTbl.class).findRowCount();
-//            getDatabase().find(PlayerTbl.class).findRowCount();
-//            getDatabase().find(TownTbl.class).findRowCount();
-//            getDatabase().find(BankTbl.class).findRowCount();
+            getDatabase().find(PlayerTbl.class).findRowCount();
+            getDatabase().find(TownTbl.class).findRowCount();
+            getDatabase().find(BankTbl.class).findRowCount();
+            getDatabase().find(BankLocationTbl.class).findRowCount();
+            getDatabase().find(AccountTbl.class).findRowCount();
 //            getDatabase().find(JobTbl.class).findRowCount();
 //            getDatabase().find(ItemForeignKeyTbl.class).findRowCount();
 //            getDatabase().find(ItemTbl.class).findRowCount();
@@ -137,9 +157,11 @@ public final class Main extends JavaPlugin {
 		list.add(StationLocationTbl.class);
         list.add(MinesTbl.class);
         list.add(MineLocationTbl.class);
-//		list.add(PlayerTbl.class);
-//		list.add(TownTbl.class);
-//		list.add(BankTbl.class);
+		list.add(PlayerTbl.class);
+		list.add(TownTbl.class);
+		list.add(BankTbl.class);
+        list.add(BankLocationTbl.class);
+        list.add(AccountTbl.class);
 //		list.add(JobTbl.class);
 //		list.add(ItemForeignKeyTbl.class);
 //		list.add(ItemTbl.class);
@@ -148,21 +170,23 @@ public final class Main extends JavaPlugin {
 
     @Override
     public void onDisable() {
-        //Clear all of the trains out of all the mappings, to free up memory.
+        //Clear all of the objects out of all the mappings, to free up memory (not that we need to...)
         TrainStation.getTrainStations().clear();
-
-//        SaveMines saveMines = new SaveMines(this);
-//        int count = 0;
-//        Boolean saved = false;
-//        while(saved == false) {
-//            //Bukkit.getScheduler().runTask(this, new SaveMinesObject(this));
-//            count++;
-//            if(count==5) {
-//                this.getLogger().info("Could not save mines after 5 retry's! Exiting..");
-//                break;
-//            }
-//        }
+        Mine.getMines().clear();
+        Bank.getBanks().clear();
 
         getLogger().info("GoldRush Plugin Disabled!");
+    }
+
+    /**
+     * Resets all players to offline.
+     */
+    public void initializePlayerTbl() {
+        List<PlayerTbl> players = db.getPlayerList();
+        if(players == null) return;
+        for(PlayerTbl p : players) {
+            p.setOnline(false);
+            db.save(p);
+        }
     }
 }
