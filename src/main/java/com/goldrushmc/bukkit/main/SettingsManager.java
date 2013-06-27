@@ -57,7 +57,10 @@ public class SettingsManager {
 			config.addDefault("station.times.public", 2);
 			config.addDefault("station.times.transport", 5);
 			config.addDefault("station.times.hub", 8);
-			
+
+            //Configure default bank settings
+            config.addDefault("bank.teller.diameter", 3);
+
 			saveConfig();
 
 		}

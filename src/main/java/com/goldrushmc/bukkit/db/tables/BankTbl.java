@@ -16,13 +16,21 @@ public class BankTbl {
     @Column(name = "BANK_NAME")
     @NotEmpty
     private String name;
-    @Column(name = "INTEREST")
+    @Column(name = "CHECKING_INTEREST")
     @NotNull
-    private float interest;
+    private float checkingInterest;
+    @Column(name = "CREDIT_INTEREST")
+    @NotNull
+    private float creditInterest;
+    @Column(name = "LOAN_INTEREST")
+    @NotNull
+    private float loanInterest;
     @OneToMany(mappedBy = "bank")
     private Set<PlayerTbl> customers;
     @OneToOne
     private TownTbl town;
+    @OneToMany(mappedBy = "bank")
+    private Set<BankLocationTbl> locations;
 
     public int getId() {
         return id;
@@ -40,30 +48,28 @@ public class BankTbl {
         this.name = name;
     }
 
-    public float getInterest() {
-        return interest;
+    public float getCheckingInterest() {
+        return checkingInterest;
     }
 
-    public void setInterest(float interest) {
-        this.interest = interest;
+    public void setCheckingInterest(float checkingInterest) {
+        this.checkingInterest = checkingInterest;
     }
 
-    @Transient
-    public float getTotalGold() {
-        float totalGold = 0;
-        if (customers != null) {
-            for (PlayerTbl player : customers) {
-                totalGold += player.getBankGold();
-            }
-        }
-        if (town != null) totalGold += town.getGoldHeld();
-
-        return totalGold;
+    public float getCreditInterest() {
+        return creditInterest;
     }
 
-    @Transient
-    public int getSumOfAccounts() {
-        return customers.size();
+    public void setCreditInterest(float creditInterest) {
+        this.creditInterest = creditInterest;
+    }
+
+    public float getLoanInterest() {
+        return loanInterest;
+    }
+
+    public void setLoanInterest(float loanInterest) {
+        this.loanInterest = loanInterest;
     }
 
     public Set<PlayerTbl> getCustomers() {
@@ -93,4 +99,11 @@ public class BankTbl {
         this.customers = customers;
     }
 
+    public Set<BankLocationTbl> getLocations() {
+        return locations;
+    }
+
+    public void setLocations(Set<BankLocationTbl> locations) {
+        this.locations = locations;
+    }
 }
