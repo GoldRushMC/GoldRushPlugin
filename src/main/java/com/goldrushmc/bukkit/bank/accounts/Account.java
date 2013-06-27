@@ -109,5 +109,4 @@ public interface Account {
      */
     public void setBank(Bank bank);
 
-
 }

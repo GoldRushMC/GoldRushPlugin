@@ -16,4 +16,7 @@ public interface DBAccessible {
      */
     EbeanServer getDB();
 
+    public void save(Object o);
+
+    public void delete(Object o);
 }

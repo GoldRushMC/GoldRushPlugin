@@ -39,7 +39,7 @@ public class CreateBankCommand extends CommandDefault {
 
         //Attempts to add the bank. If the bank is not fully within a town, or does not have the right amount of markers (somehow) the creation will fail.
         try {
-            new Bank(((Player)sender).getWorld(), locs, plugin, args[0]);
+            new Bank(((Player)sender).getWorld(), locs, plugin, args[0], true);
             sender.sendMessage("Bank created successfully!");
             return true;
         } catch (MarkerNumberException | NotInTownException e) {

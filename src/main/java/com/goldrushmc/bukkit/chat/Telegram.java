@@ -9,7 +9,7 @@ package com.goldrushmc.bukkit.chat;
  */
 public class Telegram {
 
-    public Boolean Telegram(String sender, String recipeint, String message){
+    public boolean sendTelegram(String sender, String recipeint, String message){
 
         return true;
     }

@@ -4,6 +4,7 @@ import com.avaje.ebean.validation.NotEmpty;
 import com.avaje.ebean.validation.NotNull;
 
 import javax.persistence.*;
+import java.util.HashSet;
 import java.util.Set;
 
 @Entity
@@ -23,8 +24,8 @@ public class TownTbl {
     private int level;
     @Column(name = "GOLD_HELD")
     private float goldHeld;
-    @OneToOne
-    private BankTbl bank;
+    @OneToMany(mappedBy = "town")
+    private Set<BankTbl> banks;
     @OneToMany(mappedBy = "town")
     private Set<PlayerTbl> citizens;
 
@@ -72,27 +73,47 @@ public class TownTbl {
         return citizens.size();
     }
 
-    public BankTbl getBank() {
-        return bank;
+    public Set<BankTbl> getBanks() {
+        return banks;
     }
 
-    public void setBank(BankTbl bank) {
-        this.bank = bank;
+    public void setBanks(Set<BankTbl> banks) {
+        this.banks = banks;
+    }
+
+    public void addBank(BankTbl bank) {
+        if(this.banks == null) this.banks = new HashSet<>();
+        this.banks.add(bank);
+    }
+
+    public void removeBank(BankTbl bank) {
+        if(this.banks == null) return;
+        this.banks.remove(bank);
     }
 
     public Set<PlayerTbl> getCitizens() {
         return citizens;
     }
 
+    public void setCitizens(Set<PlayerTbl> citizens) {
+        this.citizens = citizens;
+    }
+
     public void addCitizen(PlayerTbl player) {
+        if(this.citizens == null) this.citizens = new HashSet<>();
         this.citizens.add(player);
     }
 
     public void removeCitizen(PlayerTbl player) {
+        if(this.citizens == null) return;
         this.citizens.remove(player);
     }
 
-    public void setCitizens(Set<PlayerTbl> citizens) {
-        this.citizens = citizens;
+    public boolean hasBanks() {
+        return !banks.isEmpty();
+    }
+
+    public boolean hasCitizens() {
+        return !citizens.isEmpty();
     }
 }

@@ -5,7 +5,6 @@ import com.goldrushmc.bukkit.bank.accounts.AccountType;
 import com.goldrushmc.bukkit.bank.conversation.BankPrefix;
 import com.goldrushmc.bukkit.bank.conversation.prompts.WelcomePrompt;
 import com.goldrushmc.bukkit.db.access.DBBanksAccess;
-import com.goldrushmc.bukkit.db.access.DBBanksAccessible;
 import com.goldrushmc.bukkit.db.tables.BankLocationTbl;
 import com.goldrushmc.bukkit.db.tables.BankTbl;
 import com.goldrushmc.bukkit.defaults.BlockFinder;
@@ -41,7 +40,7 @@ public class Bank extends BlockFinder {
     private static Map<String, List<Account>> masterList = new HashMap<>();
     private static Map<String, Player> linkToPlayerInstance = new HashMap<>();
     private static List<Bank> banks = new ArrayList<>();
-    private static DBBanksAccessible db;
+    private static DBBanksAccess db;
 
     private Map<String, List<Account>> accountHolders = new HashMap<>();
     private volatile Map<String, Conversation> conversations = new HashMap<>();
@@ -160,13 +159,14 @@ public class Bank extends BlockFinder {
             accountHolders.put(customer.getName(), new ArrayList<Account>());
         }
         accountHolders.get(customer.getName()).add(account);
-        if(masterList.containsKey(customer.getName()))  masterList.get(customer.getName()).add(account);
-        else {
-            List<Account> add = new ArrayList<>();
-            add.add(account);
-            masterList.put(customer.getName(), add);
-        }
+
+    if(masterList.containsKey(customer.getName()))  masterList.get(customer.getName()).add(account);
+    else {
+        List<Account> add = new ArrayList<>();
+        add.add(account);
+        masterList.put(customer.getName(), add);
     }
+}
 
     public void closeAccount(HumanEntity customer, Account account) {
         accountHolders.get(customer.getName()).remove(account);
@@ -216,6 +216,17 @@ public class Bank extends BlockFinder {
         return null;
     }
 
+    public Account getAccount(HumanEntity p, String accountName) {
+        if(accountHolders.containsKey(p.getName())) {
+            for(Account a : accountHolders.get(p.getName())) {
+                if(a.accountName().equals(accountName)) {
+                    return a;
+                }
+            }
+        }
+        return null;
+    }
+
     public List<Account> getAccounts(HumanEntity p) {
         return accountHolders.get(p.getName());
     }
@@ -234,7 +245,7 @@ public class Bank extends BlockFinder {
 
         //Abandon all conversations, and nullify map.
         for(Conversation c : conversations.values()) {
-            c.abandon();
+            if(!c.getState().equals(Conversation.ConversationState.ABANDONED)) c.abandon();
         }
         conversations = null;
 
@@ -274,17 +285,19 @@ public class Bank extends BlockFinder {
         bank.setLoanInterest(loanInterest);
         bank.setName(name);
 
-        Set<BankLocationTbl> locations = new HashSet<>();
-        BankLocationTbl loc1 = new BankLocationTbl(), loc2 = new BankLocationTbl();
-        loc1.setBank(bank);
-        loc2.setBank(bank);
-        loc1.initBlock(markers.get(0).getBlock());
-        loc2.initBlock(markers.get(1).getBlock());
+        Set<BankLocationTbl> corners = new HashSet<>();
+        for(int i = 0; i < 2; i++) {
+            BankLocationTbl corner = new BankLocationTbl();
+            corner.initBlock(markers.get(i).getBlock());
+            corner.setBank(bank);
+            corner.setWorld(world.getName());
+            corners.add(corner);
+        }
 
-        bank.setLocations(locations);
+        bank.setLocations(corners);
 
         db.getDB().save(bank);
-        db.getDB().save(locations);
+        db.getDB().save(corners);
 
 
     }
@@ -350,7 +363,7 @@ public class Bank extends BlockFinder {
             }
         }
 
-//        //TODO Testing mapping of convos.
+        //Testing mapping of convos.
 //        for(Block b : tellerBlocks) {
 //            b.setType(Material.GOLD_BLOCK);
 //        }
@@ -422,5 +435,9 @@ public class Bank extends BlockFinder {
         if(p.hasPermission("goldrushmc.bank.edit")) return;
 
         if(bankArea.contains(b)) event.setCancelled(true);
+    }
+
+    public static DBBanksAccess getDB() {
+        return db;
     }
 }

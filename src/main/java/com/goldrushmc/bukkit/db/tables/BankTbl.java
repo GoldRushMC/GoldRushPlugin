@@ -4,6 +4,7 @@ import com.avaje.ebean.validation.NotEmpty;
 import com.avaje.ebean.validation.NotNull;
 
 import javax.persistence.*;
+import java.util.HashSet;
 import java.util.Set;
 
 @Entity
@@ -26,8 +27,8 @@ public class BankTbl {
     @NotNull
     private float loanInterest;
     @OneToMany(mappedBy = "bank")
-    private Set<PlayerTbl> customers;
-    @OneToOne
+    private Set<AccountTbl> accounts;
+    @ManyToOne
     private TownTbl town;
     @OneToMany(mappedBy = "bank")
     private Set<BankLocationTbl> locations;
@@ -72,18 +73,6 @@ public class BankTbl {
         this.loanInterest = loanInterest;
     }
 
-    public Set<PlayerTbl> getCustomers() {
-        return customers;
-    }
-
-    public void addCustomer(PlayerTbl player) {
-        this.customers.add(player);
-    }
-
-    public void removeCustomer(PlayerTbl player) {
-        this.customers.remove(player);
-    }
-
     public TownTbl getTown() {
         return town;
     }
@@ -92,18 +81,39 @@ public class BankTbl {
         this.town = town;
     }
 
-    /**
-     * @param customers the customers to set
-     */
-    public void setCustomers(Set<PlayerTbl> customers) {
-        this.customers = customers;
-    }
-
     public Set<BankLocationTbl> getLocations() {
         return locations;
     }
 
     public void setLocations(Set<BankLocationTbl> locations) {
         this.locations = locations;
+    }
+
+    public Set<AccountTbl> getAccounts() {
+        return accounts;
+    }
+
+    public void setAccounts(Set<AccountTbl> accounts) {
+        this.accounts = accounts;
+    }
+
+    public void addAccount(AccountTbl account) {
+        if(this.accounts == null) this.accounts = new HashSet<>();
+        this.accounts.add(account);
+    }
+
+    public void removeAccount(AccountTbl account) {
+        if(this.accounts == null) return;
+        this.accounts.remove(account);
+    }
+
+    public int getVaultTotal() {
+        int worth = 0;
+        if(accounts != null) {
+            for(AccountTbl a : accounts) {
+                worth += a.getBalance();
+            }
+        }
+        return worth;
     }
 }

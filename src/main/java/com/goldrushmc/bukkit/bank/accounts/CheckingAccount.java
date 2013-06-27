@@ -1,6 +1,10 @@
 package com.goldrushmc.bukkit.bank.accounts;
 
 import com.goldrushmc.bukkit.bank.Bank;
+import com.goldrushmc.bukkit.db.tables.AccountTbl;
+import com.goldrushmc.bukkit.db.tables.BankTbl;
+import com.goldrushmc.bukkit.db.tables.PlayerTbl;
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.inventory.Inventory;
@@ -20,6 +24,7 @@ public class CheckingAccount extends AbstractAccount {
         super(startingBalance, owner, bank, interest);
         this.type = AccountType.CHECKING;
         this.name = name;
+//        addToDB(bank, owner);
     }
 
     @Override
@@ -103,5 +108,35 @@ public class CheckingAccount extends AbstractAccount {
     @Override
     public boolean hasEnoughGold(int cost) {
         return balance >= cost;
+    }
+
+    public void addToDB(Bank bank, HumanEntity person) {
+        //DB Stuff
+        BankTbl bankTbl = Bank.getDB().queryBanks().where().ieq("name", name).findUnique();
+        if(bankTbl != null) {
+            PlayerTbl player = Bank.getDB().getPlayer(person.getName());
+            Bukkit.getLogger().info("Bank exists");
+            if(player != null) {
+                Bukkit.getLogger().info("Player exists");
+                AccountTbl aTbl = new AccountTbl();
+                aTbl.setBank(bankTbl);
+                aTbl.setHolder(player);
+                aTbl.setBalance(checkBalance());
+                aTbl.setName(accountName());
+                aTbl.setType(getAccountType());
+                aTbl.setInterest(getInterest());
+                bankTbl.addAccount(aTbl);
+                player.addAccount(aTbl);
+
+
+                Bukkit.getLogger().info("Saving bank!");
+                Bank.getDB().save(bankTbl);
+                Bukkit.getLogger().info("Saving player!");
+                Bank.getDB().save(player);
+                Bukkit.getLogger().info("Saving account!");
+                Bank.getDB().save(aTbl);
+            }
+        }
+        //End DB Stuff
     }
 }

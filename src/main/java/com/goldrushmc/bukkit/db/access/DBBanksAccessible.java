@@ -16,4 +16,5 @@ public interface DBBanksAccessible extends DBAccessible {
     public Query<BankTbl> queryBanks();
 
     public List<BankTbl> getBankList();
+
 }

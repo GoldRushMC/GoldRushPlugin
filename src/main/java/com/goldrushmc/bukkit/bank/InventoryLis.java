@@ -1,5 +1,6 @@
 package com.goldrushmc.bukkit.bank;
 
+import com.goldrushmc.bukkit.db.tables.PlayerTbl;
 import com.goldrushmc.bukkit.defaults.DefaultListener;
 import com.goldrushmc.bukkit.main.Main;
 import org.bukkit.Bukkit;
@@ -67,12 +68,41 @@ public class InventoryLis extends DefaultListener {
 
     @EventHandler
     public void onPlayerLoginAdd(PlayerLoginEvent e){
-        Main.playerList.add(e.getPlayer());
+        Player p = e.getPlayer();
+        Main.playerList.add(p);
+
+        //DB Stuff
+        PlayerTbl player = Main.db.getPlayer(p.getName());
+        if(player != null) {
+            player.setOnline(true);
+            Main.db.getDB().save(player);
+        } else {
+            PlayerTbl newPlayer = new PlayerTbl();
+            newPlayer.setOnline(true);
+            newPlayer.setName(p.getName());
+            Main.db.getDB().save(newPlayer);
+        }
+        //End DB Stuff
     }
 
     @EventHandler
     public void onPlayerLoginOut(PlayerQuitEvent e){
-        Main.playerList.remove(e.getPlayer());
+        Player p = e.getPlayer();
+        Main.playerList.remove(p);
+
+        //DB stuff
+        PlayerTbl player = Main.db.getPlayer(p.getName());
+        if(player != null) {
+            player.setOnline(false);
+            Main.db.getDB().save(player);
+            //Just in case, if the player gets removed from the DB in the time they log in and out.
+        } else {
+            PlayerTbl newPlayer = new PlayerTbl();
+            newPlayer.setOnline(false);
+            newPlayer.setName(p.getName());
+            Main.db.getDB().save(newPlayer);
+        }
+        //End DB Stuff
     }
 
     //Create class which will fill the inventory.

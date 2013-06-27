@@ -1,5 +1,6 @@
 package com.goldrushmc.bukkit.bank.conversation.prompts;
 
+import com.goldrushmc.bukkit.chat.conversation.TSession;
 import org.bukkit.ChatColor;
 import org.bukkit.conversations.ConversationContext;
 import org.bukkit.conversations.Prompt;
@@ -18,6 +19,14 @@ public class TryAgainPrompt implements Prompt {
 
     @Override
     public String getPromptText(ConversationContext context) {
+
+        if(context.getSessionData(SessionConstants.ERROR) == null) {
+            if(context.getSessionData(TSession.ERROR) == null) {
+                //Default message.
+                return "That is not an option. Please try again.";
+            }
+            return ChatColor.RED + "" + context.getSessionData(TSession.ERROR);
+        }
         return ChatColor.RED + "" + context.getSessionData(SessionConstants.ERROR);
     }
 

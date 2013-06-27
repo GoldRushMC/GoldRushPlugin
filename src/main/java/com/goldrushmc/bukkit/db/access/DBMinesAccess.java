@@ -9,17 +9,15 @@ import org.bukkit.plugin.java.JavaPlugin;
 import java.util.List;
 
 /**
- * Created with IntelliJ IDEA.
- * User: Lucas
+ * User: Diremonsoon
  * Date: 6/17/13
  * Time: 2:41 PM
- * To change this template use File | Settings | File Templates.
  */
-public class DBMinesAcess implements DBMinesAccessible {
+public class DBMinesAccess implements DBMinesAccessible {
 
     public JavaPlugin plugin;
 
-    public DBMinesAcess(JavaPlugin plugin) {
+    public DBMinesAccess(JavaPlugin plugin) {
         this.plugin = plugin;
     }
 
@@ -63,5 +61,15 @@ public class DBMinesAcess implements DBMinesAccessible {
     @Override
     public EbeanServer getDB() {
          return plugin.getDatabase();
+    }
+
+    @Override
+    public void save(Object o) {
+        getDB().save(o);
+    }
+
+    @Override
+    public void delete(Object o) {
+        getDB().delete(o);
     }
 }

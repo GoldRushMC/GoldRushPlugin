@@ -1,5 +1,6 @@
 package com.goldrushmc.bukkit.trainstation.signs;
 
+import com.goldrushmc.bukkit.trainstation.exceptions.MissingSignException;
 import org.bukkit.Chunk;
 import org.bukkit.block.Block;
 import org.bukkit.block.Sign;
@@ -73,7 +74,7 @@ public interface ISignLogic {
      *
      * @param blocks The {@link Chunk} to search.
      */
-    public void findRelevantSigns(List<Block> blocks);
+    public void findRelevantSigns(List<Block> blocks) throws MissingSignException;
 
     /**
      * Gets the {@link Chunk} associated with this logic.
